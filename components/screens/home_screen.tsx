@@ -1,6 +1,8 @@
 import { BannerCarousel } from "../home_screen/BannerCarousel";
+import Categories from "../home_screen/Categories";
 import CountdownAd from "../home_screen/CountdownAd";
 import SearchBar from "../home_screen/SearchBar";
+import SpecialProducts from "../home_screen/SpecialProducts";
 
 export default function home_screen() {
 	return (
@@ -10,6 +12,10 @@ export default function home_screen() {
 			<BannerCarousel />
 
 			<CountdownAd />
+
+			<Categories />
+
+			<SpecialProducts />
 		</div>
 	);
 }
