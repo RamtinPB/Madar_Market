@@ -27,7 +27,7 @@ export default function ProductCard({
 	return (
 		<div className="flex h-[299px] w-[156px] flex-col rounded-t-[12px] rounded-b-[20px] border bg-white text-wrap shadow-sm">
 			{/* IMAGE */}
-			<div className="relative m-2 h-36 w-36">
+			<div className="relative my-2 mx-auto h-36 w-36">
 				<Image
 					src={image}
 					alt={title}
