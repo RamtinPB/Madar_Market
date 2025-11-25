@@ -26,7 +26,11 @@ export function Header() {
 			 * - Basket button
 			 * -------------------------------------------------------- */}
 			<div>
-				<Button variant="outline" className="h-10 w-10 p-0 border-2">
+				<Button
+					variant="outline"
+					className="h-10 w-10 p-0 border-2 transition-all duration-150
+				hover:bg-zinc-50 active:scale-95"
+				>
 					<BasketIcon className="h-5! w-5! text-[#B3B2B2]" />
 				</Button>
 			</div>
