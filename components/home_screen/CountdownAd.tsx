@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import CountdownAdImage from "@/public/assets/home_screen/CountdownAd.png";
+import CountdownAdImage from "@/public/assets/home_screen/CountdownAd.svg";
 
 /* ------------------------------------------------------------
  * TYPES
@@ -72,7 +71,7 @@ export default function CountdownAd() {
 	 * ------------------------------------------------------------ */
 	return (
 		<div className="flex h-[58px] w-full items-center justify-between rounded-xl border-2 border-[#FFCACA] bg-[#FDF2F6] px-3">
-			<Image src={CountdownAdImage} alt="Countdown Ad" />
+			<CountdownAdImage />
 
 			{/* TIMER */}
 			<div className="flex flex-row items-center gap-1 font-semibold text-xs text-white">

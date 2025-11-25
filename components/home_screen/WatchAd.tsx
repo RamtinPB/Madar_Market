@@ -12,7 +12,7 @@ export default function WatchAd() {
 			</div>
 
 			{/* Image Section */}
-			<Image src={WatchImage} alt="ساعت دیجیتال" />
+			<Image src={WatchImage} width={32} height={59} alt="ساعت دیجیتال" />
 		</div>
 	);
 }

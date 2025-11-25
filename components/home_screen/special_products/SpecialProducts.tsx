@@ -6,6 +6,8 @@ import ViewAllCard from "./ViewAllCard";
 
 import { products } from "./ProductData";
 
+import ShoppingCart from "@/public/assets/home_screen/special_products/Cart.png";
+
 /* ------------------------------------------------------------
  *  SPECIAL PRODUCTS SECTION
  * ------------------------------------------------------------ */
@@ -28,7 +30,7 @@ export default function SpecialProducts() {
 					{products.map((p, i) => (
 						<ProductCard
 							key={i}
-							image={p.image}
+							image={p.image ?? ShoppingCart} // use ShoppingCart if p.image is null
 							title={p.title}
 							discount={p.discount}
 							oldPrice={p.oldPrice}

@@ -1,4 +1,3 @@
-import ShoppingCart from "@/public/assets/home_screen/special_products/Cart.png";
 import MachhiatoCafe from "@/public/assets/home_screen/special_products/machhiato.png";
 import OliveOil from "@/public/assets/home_screen/special_products/olive_oil.png";
 import Qharaqhorum from "@/public/assets/home_screen/special_products/qh.png";
@@ -24,7 +23,7 @@ export const products = [
 		newPrice: "3,700,000",
 	},
 	{
-		image: ShoppingCart,
+		image: null,
 		title: "روغن زیتون بکر کریستال - 5 لیتر ",
 		discount: 10,
 		oldPrice: "40,000",
@@ -52,7 +51,7 @@ export const products = [
 		newPrice: "292,900",
 	},
 	{
-		image: ShoppingCart,
+		image: null,
 		title: "روغن زیتون بکر کریستال - 5 لیتر ",
 		discount: 10,
 		oldPrice: "40,000",
