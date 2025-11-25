@@ -24,12 +24,12 @@ export default function NavItem({
 		>
 			{/* ACTIVE INDICATOR */}
 			{active && (
-				<ActiveIndicatorIcon className="absolute -top-[18px] left-1/2 -translate-x-1/2 text-[#FF6A29] !w-[34px] !h-[4px]" />
+				<ActiveIndicatorIcon className="absolute -top-[18px] left-1/2 -translate-x-1/2 text-[#FF6A29] w-[34px]! h-1!" />
 			)}
 
 			{/* ICON */}
 			<IconComponent
-				className={`!w-5 !h-5 ${active ? "text-[#FF6A29]" : "text-[#B3B2B2]"}`}
+				className={`w-5! h-5! ${active ? "text-[#FF6A29]" : "text-[#B3B2B2]"}`}
 			/>
 
 			{/* LABEL */}

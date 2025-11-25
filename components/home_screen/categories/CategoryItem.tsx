@@ -23,7 +23,7 @@ export default function CategoryItem({ icon, label }: CategoryItemProps) {
 			<div
 				className="
 				flex h-[76px] w-[73px] items-center justify-center
-				rounded-xl bg-gradient-to-b from-[#FFF7F5] to-[#FFEBE5]
+				rounded-xl bg-linear-to-b from-[#FFF7F5] to-[#FFEBE5]
 				shadow-xs
 			"
 			>

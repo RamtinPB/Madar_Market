@@ -13,9 +13,9 @@ export function Header() {
 			 * - Navigation back arrow
 			 * - Center-aligned logo
 			 * -------------------------------------------------------- */}
-			<div className="flex h-[32px] min-w-[92px] items-center gap-1">
-				<Button variant="ghost" className="h-[32px] w-[32px] p-0">
-					<RightArrowIcon className="!h-[32px] !w-[32px]" />
+			<div className="flex h-8 min-w-[92px] items-center gap-1">
+				<Button variant="ghost" className="h-8 w-8 p-0">
+					<RightArrowIcon className="h-8! w-8!" />
 				</Button>
 
 				<Logo className="h-full w-full" />
@@ -26,8 +26,8 @@ export function Header() {
 			 * - Basket button
 			 * -------------------------------------------------------- */}
 			<div>
-				<Button variant="outline" className="h-[40px] w-[40px] p-0 border-2">
-					<BasketIcon className="!h-5 !w-5 text-[#B3B2B2]" />
+				<Button variant="outline" className="h-10 w-10 p-0 border-2">
+					<BasketIcon className="h-5! w-5! text-[#B3B2B2]" />
 				</Button>
 			</div>
 		</header>

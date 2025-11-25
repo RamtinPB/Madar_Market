@@ -63,8 +63,8 @@ export function BannerCarousel() {
 						key={index}
 						className={
 							index === currentIndex
-								? "w-[16px] h-[6px] bg-gradient-to-b from-[#FFFFFF] to-[#D79BC8] rounded-full transition-all"
-								: "w-[6px] h-[6px] bg-[#FFFFFF] opacity-20 rounded-full transition-all"
+								? "w-4 h-1.5 bg-linear-to-b from-[#FFFFFF] to-[#D79BC8] rounded-full transition-all"
+								: "w-1.5 h-1.5 bg-[#FFFFFF] opacity-20 rounded-full transition-all"
 						}
 					/>
 				))}

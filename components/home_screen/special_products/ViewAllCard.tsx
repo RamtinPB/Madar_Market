@@ -29,7 +29,7 @@ export default function ViewAllCard({ onClick }: ViewAllCardProps) {
 			<Image
 				src={ArrowLeft as StaticImageData}
 				alt="مشاهده همه محصولات"
-				className="h-[64px] w-[74px]"
+				className="h-16 w-[74px]"
 			/>
 		</button>
 	);

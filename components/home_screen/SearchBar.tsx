@@ -7,7 +7,7 @@ import {
 
 export default function SearchBar() {
 	return (
-		<InputGroup className="h-[40px] w-full rounded-xl">
+		<InputGroup className="h-10 w-full rounded-xl">
 			{/* TEXT INPUT */}
 			<InputGroupInput
 				placeholder="جستجو"
@@ -20,8 +20,8 @@ export default function SearchBar() {
 			/>
 
 			{/* ICON ADDON */}
-			<InputGroupAddon className="!pr-2">
-				<SearchIcon className="!h-6 !w-6 text-[#DDDCDB]" />
+			<InputGroupAddon className="pr-2!">
+				<SearchIcon className="h-6! w-6! text-[#DDDCDB]" />
 			</InputGroupAddon>
 		</InputGroup>
 	);

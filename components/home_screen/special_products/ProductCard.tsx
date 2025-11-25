@@ -27,7 +27,7 @@ export default function ProductCard({
 	return (
 		<div className="flex h-[299px] w-[156px] flex-col rounded-t-[12px] rounded-b-[20px] border bg-white text-wrap shadow-sm">
 			{/* IMAGE */}
-			<div className="relative m-2 h-[144px] w-[144px]">
+			<div className="relative m-2 h-36 w-36">
 				<Image
 					src={image}
 					alt={title}
@@ -52,7 +52,7 @@ export default function ProductCard({
 					</div>
 
 					{/* DISCOUNT BADGE */}
-					<span className="rounded-[20px] bg-[#C50F1F] px-1 py-[2px] text-[9px] font-normal text-white">
+					<span className="rounded-[20px] bg-[#C50F1F] px-1 py-0.5 text-[9px] font-normal text-white">
 						%{discount}
 					</span>
 				</div>
@@ -65,7 +65,7 @@ export default function ProductCard({
 			</div>
 
 			{/* ADD-TO-CART BUTTON */}
-			<Button className="mt-auto h-[32px] w-full rounded-[20px] bg-[#F5F2EF] p-2 text-[16px] font-medium text-[#787471]">
+			<Button className="mt-auto h-8 w-full rounded-[20px] bg-[#F5F2EF] p-2 text-[16px] font-medium text-[#787471]">
 				افزودن به سبد
 			</Button>
 		</div>
