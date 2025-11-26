@@ -26,7 +26,6 @@ export function BannerCarousel() {
 			<Carousel
 				className="w-full h-[147px] border-2 border-white shadow-lg rounded-xl overflow-hidden"
 				opts={{
-					align: "center",
 					loop: true,
 					startIndex: 0,
 				}}
@@ -47,17 +46,23 @@ export function BannerCarousel() {
 			>
 				<CarouselContent>
 					{banners.map((banner, index) => (
-						<CarouselItem key={index} className="relative  h-[147px] w-full ">
+						<CarouselItem key={index} className="relative h-[147px] w-full">
 							<div className="relative w-full h-full rounded-xl ">
 								<Image src={banner} alt={`banner-${index}`} fill priority />
 							</div>
 						</CarouselItem>
 					))}
 				</CarouselContent>
+
+				<CarouselPrevious className="hidden" />
+				<CarouselNext className="hidden" />
 			</Carousel>
 
 			{/* PAGINATION DOTS */}
-			<div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1 z-20">
+			<div
+				dir="ltr"
+				className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1 z-20"
+			>
 				{banners.map((_, index) => (
 					<div
 						key={index}
