@@ -18,7 +18,10 @@ export default function NavItem({
 }: NavItemProps) {
 	return (
 		<Button
-			onClick={onClick}
+			onClick={() => {
+				window.scrollTo({ top: 0, behavior: "smooth" });
+				onClick?.();
+			}}
 			variant="ghost"
 			className="relative flex flex-col items-center justify-center gap-1"
 		>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "../ui/button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 
@@ -13,6 +14,8 @@ const SUBCATEGORIES = [
 ];
 
 export default function SubCategories() {
+	const [active, setActive] = useState<string | null>(null);
+
 	return (
 		<section>
 			<ScrollArea
@@ -23,7 +26,13 @@ export default function SubCategories() {
 					{SUBCATEGORIES.map((subcat) => (
 						<Button
 							key={subcat.name}
-							className="rounded-2xl bg-[#F5F2EF] px-3 py-2 text-[16px] font-normal text-center text-[#787471]"
+							onClick={() =>
+								setActive(active === subcat.name ? null : subcat.name)
+							}
+							className={`rounded-2xl bg-[#F7F7F7] px-3 py-2 text-[16px] font-normal text-center text-[#787471] border border-transparent ${
+								active === subcat.name && "text-[#FF6A29]  border-[#FF6A29]"
+							}
+`}
 						>
 							{subcat.name}
 						</Button>

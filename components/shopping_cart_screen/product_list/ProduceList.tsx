@@ -34,11 +34,11 @@ export default function ProduceList() {
 					</SelectContent>
 				</Select>
 				<div className="flex gap-2">
-					<Button className="items-center text-[#787471] bg-[#F7F7F7] border border[#F3F0EC] rounded-xl">
+					<Button className="items-center text-[#787471] bg-[#F7F7F7] rounded-xl">
 						<CardIcon />
 						<span>تخفیفات</span>
 					</Button>
-					<Button className="items-center text-[#787471] bg-[#F7F7F7] border border[#F3F0EC] rounded-xl">
+					<Button className="items-center text-[#787471] bg-[#F7F7F7] rounded-xl">
 						<DiscountIcon />
 						<span>حامی کارت</span>
 					</Button>

@@ -24,6 +24,7 @@ import Refrigerated from "@/public/assets/home_screen/categories/Refrigerated.pn
 import Snacks from "@/public/assets/home_screen/categories/Snacks.png";
 import WritingSupplies from "@/public/assets/home_screen/categories/Writing supplies.png";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { useState } from "react";
 
 /* ------------------------------------------------------------
  * CATEGORY LIST (DATA MODEL)
@@ -57,6 +58,8 @@ const CATEGORIES = [
  * ------------------------------------------------------------ */
 
 export default function ScrollCategories() {
+	const [active, setActive] = useState<string | null>(null);
+
 	return (
 		<section>
 			<ScrollArea
@@ -65,7 +68,13 @@ export default function ScrollCategories() {
 			>
 				<div className="flex gap-4">
 					{CATEGORIES.map((cat) => (
-						<CategoryItem key={cat.label} icon={cat.icon} label={cat.label} />
+						<CategoryItem
+							key={cat.label}
+							icon={cat.icon}
+							label={cat.label}
+							active={active === cat.label}
+							onclick={() => setActive(active === cat.label ? null : cat.label)}
+						/>
 					))}
 				</div>
 				<ScrollBar orientation="horizontal" className="hidden" />
