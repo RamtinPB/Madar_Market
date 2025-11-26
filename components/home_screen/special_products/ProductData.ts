@@ -1,6 +1,7 @@
 import MachhiatoCafe from "@/public/assets/home_screen/special_products/machhiato.png";
 import OliveOil from "@/public/assets/home_screen/special_products/olive_oil.png";
 import Qharaqhorum from "@/public/assets/home_screen/special_products/qh.png";
+import Cheese from "@/public/assets/home_screen/special_products/cheese.png";
 
 /* ------------------------------------------------------------
  * PRODUCT LIST
@@ -14,6 +15,7 @@ export const products = [
 		discount: 10,
 		oldPrice: "40,000",
 		newPrice: "3,700,000",
+		sponsorPrice: "3,000,000",
 	},
 	{
 		image: Qharaqhorum,
@@ -21,6 +23,7 @@ export const products = [
 		discount: 10,
 		oldPrice: "40,000",
 		newPrice: "3,700,000",
+		sponsorPrice: undefined,
 	},
 	{
 		image: null,
@@ -28,6 +31,7 @@ export const products = [
 		discount: 10,
 		oldPrice: "40,000",
 		newPrice: "3,700,000",
+		sponsorPrice: undefined,
 	},
 	{
 		image: Qharaqhorum,
@@ -35,6 +39,7 @@ export const products = [
 		discount: 10,
 		oldPrice: "40,000",
 		newPrice: "3,700,000",
+		sponsorPrice: undefined,
 	},
 	{
 		image: OliveOil,
@@ -42,6 +47,7 @@ export const products = [
 		discount: 10,
 		oldPrice: "40,000",
 		newPrice: "3,700,000",
+		sponsorPrice: undefined,
 	},
 	{
 		image: MachhiatoCafe,
@@ -49,12 +55,14 @@ export const products = [
 		discount: 22,
 		oldPrice: "365,000",
 		newPrice: "292,900",
+		sponsorPrice: undefined,
 	},
 	{
-		image: null,
+		image: Cheese,
 		title: "روغن زیتون بکر کریستال - 5 لیتر ",
-		discount: 10,
-		oldPrice: "40,000",
+		discount: undefined,
+		oldPrice: undefined,
 		newPrice: "3,700,000",
+		sponsorPrice: undefined,
 	},
 ];
