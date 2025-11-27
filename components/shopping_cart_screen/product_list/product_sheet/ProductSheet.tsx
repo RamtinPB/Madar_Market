@@ -55,7 +55,7 @@ export default function ProductSheet({
 						imageObject="contain"
 						shadowAmount="none"
 					/>
-					<SheetTitle>{product.title}</SheetTitle>
+					<SheetTitle className="text-[#6B6866]!">{product.title}</SheetTitle>
 
 					<div className="grid grid-cols-2 gap-3">
 						{SheetData.map((item, i) => (
