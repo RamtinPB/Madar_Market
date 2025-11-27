@@ -1,4 +1,5 @@
 import NavItem from "./NavItem";
+import { useRouter } from "next/navigation";
 
 import HomeIcon from "@/public/assets/footer/home.svg";
 import ReceiptIcon from "@/public/assets/footer/receipt.svg";
@@ -26,6 +27,7 @@ const NAV_ITEMS: { tab: TabKey; label: string; icon: any }[] = [
  * FOOTER CONTAINER
  * ------------------------------------------------------------ */
 export function Footer({ activeTab, onChangeTab }: FooterProps) {
+	const router = useRouter();
 	return (
 		<footer className="fixed bottom-0 left-0 z-50 flex h-[74px] w-full items-center justify-evenly border-t bg-white px-4">
 			{NAV_ITEMS.map((item) => (
@@ -34,7 +36,13 @@ export function Footer({ activeTab, onChangeTab }: FooterProps) {
 					icon={item.icon}
 					label={item.label}
 					active={activeTab === item.tab}
-					onClick={() => onChangeTab(item.tab)}
+					onClick={() => {
+						if (item.tab === "profile") {
+							router.push("/login"); // 🔥 Go to login page
+						} else {
+							onChangeTab(item.tab); // normal tab switching
+						}
+					}}
 				/>
 			))}
 		</footer>

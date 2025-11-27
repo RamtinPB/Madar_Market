@@ -1,14 +1,14 @@
 "use client";
 
-import {
-	Carousel,
-	CarouselContent,
-	CarouselItem,
-	CarouselNext,
-	CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import Image from "next/image";
 import { useState } from "react";
+import type { Swiper as SwiperType } from "swiper";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 import banner1 from "@/public/assets/home_screen/carousel/frame.png";
 import banner2 from "@/public/assets/home_screen/carousel/frame.png";
@@ -17,46 +17,41 @@ import banner4 from "@/public/assets/home_screen/carousel/frame.png";
 
 export function BannerCarousel() {
 	const banners = [banner1, banner2, banner3, banner4];
-
-	const [currentIndex, setCurrentIndex] = useState(0);
+	const [currentIndex, setCurrentIndex] = useState(4);
 
 	return (
-		<div className="relative w-full h-[147px] ">
-			{/* CAROUSEL */}
-			<Carousel
-				className="w-full h-[147px] border-2 border-white shadow-lg rounded-xl overflow-hidden"
-				opts={{
-					loop: true,
-					startIndex: 0,
+		<div className="relative w-full h-[147px]" dir="rtl">
+			{/* SWIPER */}
+			<Swiper
+				dir="rtl"
+				modules={[Navigation, Pagination, Autoplay]}
+				spaceBetween={0}
+				slidesPerView={1}
+				loop={true}
+				onSlideChange={(swiper: SwiperType) => {
+					const reversedIndex = swiper.realIndex;
+					const originalIndex = banners.length - 1 - reversedIndex;
+					setCurrentIndex(originalIndex);
 				}}
-				setApi={(api) => {
-					if (!api) return;
-
-					const updateIndex = () => {
-						const idx = api.selectedScrollSnap();
-						setCurrentIndex(idx);
-					};
-
-					// Initial update AFTER embla is fully ready
-					api.on("init", updateIndex);
-
-					// Recalculate on change
-					api.on("select", updateIndex);
-				}}
+				className="w-full h-[147px] border-2 border-white shadow-lg rounded-xl"
 			>
-				<CarouselContent>
-					{banners.map((banner, index) => (
-						<CarouselItem key={index} className="relative h-[147px] w-full">
-							<div className="relative w-full h-full rounded-xl ">
-								<Image src={banner} alt={`banner-${index}`} fill priority />
+				{[...banners].reverse().map((banner, reverseIndex) => {
+					const originalIndex = banners.length - 1 - reverseIndex;
+					return (
+						<SwiperSlide key={originalIndex}>
+							<div className="relative w-full h-[147px] rounded-xl">
+								<Image
+									src={banner}
+									alt={`banner-${originalIndex}`}
+									fill
+									priority={originalIndex === 0}
+									className="object-cover rounded-xl"
+								/>
 							</div>
-						</CarouselItem>
-					))}
-				</CarouselContent>
-
-				<CarouselPrevious className="hidden" />
-				<CarouselNext className="hidden" />
-			</Carousel>
+						</SwiperSlide>
+					);
+				})}
+			</Swiper>
 
 			{/* PAGINATION DOTS */}
 			<div
