@@ -72,7 +72,7 @@ export default function ProductSheet({
 								"linear-gradient(white, white) padding-box, linear-gradient(90deg, #D2DD25, #43B999, #02A9EC, #364FC0, #65029B) border-box",
 						}}
 					>
-						<span className="text[#65029B] text-[14px] font-bold">
+						<span className="text-[#65029B] text-[14px] font-bold">
 							قیمت با حامی کارد
 						</span>
 						<div className=" flex items-center gap-1.5 text-[14px] font-bold text-[#0B8500]">
