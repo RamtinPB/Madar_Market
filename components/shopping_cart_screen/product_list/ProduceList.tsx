@@ -10,13 +10,20 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../ui/select";
-import ProduceListCard from "./ProduceListCard";
+import ProduceListCard, { ProduceListCardProps } from "./ProduceListCard";
 import { products } from "@/components/home_screen/special_products/ProductData";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ShoppingCart from "@/public/assets/home_screen/special_products/Cart.png";
 import CustomSpinner from "../CustomSpinner";
+import { useState } from "react";
+import ProductDrawer from "./ProductSheet";
+import ProductSheet from "./ProductSheet";
 
 export default function ProduceList() {
+	const [selectedProduct, setSelectedProduct] =
+		useState<ProduceListCardProps | null>(null);
+	const [isDrawerOpen, setDrawerOpen] = useState(false);
+
 	return (
 		<section className="flex flex-col gap-5">
 			<header className="flex items-center justify-between">
@@ -47,20 +54,38 @@ export default function ProduceList() {
 			<ScrollArea dir="rtl" className="w-full whitespace-nowrap pb-2">
 				<div className="flex flex-col items-center gap-3">
 					{products.map((p, i) => (
-						<ProduceListCard
+						<div
 							key={i}
-							image={p.image ?? ShoppingCart} // use ShoppingCart if p.image is null
-							title={p.title}
-							discount={p.discount}
-							oldPrice={p.oldPrice}
-							newPrice={p.newPrice}
-							sponsorPrice={p.sponsorPrice}
-						/>
+							onClick={() => {
+								setSelectedProduct(p);
+								setDrawerOpen(true);
+							}}
+							className="cursor-pointer"
+						>
+							<ProduceListCard
+								image={p.image ?? ShoppingCart}
+								title={p.title}
+								discount={p.discount}
+								oldPrice={p.oldPrice}
+								newPrice={p.newPrice}
+								sponsorPrice={p.sponsorPrice}
+								onCardClick={() => {
+									setSelectedProduct(p);
+									setDrawerOpen(true);
+								}}
+							/>
+						</div>
 					))}
+
 					<CustomSpinner />
 				</div>
 				<ScrollBar orientation="vertical" className="hidden" />
 			</ScrollArea>
+			<ProductSheet
+				open={isDrawerOpen}
+				onOpenChange={setDrawerOpen}
+				product={selectedProduct}
+			/>
 		</section>
 	);
 }

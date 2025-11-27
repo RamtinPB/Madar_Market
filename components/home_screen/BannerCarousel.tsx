@@ -2,7 +2,7 @@
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import { useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
 
@@ -10,17 +10,21 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-import banner1 from "@/public/assets/home_screen/carousel/frame.png";
-import banner2 from "@/public/assets/home_screen/carousel/frame.png";
-import banner3 from "@/public/assets/home_screen/carousel/frame.png";
-import banner4 from "@/public/assets/home_screen/carousel/frame.png";
+interface BannerCarouselProps {
+	height: string;
+	banners: StaticImageData[];
+	imageObject: string;
+}
 
-export function BannerCarousel() {
-	const banners = [banner1, banner2, banner3, banner4];
+export function BannerCarousel({
+	height,
+	banners,
+	imageObject,
+}: BannerCarouselProps) {
 	const [currentIndex, setCurrentIndex] = useState(4);
 
 	return (
-		<div className="relative w-full h-[147px]" dir="rtl">
+		<div className={`relative w-full h-[${height}px]`} dir="rtl">
 			{/* SWIPER */}
 			<Swiper
 				dir="rtl"
@@ -33,19 +37,19 @@ export function BannerCarousel() {
 					const originalIndex = banners.length - 1 - reversedIndex;
 					setCurrentIndex(originalIndex);
 				}}
-				className="w-full h-[147px] border-2 border-white shadow-lg rounded-xl"
+				className={`w-full h-full border-2 border-white shadow-lg rounded-xl`}
 			>
 				{[...banners].reverse().map((banner, reverseIndex) => {
 					const originalIndex = banners.length - 1 - reverseIndex;
 					return (
 						<SwiperSlide key={originalIndex}>
-							<div className="relative w-full h-[147px] rounded-xl">
+							<div className={`relative w-full h-full rounded-xl`}>
 								<Image
 									src={banner}
 									alt={`banner-${originalIndex}`}
 									fill
 									priority={originalIndex === 0}
-									className="object-cover rounded-xl"
+									className={`object-${imageObject}`}
 								/>
 							</div>
 						</SwiperSlide>

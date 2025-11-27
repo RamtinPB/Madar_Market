@@ -5,19 +5,19 @@ import Image, { type StaticImageData } from "next/image";
 
 import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
 import TrashIcon from "@/public/assets/shopping_cart_screen/trash.svg";
-import { Plus } from "lucide-react";
 import { useState } from "react";
 
 /* ------------------------------------------------------------
  * TYPES
  * ------------------------------------------------------------ */
 export interface ProduceListCardProps {
-	image: StaticImageData;
+	image?: StaticImageData;
 	title: string;
 	discount?: number;
 	oldPrice?: string;
 	newPrice: string;
 	sponsorPrice?: string;
+	onCardClick?: () => void;
 }
 
 /* ------------------------------------------------------------
@@ -31,15 +31,25 @@ export default function ProduceListCard({
 	oldPrice,
 	newPrice,
 	sponsorPrice,
+	onCardClick,
 }: ProduceListCardProps) {
 	const [count, setCount] = useState(0);
 	const inCart = count > 0;
 
 	return (
-		<Card className="p-0">
+		<Card
+			className="p-0 cursor-pointer"
+			onClick={() => {
+				if (onCardClick) onCardClick(); // your drawer trigger
+			}}
+		>
 			<CardContent className="flex flex-col justify-between p-0">
 				<div className="flex flex-row pl-5 pr-2 py-3">
-					<Image src={image} alt={title} className="w-[114.5px] h-[114.5px]" />
+					<Image
+						src={image ?? ""}
+						alt={title}
+						className="w-[114.5px] h-[114.5px]"
+					/>
 					<div className="flex flex-col w-full justify-between">
 						<p className="font-normal text[#787471] text-[14px] text-wrap mt-2">
 							{title}
@@ -69,16 +79,20 @@ export default function ProduceListCard({
 							</div>
 							{!inCart ? (
 								<Button
-									onClick={() => setCount(1)}
+									onClick={(e) => {
+										e.stopPropagation(); // prevent parent click
+										setCount(1);
+									}}
 									className=" h-10 rounded-[20px] bg-[#F5F2EF] p-4 text-[16px] font-medium text-[#787471]"
 								>
 									افزودن به سبد
 								</Button>
 							) : (
 								<ButtonGroup
+									onClick={(e) => e.stopPropagation()} // stop clicks from bubbling
 									orientation={"horizontal"}
 									dir="ltr"
-									className="h-10 w-[105px] items-center bg-[#F7F7F7] border border[#F3F0EC] rounded-[20px]"
+									className="h-10 w-[105px] items-center bg-[#F7F7F7] border border[#F3F0EC] rounded-[20px] z-10"
 								>
 									<Button
 										onClick={() => setCount(0)}

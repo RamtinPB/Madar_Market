@@ -26,7 +26,7 @@ export const products = [
 		sponsorPrice: undefined,
 	},
 	{
-		image: null,
+		image: undefined,
 		title: "روغن زیتون بکر کریستال - 5 لیتر ",
 		discount: 10,
 		oldPrice: "40,000",
