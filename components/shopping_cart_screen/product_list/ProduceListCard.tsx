@@ -44,14 +44,14 @@ export default function ProduceListCard({
 			}}
 		>
 			<CardContent className="flex flex-col justify-between p-0">
-				<div className="flex flex-row pl-5 pr-2 py-3">
+				<div className="flex  p-3">
 					<Image
 						src={image ?? ""}
 						alt={title}
-						className="w-[114.5px] h-[114.5px]"
+						className="aspect-square w-1/3 "
 					/>
 					<div className="flex flex-col w-full justify-between">
-						<p className="font-normal text[#787471] text-[14px] text-wrap mt-2">
+						<p className="font-normal text-[#787471] text-[14px] text-wrap mt-2">
 							{title}
 						</p>
 						<div className="flex flex-row justify-between items-center">
@@ -60,19 +60,19 @@ export default function ProduceListCard({
 								{discount && oldPrice && (
 									<div className="mx-2 mt-1 flex items-center gap-1.5">
 										{/* OLD PRICE */}
-										<div className="flex items-center text-[10px] font-medium text-[#787471] line-through">
+										<div className="flex items-center text-[10px] max-[376px]:text-[8px] font-medium text-[#787471] line-through">
 											<span>{oldPrice}</span>
 											<span>تومان</span>
 										</div>
 
 										{/* DISCOUNT BADGE */}
-										<span className="rounded-[20px] bg-[#C50F1F] px-1 py-0.5 text-[9px] font-normal text-white">
+										<span className="rounded-[20px] bg-[#C50F1F] px-1 py-0.5 text-[9px] max-[376px]:text-[8px] font-normal text-white">
 											%{discount}
 										</span>
 									</div>
 								)}
 								{/* NEW PRICE */}
-								<div className="mx-2 mt-1 flex items-center gap-1.5 text-[14px] font-bold text-[#BA400B]">
+								<div className="mx-2 mt-1 flex items-center gap-1.5 text-[14px] max-[376px]:text-[11px] font-bold text-[#BA400B]">
 									<span>{newPrice}</span>
 									<span>تومان</span>
 								</div>
@@ -92,7 +92,7 @@ export default function ProduceListCard({
 									onClick={(e) => e.stopPropagation()} // stop clicks from bubbling
 									orientation={"horizontal"}
 									dir="ltr"
-									className="h-10 w-[105px] items-center bg-[#F7F7F7] border border[#F3F0EC] rounded-[20px] z-10"
+									className="h-10 max-[376px]:h-9 items-center bg-[#F7F7F7] border border[#F3F0EC] rounded-[20px] z-10"
 								>
 									<Button
 										onClick={() => setCount(0)}

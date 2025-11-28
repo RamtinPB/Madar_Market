@@ -26,7 +26,7 @@ export function BannerCarousel({
 	const [currentIndex, setCurrentIndex] = useState(4);
 
 	return (
-		<div className={`relative w-full h-[${height}px]`} dir="rtl">
+		<div className="relative w-full aspect-video" dir="rtl">
 			{/* SWIPER */}
 			<Swiper
 				dir="rtl"
