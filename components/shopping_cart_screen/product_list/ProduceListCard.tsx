@@ -44,11 +44,11 @@ export default function ProduceListCard({
 			}}
 		>
 			<CardContent className="flex flex-col justify-between p-0">
-				<div className="flex  p-3">
+				<div className="flex gap-2 p-3">
 					<Image
 						src={image ?? ""}
 						alt={title}
-						className="aspect-square w-1/3 "
+						className="aspect-square w-1/4 "
 					/>
 					<div className="flex flex-col w-full justify-between">
 						<p className="font-normal text-[#787471] text-[14px] text-wrap mt-2">
