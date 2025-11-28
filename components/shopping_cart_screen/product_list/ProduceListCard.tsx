@@ -6,6 +6,7 @@ import Image, { type StaticImageData } from "next/image";
 import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
 import TrashIcon from "@/public/assets/shopping_cart_screen/trash.svg";
 import { useState } from "react";
+import { useCartStore } from "@/data_store/useCartStore";
 
 /* ------------------------------------------------------------
  * TYPES
@@ -35,6 +36,7 @@ export default function ProduceListCard({
 }: ProduceListCardProps) {
 	const [count, setCount] = useState(0);
 	const inCart = count > 0;
+	const setItemCount = useCartStore((s) => s.setItemCount);
 
 	return (
 		<Card
@@ -81,7 +83,9 @@ export default function ProduceListCard({
 								<Button
 									onClick={(e) => {
 										e.stopPropagation(); // prevent parent click
-										setCount(1);
+										const updated = 1;
+										setCount(updated);
+										setItemCount(title, updated);
 									}}
 									className=" h-10 rounded-[20px] bg-[#F5F2EF] p-4 text-[16px] font-medium text-[#787471]"
 								>
@@ -95,14 +99,21 @@ export default function ProduceListCard({
 									className="h-10 max-[376px]:h-9 items-center bg-[#F7F7F7] border border[#F3F0EC] rounded-[20px] z-10"
 								>
 									<Button
-										onClick={() => setCount(0)}
+										onClick={() => {
+											setCount(0);
+											setItemCount(title, 0);
+										}}
 										className="bg-transparent"
 									>
 										<TrashIcon className="w-fit! h-fit!" />
 									</Button>
 									<span>{count}</span>
 									<Button
-										onClick={() => setCount((prev) => prev + 1)}
+										onClick={() => {
+											const updated = count + 1;
+											setCount(updated);
+											setItemCount(title, updated);
+										}}
 										className="bg-transparent"
 									>
 										<PlusIcon className="w-fit! h-fit!" />

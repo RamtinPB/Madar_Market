@@ -154,7 +154,7 @@ export default function LoginPage() {
 	return (
 		<div className="relative flex w-full flex-col gap-14 bg-white dark:bg-black overflow-hidden">
 			{/* HEADER */}
-			<header className="flex h-[72px] w-full items-center border-b px-6">
+			<header className="flex h-[72px] fixed z-50 bg-white w-full items-center border-b px-6">
 				<Button
 					variant="ghost"
 					className="h-8 w-8 p-0"
@@ -165,7 +165,7 @@ export default function LoginPage() {
 			</header>
 
 			{/* MAIN CONTENT */}
-			<main className="flex flex-col justify-between items-center relative z-20 ">
+			<main className="flex flex-col justify-between items-center relative z-20 mt-[135px]">
 				{/* LOGO */}
 				<div className="flex flex-col items-center gap-2 mb-3">
 					<Image src={Logo} alt="Logo" className="w-[46px] h-[34px]" />
@@ -212,7 +212,7 @@ export default function LoginPage() {
 					{stage === 1 && (
 						<div
 							dir="ltr"
-							className="flex justify-between items-center w-[380px] mt-2"
+							className="flex justify-between items-center w-full mt-2"
 						>
 							{/* EDIT PHONE NUMBER */}
 							<Button

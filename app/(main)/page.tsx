@@ -50,7 +50,7 @@ export default function HomePage() {
 				<Header />
 
 				{/* MAIN CONTENT WRAPPER */}
-				<section className="mt-3 mb-[74px] flex w-full justify-center px-6 max-[376px]:px-2.5 max-[321px]:px-1">
+				<section className="mt-[84px] mb-[74px] flex w-full justify-center px-6 max-[376px]:px-2.5 max-[321px]:px-1">
 					{currentScreen}
 				</section>
 
