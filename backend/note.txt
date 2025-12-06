@@ -1,0 +1,18 @@
+elysia.js
+postgresql
+dbengi
+table plus crack
+prisma
+table +
+
+reconfigure prisma postgres & run the backend:
+    1.  npx prisma init --db --output ../generated/prisma
+    2.  copy database url to the .env file
+
+    // if using local postgres server and database start from here
+    3.  npx prisma migrate dev
+    4.  npx prisma generate
+    5.  bun run dev
+
+last sessions do's:
+    1.  
