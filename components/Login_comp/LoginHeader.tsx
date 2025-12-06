@@ -8,7 +8,7 @@ export function LoginHeader() {
 	const router = useRouter();
 
 	return (
-		<header className="flex h-[72px] fixed z-50 bg-white w-full items-center border-b px-6">
+		<header className="flex h-[72px] z-50 bg-white w-full items-center border-b px-6">
 			<Button
 				variant="ghost"
 				className="h-8 w-8 p-0"

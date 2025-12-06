@@ -52,7 +52,7 @@ export function StagePhone({
 					/>
 				</InputGroup>
 				<Button
-					className="rounded-r-xl w-[46px]! h-[46px]! p-2 bg-[#F7F7F7] border border-[#EDEDED]  group-focus-within:border-[#FF6A29] "
+					className="rounded-r-xl w-[46px]! h-[46px]! p-2 bg-[#F7F7F7] border border-[#EDEDED] group-focus-within:border-[#FF6A29] "
 					onClick={() => setShowPassword(!showPassword)}
 				>
 					{showPassword ? (

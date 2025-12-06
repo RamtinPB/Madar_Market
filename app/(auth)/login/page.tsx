@@ -53,7 +53,7 @@ export default function LoginPage() {
 			<LoginHeader />
 
 			{/* MAIN CONTENT */}
-			<main className="flex flex-col justify-between items-center relative z-20 mt-[135px]">
+			<main className="flex flex-col justify-between items-center relative z-20 mt-[45px]">
 				{/* LOGO */}
 				<div className="flex flex-col items-center gap-2 mb-3">
 					<Image src={Logo} alt="Logo" className="w-[46px] h-[34px]" />
