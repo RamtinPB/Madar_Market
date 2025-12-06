@@ -29,6 +29,8 @@ export default function LoginPage() {
 	const {
 		stage,
 		setStage,
+		password,
+		setPassword,
 		phone,
 		setPhone,
 		code,
@@ -46,7 +48,7 @@ export default function LoginPage() {
 	 * RENDER
 	 * ------------------------------------------------------------ */
 	return (
-		<div className="relative flex w-full flex-col gap-14 bg-white dark:bg-black overflow-hidden">
+		<>
 			{/* HEADER */}
 			<LoginHeader />
 
@@ -71,7 +73,14 @@ export default function LoginPage() {
 
 					{/* STAGE CONTENT */}
 					<div className="mt-2">
-						{stage === 0 && <StagePhone phone={phone} setPhone={setPhone} />}
+						{stage === 0 && (
+							<StagePhone
+								phone={phone}
+								setPhone={setPhone}
+								password={password}
+								setPassword={setPassword}
+							/>
+						)}
 						{stage === 1 && <StageOTP code={code} setCode={setCode} />}
 					</div>
 
@@ -210,6 +219,6 @@ export default function LoginPage() {
 				height={301}
 				className="absolute bottom-0 right-0 pointer-events-none select-none z-10"
 			/>
-		</div>
+		</>
 	);
 }

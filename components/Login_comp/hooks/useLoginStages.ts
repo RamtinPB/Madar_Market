@@ -5,6 +5,7 @@ import { useState } from "react";
 export function useLoginStages() {
 	const [stage, setStage] = useState(0);
 	const [phone, setPhone] = useState("");
+	const [password, setPassword] = useState("");
 	const [code, setCode] = useState(["", "", "", ""]);
 
 	const isValidPhone = /^09\d{9}$/.test(phone);
@@ -13,6 +14,8 @@ export function useLoginStages() {
 	return {
 		stage,
 		setStage,
+		password,
+		setPassword,
 		phone,
 		setPhone,
 		code,

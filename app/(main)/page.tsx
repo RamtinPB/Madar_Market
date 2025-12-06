@@ -44,19 +44,17 @@ export default function HomePage() {
 	const currentScreen = useMemo(() => SCREEN_MAP[activeTab], [activeTab]);
 
 	return (
-		<div className="flex min-h-screen bg-zinc-50 dark:bg-black font-sans">
-			<main className="relative flex min-h-screen w-full max-w-3xl flex-col bg-white dark:bg-black">
-				{/* HEADER */}
-				<Header />
+		<>
+			{/* HEADER */}
+			<Header />
 
-				{/* MAIN CONTENT WRAPPER */}
-				<section className="mt-[84px] mb-[74px] flex w-full justify-center px-6 max-[376px]:px-2.5 max-[321px]:px-1">
-					{currentScreen}
-				</section>
+			{/* MAIN CONTENT WRAPPER */}
+			<section className="mt-[84px] mb-[74px] flex w-full justify-center px-6 max-[376px]:px-2.5 max-[321px]:px-1">
+				{currentScreen}
+			</section>
 
-				{/* FOOTER NAVIGATION */}
-				<Footer activeTab={activeTab} onChangeTab={setActiveTab} />
-			</main>
-		</div>
+			{/* FOOTER NAVIGATION */}
+			<Footer activeTab={activeTab} onChangeTab={setActiveTab} />
+		</>
 	);
 }
