@@ -11,6 +11,7 @@ import HomeScreen from "@/src/components/Screens_comp/home_screen";
 import OrdersScreen from "@/src/components/Screens_comp/orders_screen";
 import ProfileScreen from "@/src/components/Screens_comp/profile_screen";
 import ShoppingCartScreen from "@/src/components/Screens_comp/shopping_cart_screen";
+import { getAccessToken } from "@/src/lib/api/auth";
 
 /* ------------------------------------------------------------
  * TYPES
@@ -37,6 +38,7 @@ const SCREEN_MAP: Record<TabKey, ReactElement> = {
 
 export default function HomePage() {
 	const [activeTab, setActiveTab] = useState<TabKey>("home");
+	console.log(getAccessToken());
 
 	/**
 	 * Screen rendering is memoized to avoid unnecessary rerenders.

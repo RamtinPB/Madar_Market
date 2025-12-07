@@ -1,7 +1,6 @@
 "use client";
 
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useRouter } from "next/navigation";
+import { Sheet, SheetContent } from "@/src/components/ui/sheet";
 
 // Subcomponents you created
 import { ProductSheetHeader } from "./ProductSheetHeader";

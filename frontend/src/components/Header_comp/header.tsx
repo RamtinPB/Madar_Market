@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import { useCartStore } from "@/data_store/useCartStore";
 
 // SVG Icons (imported as React components via SVGR)

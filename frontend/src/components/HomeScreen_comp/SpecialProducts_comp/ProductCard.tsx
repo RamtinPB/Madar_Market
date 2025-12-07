@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 
 /* ------------------------------------------------------------
  * TYPES

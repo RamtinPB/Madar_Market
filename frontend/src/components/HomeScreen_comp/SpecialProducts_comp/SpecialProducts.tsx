@@ -1,6 +1,6 @@
 "use client";
 
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
 import ProductCard from "./ProductCard";
 import ViewAllCard from "./ViewAllCard";
 

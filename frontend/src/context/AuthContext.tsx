@@ -28,16 +28,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		const token = sessionStorage.getItem("accessToken");
 
-		if (token) {
-			// restore the in-memory token
-			setAccessToken(token);
-
-			// optionally fetch user profile
-			// but for now just mark authenticated
-			setUser({});
+		if (!token) {
+			setLoading(false);
+			return;
 		}
 
-		setLoading(false);
+		// restore the in-memory token
+		setAccessToken(token);
+
+		// validate token by calling backend
+		fetch(`${process.env.NEXT_PUBLIC_API_BASE}/auth/me`, {
+			credentials: "include",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
+			.then(async (res) => {
+				if (!res.ok) throw new Error("Invalid token");
+				const data = await res.json();
+				setUser(data.user);
+			})
+			.catch(() => {
+				// Token invalid - clear everything
+				sessionStorage.removeItem("accessToken");
+				setAccessToken(null);
+				setUser(null);
+			})
+			.finally(() => {
+				setLoading(false);
+			});
 	}, []);
 
 	// -----------------------------

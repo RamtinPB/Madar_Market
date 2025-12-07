@@ -1,9 +1,11 @@
-import { logout } from "@/lib/api/auth";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/src/context/AuthContext";
 
 export default function profile_screen() {
 	const router = useRouter();
+	const { logout } = useAuth();
+
 	return (
 		<div>
 			<Button
@@ -11,6 +13,7 @@ export default function profile_screen() {
 				onClick={async () => {
 					try {
 						await logout();
+						router.push("/");
 					} catch (error: any) {
 						console.error(error);
 					}

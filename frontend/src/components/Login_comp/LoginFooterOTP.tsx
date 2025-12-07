@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import ClockIcon from "@/public/assets/login/clock.svg";
 import EditIcon from "@/public/assets/login/edit.svg";
 

@@ -1,6 +1,6 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+import { Button } from "@/src/components/ui/button";
+import { ButtonGroup } from "@/src/components/ui/button-group";
 import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
 import TrashIcon from "@/public/assets/shopping_cart_screen/trash.svg";
 import { useCartStore } from "@/data_store/useCartStore";

@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { products } from "@/components/HomeScreen_comp/SpecialProducts_comp/ProductData";
+import { products } from "@/src/components/HomeScreen_comp/SpecialProducts_comp/ProductData";
 
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
 import { ProduceListHeader } from "./ProduceListHeader";
 import { ProduceListGrid } from "./ProduceListGrid";
 import ProductSheet from "./ProductSheet_comp/ProductSheet";
