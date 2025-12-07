@@ -22,7 +22,7 @@ import { StageOTP } from "@/components/Login_comp/StageOTP";
 import { LoginHeader } from "@/components/Login_comp/LoginHeader";
 import { LoginFooterPhone } from "@/components/Login_comp/LoginFooterPhone";
 import { LoginFooterOTP } from "@/components/Login_comp/LoginFooterOTP";
-import { login, requestOtp } from "@/lib/api/auth";
+import { login, requestOtp, signup } from "@/lib/api/auth";
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -64,7 +64,7 @@ export default function LoginPage() {
 				{/* TITLE */}
 				<div className="flex flex-col w-full px-5 gap-3 mt-10">
 					<span className="px-2 font-medium text-[28px] text-[#514F4D]">
-						ورود
+						ثبت نام
 					</span>
 
 					<p className="px-2 text-[#787471] text-[14px] font-normal">
@@ -97,7 +97,7 @@ export default function LoginPage() {
 							if (stage === 0) {
 								// request OTP
 								try {
-									const { otp } = await requestOtp(phone, "login");
+									const { otp } = await requestOtp(phone, "signup");
 									setVisibleOtp(otp);
 									reset();
 									setStage(1);
@@ -105,9 +105,9 @@ export default function LoginPage() {
 									console.error(err);
 								}
 							} else {
-								// verify OTP (login)
+								// verify OTP (signup)
 								try {
-									const { user, accessToken } = await login(
+									const { accessToken } = await signup(
 										phone,
 										password,
 										code.join("")
@@ -116,14 +116,7 @@ export default function LoginPage() {
 									// store access token in memory only
 									sessionStorage.setItem("accessToken", accessToken);
 
-									if (
-										user.role === "SUPER_ADMIN" ||
-										user.role === "SUB_ADMIN"
-									) {
-										router.push("/admin");
-									} else {
-										router.push("/");
-									}
+									router.push("/");
 								} catch (err: any) {
 									setOtpError(err.message || "خطا در ورود");
 								}
@@ -134,17 +127,7 @@ export default function LoginPage() {
 					</Button>
 
 					{/* FOOTERS */}
-					{stage === 0 && (
-						<>
-							<LoginFooterPhone />
-							<p className="font-normal text-[14px] text-[#787471] leading-6">
-								<a href="/signup" className="text-[#02B1EA] hover:underline">
-									ثبت نام
-								</a>{" "}
-								رایگان!
-							</p>
-						</>
-					)}
+					{stage === 0 && <LoginFooterPhone />}
 					{stage === 1 && (
 						<LoginFooterOTP
 							timeLeft={formatTime(timeLeft)}
@@ -153,7 +136,7 @@ export default function LoginPage() {
 							resend={async () => {
 								// request OTP
 								try {
-									const { otp } = await requestOtp(phone, "login");
+									const { otp } = await requestOtp(phone, "signup");
 									setVisibleOtp(otp);
 									reset();
 									setStage(1);

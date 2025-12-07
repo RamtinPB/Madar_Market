@@ -8,7 +8,7 @@ export default async function apiFetch(url: string, options: any = {}) {
 		headers: {
 			...(options.headers || {}),
 			authorization: token ? `Bearer ${token}` : "",
-			"content-type": "application/json",
+			...(options.body && { "content-type": "application/json" }),
 		},
 		credentials: "include", // send cookies -- refresh cookie importantly
 	});
@@ -25,6 +25,7 @@ export default async function apiFetch(url: string, options: any = {}) {
 		headers: {
 			...(options.headers || {}),
 			authorization: `Bearer ${newToken}`,
+			...(options.body && { "content-type": "application/json" }),
 		},
 		credentials: "include",
 	});
@@ -32,7 +33,7 @@ export default async function apiFetch(url: string, options: any = {}) {
 	return retryRes;
 }
 
-async function refreshAccessToken() {
+export async function refreshAccessToken() {
 	const res = await fetch("/api/auth/refresh", {
 		method: "POST",
 		credentials: "include",

@@ -119,7 +119,11 @@ export const signupWithPasswordOtp = async (
 	});
 
 	return {
-		user: { id: newUser.id, phoneNumber: newUser.phoneNumber },
+		user: {
+			id: newUser.id,
+			phoneNumber: newUser.phoneNumber,
+			role: newUser.role,
+		},
 		accessToken,
 		refreshToken,
 	};
@@ -162,7 +166,7 @@ export const loginWithPasswordOtp = async (
 	});
 
 	return {
-		user: { id: user.id, phoneNumber: user.phoneNumber },
+		user: { id: user.id, phoneNumber: user.phoneNumber, role: user.role },
 		accessToken,
 		refreshToken,
 	};
