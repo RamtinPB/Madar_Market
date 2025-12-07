@@ -1,5 +1,7 @@
+"use client";
+
 import NavItem from "./NavItem";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/src/context/AuthContext";
 
 import HomeIcon from "@/public/assets/footer/home.svg";
@@ -8,29 +10,23 @@ import BasketIcon from "@/public/assets/header/basket.svg";
 import ProfileIcon from "@/public/assets/footer/profile.svg";
 import LoginIcon from "@/public/assets/footer/right-to-bracket-solid-full.svg";
 
-type TabKey = "home" | "orders" | "profile" | "basket" | "login";
-
-type NavTab = Exclude<TabKey, "login">;
-
-interface FooterProps {
-	activeTab: NavTab;
-	onChangeTab: (tab: NavTab) => void;
-}
+type TabKey = "home" | "orders" | "profile" | "cart" | "login";
 
 /* ------------------------------------------------------------
  * CONFIG ARRAY → Single Source of Truth
  * ------------------------------------------------------------ */
 const NAV_ITEMS: { tab: TabKey; label: string; icon: any }[] = [
 	{ tab: "home", label: "خانه", icon: HomeIcon },
-	{ tab: "basket", label: "سبد خرید", icon: BasketIcon },
+	{ tab: "cart", label: "سبد خرید", icon: BasketIcon },
 	{ tab: "orders", label: "سفارش ها", icon: ReceiptIcon },
 ];
 
 /* ------------------------------------------------------------
  * FOOTER CONTAINER
  * ------------------------------------------------------------ */
-export function Footer({ activeTab, onChangeTab }: FooterProps) {
+export function Footer() {
 	const router = useRouter();
+	const pathname = usePathname();
 	const { isAuthenticated } = useAuth();
 
 	const itemsToRender = NAV_ITEMS.concat([
@@ -46,13 +42,14 @@ export function Footer({ activeTab, onChangeTab }: FooterProps) {
 					key={item.tab}
 					icon={item.icon}
 					label={item.label}
-					active={activeTab === item.tab}
+					active={pathname.startsWith(`/${item.tab}`)}
 					onClick={() => {
 						if (item.tab === "login") {
-							router.push("/login"); // 🔥 Go to login page
-						} else {
-							onChangeTab(item.tab); // normal tab switching
+							router.push("/login");
+							return;
 						}
+
+						router.push(`/${item.tab}`);
 					}}
 				/>
 			))}

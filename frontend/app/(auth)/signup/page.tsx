@@ -39,6 +39,7 @@ export default function LoginPage() {
 		code,
 		setCode,
 		isValidPhone,
+		isValidPassword,
 		isValidCode,
 	} = useLoginStages();
 
@@ -90,11 +91,13 @@ export default function LoginPage() {
 					{/* MAIN ACTION BUTTON */}
 					<Button
 						className={`w-full text-white rounded-lg ${
-							(stage === 0 ? isValidPhone : isValidCode)
+							(stage === 0 ? isValidPhone && isValidPassword : isValidCode)
 								? "bg-[#FF6A29]"
 								: "bg-[#FFD1B8] opacity-60"
 						}`}
-						disabled={stage === 0 ? !isValidPhone : !isValidCode}
+						disabled={
+							stage === 0 ? !isValidPhone && !isValidPassword : !isValidCode
+						}
 						onClick={async () => {
 							if (stage === 0) {
 								// request OTP

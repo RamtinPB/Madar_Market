@@ -1,7 +1,7 @@
 import { Footer } from "@/src/components/Footer_comp/footer";
 import { Header } from "@/src/components/Header_comp/header";
 
-export default function MainLayout({
+export default function AdminLayout({
 	children,
 }: {
 	children: React.ReactNode;
@@ -16,9 +16,6 @@ export default function MainLayout({
 				<section className="mt-[84px] mb-[74px] flex w-full justify-center px-6 max-[376px]:px-2.5 max-[321px]:px-1">
 					{children}
 				</section>
-
-				{/* FOOTER NAVIGATION */}
-				<Footer />
 			</main>
 		</div>
 	);

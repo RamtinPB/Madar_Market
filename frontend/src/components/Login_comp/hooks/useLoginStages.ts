@@ -9,6 +9,13 @@ export function useLoginStages() {
 	const [code, setCode] = useState(["", "", "", ""]);
 
 	const isValidPhone = /^09\d{9}$/.test(phone);
+	const isValidPassword = password.length >= 3 && /[A-Za-z]/.test(password);
+	// const isValidPassword =
+	// password.length >= 8 &&
+	// /[A-Za-z]/.test(password) &&
+	// /\d/.test(password) &&
+	// /[!@#$%^&*]/.test(password);
+
 	const isValidCode = code.every((d) => d.length === 1);
 
 	return {
@@ -21,6 +28,7 @@ export function useLoginStages() {
 		code,
 		setCode,
 		isValidPhone,
+		isValidPassword,
 		isValidCode,
 	};
 }

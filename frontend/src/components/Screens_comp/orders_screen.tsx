@@ -1,3 +1,3 @@
-export default function orders_screen() {
+export default function OrdersScreen() {
 	return <div></div>;
 }

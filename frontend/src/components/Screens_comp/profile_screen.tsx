@@ -2,12 +2,15 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/context/AuthContext";
 
-export default function profile_screen() {
+export default function ProfileScreen() {
 	const router = useRouter();
 	const { logout } = useAuth();
 
 	return (
-		<div>
+		<div className="flex flex-col gap-4">
+			<Button className="" onClick={() => router.push("/admin")}>
+				پنل ادمین
+			</Button>
 			<Button
 				className="bg-red-700"
 				onClick={async () => {
