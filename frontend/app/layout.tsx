@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/src/context/AuthContext";
 
 const vazir = Vazirmatn({
 	subsets: ["arabic"],
@@ -19,7 +20,9 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="fa" dir="rtl">
-			<body className={`${vazir.variable} antialiased`}>{children}</body>
+			<body className={`${vazir.variable} antialiased`}>
+				<AuthProvider>{children}</AuthProvider>
+			</body>
 		</html>
 	);
 }

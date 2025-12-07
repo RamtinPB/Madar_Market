@@ -11,21 +11,23 @@ import LoginBasket from "@/public/assets/login/HandBasket.png";
 import Logo from "@/public/assets/login/logo.png";
 import LogoDesc from "@/public/assets/login/logo_desc.png";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 
-import { useLoginStages } from "@/components/Login_comp/hooks/useLoginStages";
-import { useOTPCountdown } from "@/components/Login_comp/hooks/useOTPCountdown";
-import { formatTime } from "@/components/Login_comp/utils/formatTime";
+import { useLoginStages } from "@/src/components/Login_comp/hooks/useLoginStages";
+import { useOTPCountdown } from "@/src/components/Login_comp/hooks/useOTPCountdown";
+import { formatTime } from "@/src/components/Login_comp/utils/formatTime";
 
-import { StagePhone } from "@/components/Login_comp//StagePhone";
-import { StageOTP } from "@/components/Login_comp/StageOTP";
-import { LoginHeader } from "@/components/Login_comp/LoginHeader";
-import { LoginFooterPhone } from "@/components/Login_comp/LoginFooterPhone";
-import { LoginFooterOTP } from "@/components/Login_comp/LoginFooterOTP";
-import { login, requestOtp, signup } from "@/lib/api/auth";
+import { StagePhone } from "@/src/components/Login_comp//StagePhone";
+import { StageOTP } from "@/src/components/Login_comp/StageOTP";
+import { LoginHeader } from "@/src/components/Login_comp/LoginHeader";
+import { LoginFooterPhone } from "@/src/components/Login_comp/LoginFooterPhone";
+import { LoginFooterOTP } from "@/src/components/Login_comp/LoginFooterOTP";
+import { requestOtp } from "@/src/lib/api/auth";
+import { useAuth } from "@/src/context/AuthContext";
 
 export default function LoginPage() {
 	const router = useRouter();
+	const { signup } = useAuth();
 
 	const {
 		stage,
@@ -107,15 +109,7 @@ export default function LoginPage() {
 							} else {
 								// verify OTP (signup)
 								try {
-									const { accessToken } = await signup(
-										phone,
-										password,
-										code.join("")
-									);
-
-									// store access token in memory only
-									sessionStorage.setItem("accessToken", accessToken);
-
+									await signup(phone, password, code.join(""));
 									router.push("/");
 								} catch (err: any) {
 									setOtpError(err.message || "خطا در ورود");

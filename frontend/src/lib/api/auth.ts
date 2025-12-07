@@ -1,9 +1,9 @@
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 let accessToken: string | null = null;
 
 export const setAccessToken = (token: string | null) => {
 	accessToken = token;
 };
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 export const getAccessToken = () => accessToken;
 

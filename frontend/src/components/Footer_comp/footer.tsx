@@ -1,6 +1,6 @@
 import NavItem from "./NavItem";
 import { useRouter } from "next/navigation";
-import { useAuthState } from "@/lib/hooks/checkLoginState";
+import { useAuth } from "@/src/context/AuthContext";
 
 import HomeIcon from "@/public/assets/footer/home.svg";
 import ReceiptIcon from "@/public/assets/footer/receipt.svg";
@@ -31,10 +31,10 @@ const NAV_ITEMS: { tab: TabKey; label: string; icon: any }[] = [
  * ------------------------------------------------------------ */
 export function Footer({ activeTab, onChangeTab }: FooterProps) {
 	const router = useRouter();
-	const { loggedIn } = useAuthState();
+	const { isAuthenticated } = useAuth();
 
 	const itemsToRender = NAV_ITEMS.concat([
-		loggedIn
+		isAuthenticated
 			? { tab: "profile", label: "پروفایل", icon: ProfileIcon }
 			: { tab: "login", label: "ورود", icon: LoginIcon },
 	]);
