@@ -12,10 +12,24 @@ export const requireAuth = (ctx: any, next: any) => {
 	try {
 		const payload: any = verifyAccessToken(token);
 		// attach user info to context
-		ctx.user = { id: payload.id, role: payload.role };
+		ctx.user = { id: payload.userId, role: payload.role };
 		return next();
 	} catch (error) {
 		ctx.set.status = 401;
 		return { error: "Invalid token" };
 	}
+};
+
+export const requireRole = (role: "SUPER_ADMIN" | "USER") => {
+	return (ctx: any, next: any) => {
+		if (!ctx.user) {
+			ctx.set.status = 401;
+			return { error: "Unauthorized" };
+		}
+		if (ctx.user.role !== role) {
+			ctx.set.status = 403;
+			return { error: "Forbidden" };
+		}
+		return next();
+	};
 };

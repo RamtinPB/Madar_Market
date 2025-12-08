@@ -1,101 +1,82 @@
-import { Elysia, t } from "elysia";
-import {
-	getCategories,
-	createCategory,
-	getCategoryById,
-	updateCategory,
-	deleteCategory,
-} from "./categories.controller";
-import { getUserFromToken } from "../../utils/auth";
+// src/modules/category/category.routes.ts
+import { categoryController } from "./categories.controller";
+import { verifyAccessToken } from "../../utils/jwt";
+import { secureRoute } from "../../utils/securityRoute";
 
-// Categories routes
-export const categoriesRoutes = new Elysia({ prefix: "/categories" })
-	// Fetch all categories
-	.get("/", async ({ request }) => {
-		// Build base url for this request; prefer explicit BACKEND_URL env var
-		const envUrl = process.env.BACKEND_URL;
-		const proto = request.headers.get("x-forwarded-proto") ?? "http";
-		const host = request.headers.get("host") ?? "localhost:4000";
-		const baseUrl = envUrl ?? `${proto}://${host}`;
+async function authenticateSuperAdmin(ctx: any) {
+	const auth = ctx.request.headers.get("authorization") || "";
+	const parts = auth.split(" ");
+	if (parts.length !== 2 || parts[0] !== "Bearer") {
+		ctx.set.status = 401;
+		return { error: "Unauthorized" };
+	}
 
-		// Fetch categories
-		const data = await getCategories(baseUrl);
-		return new Response(JSON.stringify(data), {
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
-	})
-	// Create new category
-	.post(
-		"/",
-		async ({ body, request }) => {
-			const token = request.headers.get("authorization") ?? undefined;
-			const user = await getUserFromToken(token);
-			if (!user || (user.role !== "SUB_ADMIN" && user.role !== "SUPER_ADMIN")) {
-				return new Response(JSON.stringify({ error: "Unauthorized" }), {
-					status: 403,
-					headers: { "Content-Type": "application/json" },
-				});
-			}
-			const created = await createCategory(
-				body as { label: string; imageUrl: string; order?: number }
-			);
+	const token = parts[1];
+	try {
+		const payload: any = await verifyAccessToken(token);
+		const user = { id: payload.userId, role: payload.role };
+		if (user.role !== "SUPER_ADMIN") {
+			ctx.set.status = 403;
+			return { error: "Forbidden" };
+		}
+		ctx.user = user;
+		return null; // continue
+	} catch (error) {
+		ctx.set.status = 401;
+		return { error: "Invalid token" };
+	}
+}
 
-			return new Response(JSON.stringify(created), {
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
-		},
-		{
-			body: t.Object({
-				label: t.String(),
-				imageUrl: t.String(),
-				order: t.Optional(t.Number()),
-			}),
-		}
-	)
-	.get("/:id", ({ params }) => getCategoryById(params.id))
-	.put(
-		"/:id",
-		async ({ params, body, request }) => {
-			const token = request.headers.get("authorization") ?? undefined;
-			const user = await getUserFromToken(token);
-			if (!user || (user.role !== "SUB_ADMIN" && user.role !== "SUPER_ADMIN")) {
-				return new Response(JSON.stringify({ error: "Unauthorized" }), {
-					status: 403,
-					headers: { "Content-Type": "application/json" },
-				});
-			}
-			const updated = await updateCategory(params.id, body as any);
-			return new Response(JSON.stringify(updated), {
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
-		},
-		{
-			body: t.Object({
-				label: t.Optional(t.String()),
-				imageUrl: t.Optional(t.String()),
-				order: t.Optional(t.Number()),
-			}),
-		}
-	)
-	.delete("/:id", async ({ params, request }) => {
-		const token = request.headers.get("authorization") ?? undefined;
-		const user = await getUserFromToken(token);
-		if (!user || (user.role !== "SUB_ADMIN" && user.role !== "SUPER_ADMIN")) {
-			return new Response(JSON.stringify({ error: "Unauthorized" }), {
-				status: 403,
-				headers: { "Content-Type": "application/json" },
-			});
-		}
-		const deleted = await deleteCategory(params.id);
-		return new Response(JSON.stringify(deleted), {
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
+export function registerCategoryRoutes(router: any) {
+	router.get("/categories", async (ctx: any) => {
+		const authResult = await authenticateSuperAdmin(ctx);
+		if (authResult) return authResult;
+		return categoryController.getAll(ctx);
 	});
+
+	router.get("/categories/:id", async (ctx: any) => {
+		const authResult = await authenticateSuperAdmin(ctx);
+		if (authResult) return authResult;
+		return categoryController.getById(ctx);
+	});
+
+	router.post(
+		"/categories",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return categoryController.create(ctx);
+		},
+		secureRoute()
+	);
+
+	router.put(
+		"/categories/:id",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return categoryController.update(ctx);
+		},
+		secureRoute()
+	);
+
+	router.delete(
+		"/categories/:id",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return categoryController.delete(ctx);
+		},
+		secureRoute()
+	);
+
+	router.put(
+		"/categories/reorder",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return categoryController.reorder(ctx);
+		},
+		secureRoute()
+	);
+}

@@ -97,7 +97,10 @@ export const signupWithPasswordOtp = async (
 	});
 
 	// issue tokens
-	const accessToken = signAccessToken({ userId: newUser.id });
+	const accessToken = signAccessToken({
+		userId: newUser.id,
+		role: newUser.role,
+	});
 	const refreshToken = signRefreshToken({ userId: newUser.id });
 
 	// store hashed refresh token
@@ -145,7 +148,7 @@ export const loginWithPasswordOtp = async (
 	await validateOtpAndConsume(user.phoneNumber, otp);
 
 	//issue tokens
-	const accessToken = signAccessToken({ userId: user.id });
+	const accessToken = signAccessToken({ userId: user.id, role: user.role });
 	const refreshToken = signRefreshToken({ userId: user.id });
 
 	const refreshHash = await bcrypt.hash(refreshToken, 10);
@@ -182,6 +185,9 @@ export const refreshAccessToken = async (refreshToken: string) => {
 	}
 
 	const userId = payload?.userId;
+	const user = await prisma.user.findUnique({ where: { id: userId } });
+	if (!user) throw new Error("User not found");
+
 	// Find stored refresh tokens for this user that are not revoked and not expired
 	const tokens = await prisma.refreshToken.findMany({
 		where: { userId, revoked: false, expiresAt: { gte: new Date() } },
@@ -193,7 +199,7 @@ export const refreshAccessToken = async (refreshToken: string) => {
 		const match = await bcrypt.compare(refreshToken, t.tokenHash);
 		if (match) {
 			// valid refresh token -> issue new access token (and optionally refresh rotation)
-			const accessToken = signAccessToken({ userId });
+			const accessToken = signAccessToken({ userId, role: user.role });
 			// Optionally rotate refresh token: issue new refresh token and revoke old one
 			const newRefreshToken = signRefreshToken({ userId });
 			const newHash = await bcrypt.hash(newRefreshToken, 10);

@@ -14,5 +14,31 @@ reconfigure prisma postgres & run the backend:
     4.  npx prisma generate
     5.  bun run dev
 
-last sessions do's:
-    1.  
+// category, sub categories, products schema
+i need your help writing this structure for the backend of my project:
+context: im using bun + elysia + prisma + postgres + typescript
+what i have implemented: a refresh and access JWT system where users also having roles such as USER or SUPER_ADMIN.
+what i want:
+1. i want to implement this new structure: there will be categories, which host an image, a title, and an order (the super admin will upload the images and edit other content). in addition, each category will also have sub categories, which host a title, and an order (same mechanic for the super admin). in addition to that, each sub category will also have multiple products, these products will each have multiple images--each product image will have an order. the products will also host a title, a description, a discount (a number will be displayed as a percentage), a price, a discounted price, and a sponsor price.
+2. i want to professionally and correctly create these backend routes:
+/categories/getAll (get all categories)
+/categories/:categoryId/getAll (get all subcategories associated with that category)
+/categories/:categoryId/:subCategoryId/getAll (get all products associated with that sub category)
+
+the super admin (only the super admin) should also be able to:
+1. add/edit/delete the categories data
+2. add/edit/delete the sub categories data
+3. add/edit/delete the products data
+
+i have this idea for the add/edit/delete:
+/admin/categories/:categoryId/add (may not require the categoryId) or edit or delete
+/admin/categories/:categoryId/:subCategoryId/add (may not require the categoryId) or edit or delete
+/admin/categories/:categoryId/:subCategoryId/:productId/add (may not require the categoryId) or edit or delete
+
+note that add will simply make an empty item. it will be filled through the edit option.
+
+however, on further thought, i think maybe it doesnt have to be specific like this "...:categoryId/:subCategoryId/:productId...". if the association is there then we could just call that specific product or sub category or category. they are already linked.
+
+these are the ideas i have, what is your recommendation for implementing this like a professional project.
+
+p.s. i will store the images in the public folder in the backend (in a structured way with each image having being placed in its appropriate folder and given a relevant name if possible).

@@ -1,11 +1,12 @@
 import { Elysia } from "elysia";
-import { userRoutes } from "./modules/user/user.route";
+
 import { registerAuthRoutes } from "./modules/auth/auth.route";
-import { categoriesRoutes } from "./modules/categories/categories.route";
+
 import { staticPlugin } from "@elysiajs/static";
-import { productRoutes } from "./modules/product/product.route";
+
 import cors from "@elysiajs/cors";
-import swagger from "@elysiajs/swagger";
+import { registerCategoryRoutes } from "./modules/categories/categories.route";
+import openapi from "@elysiajs/openapi";
 
 export const app = new Elysia()
 	.use(
@@ -23,9 +24,52 @@ export const app = new Elysia()
 		})
 	)
 	.get("/", () => ({ status: "ok", message: "Backend is running" }))
-	.use(swagger());
+	.use(
+		openapi({
+			documentation: {
+				components: {
+					securitySchemes: {
+						bearerAuth: {
+							type: "http",
+							scheme: "bearer",
+							bearerFormat: "JWT",
+						},
+					},
+				},
+			},
+		})
+	);
 
 registerAuthRoutes(app);
+registerCategoryRoutes(app);
+
+// Test route for authentication
+app.get("/test-auth", async (ctx: any) => {
+	const auth = ctx.request.headers.get("authorization") || "";
+	const parts = auth.split(" ");
+	if (parts.length !== 2 || parts[0] !== "Bearer") {
+		ctx.set.status = 401;
+		return { error: "Unauthorized" };
+	}
+
+	const token = parts[1];
+	try {
+		const { verifyAccessToken } = await import("./utils/jwt");
+		const payload: any = verifyAccessToken(token);
+		const user = { id: payload.userId, role: payload.role };
+		if (user.role !== "SUPER_ADMIN") {
+			ctx.set.status = 403;
+			return { error: "Forbidden" };
+		}
+		return {
+			message: "Authentication successful",
+			user,
+		};
+	} catch (error) {
+		ctx.set.status = 401;
+		return { error: "Invalid token" };
+	}
+});
 
 app.listen(4000);
 
