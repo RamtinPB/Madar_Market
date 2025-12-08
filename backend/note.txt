@@ -5,6 +5,20 @@ table plus crack
 prisma
 table +
 
+
+// backend structure:
+inside /backend =>
+/prisma/schema.prisma
+and then,
+/public/uploads/categories and products and subcategories folders
+and then,
+/src/ modules and utils folders and server.ts
+inside /modules => auth and categories and product and user folders
+each host for example auth.controller and .middleware and .route and .service .ts files
+subsequently,
+the /utils folder has => hash.ts and jwt.ts and etc.
+
+
 reconfigure prisma postgres & run the backend:
     1.  npx prisma init --db --output ../generated/prisma
     2.  copy database url to the .env file
@@ -13,6 +27,7 @@ reconfigure prisma postgres & run the backend:
     3.  npx prisma migrate dev
     4.  npx prisma generate
     5.  bun run dev
+
 
 // category, sub categories, products schema
 i need your help writing this structure for the backend of my project:
@@ -42,3 +57,20 @@ however, on further thought, i think maybe it doesnt have to be specific like th
 these are the ideas i have, what is your recommendation for implementing this like a professional project.
 
 p.s. i will store the images in the public folder in the backend (in a structured way with each image having being placed in its appropriate folder and given a relevant name if possible).
+
+
+
+// image upload
+given my projects backend  @/backend/  the put /categories/{id} doesnt take in the relevant data its supposed to as its editing responsabilities require.
+it should take the specific categories title and image.
+as for the image part its logic needs to be implemented.
+here is what you need to know about the image uploading logic:
+1. uploaded images will be sent to the /public/uploads folder in the /backend folder. further more inside /uploads there are sub folders indecate each sub section the images belong to (for example the /categories folder).
+
+2. the images should also be named appropriately based on what their use (like if they belong to a category).
+
+3. all proper validation for image file such as file size and allowed file type should be implemented properly.
+
+4. deleting images should be done using a separate endpoint and the stored image will also be deleted. also on update the previous image should be replaced/overwritten.
+
+note that all implementation should be professional, so that the project is organized and well structured.
