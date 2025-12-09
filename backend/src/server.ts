@@ -6,6 +6,7 @@ import { staticPlugin } from "@elysiajs/static";
 
 import cors from "@elysiajs/cors";
 import { registerCategoryRoutes } from "./modules/categories/categories.route";
+import { registerSubCategoryRoutes } from "./modules/subCategories/subCategories.route";
 import swagger from "@elysiajs/swagger";
 
 export const app = new Elysia()
@@ -40,11 +41,8 @@ export const app = new Elysia()
 		})
 	);
 
-registerAuthRoutes(app);
-registerCategoryRoutes(app);
-
 // Test route for authentication
-app.get("/test-auth", async (ctx: any) => {
+app.get("/auth-test", async (ctx: any) => {
 	const auth = ctx.request.headers.get("authorization") || "";
 	const parts = auth.split(" ");
 	if (parts.length !== 2 || parts[0] !== "Bearer") {
@@ -70,6 +68,10 @@ app.get("/test-auth", async (ctx: any) => {
 		return { error: "Invalid token" };
 	}
 });
+
+registerAuthRoutes(app);
+registerCategoryRoutes(app);
+registerSubCategoryRoutes(app);
 
 app.listen(4000);
 

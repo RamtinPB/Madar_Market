@@ -59,7 +59,7 @@ enum Role {
 
 model Category {
   id          String        @id @default(cuid())
-  title       String
+  title       String?
   imagePath   String?       // relative path in public/, e.g. /uploads/categories/slug.jpg
   order       Int           @default(0)
   subCategories SubCategory[]

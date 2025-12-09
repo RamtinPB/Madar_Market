@@ -1,5 +1,7 @@
 // src/modules/category/category.routes.ts
 import { categoryController } from "./categories.controller";
+import { subCategoryController } from "../subCategories/subCategories.controller";
+import { productController } from "../product/products.controller";
 import { verifyAccessToken } from "../../utils/jwt";
 import { secureRoute } from "../../utils/securityRoute";
 import {
@@ -148,5 +150,25 @@ export function registerCategoryRoutes(router: any) {
 			}),
 		},
 		secureRoute()
+	);
+
+	// Get all subcategories for a category
+	router.get(
+		"/categories/:categoryId/get-all-subcategories",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return subCategoryController.getAllByCategory(ctx);
+		}
+	);
+
+	// Get all products for a subcategory
+	router.get(
+		"/categories/:categoryId/:subCategoryId/get-all-products",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return productController.getAllBySubCategory(ctx);
+		}
 	);
 }

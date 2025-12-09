@@ -37,10 +37,11 @@ export async function saveUploadedFile(
 // Delete file
 export async function deleteFile(path: string): Promise<void> {
 	try {
-		// Convert relative path to absolute if needed
-		const absolutePath = path.startsWith("/")
-			? join(process.cwd(), "public", path.slice(1))
-			: path;
+		// Remove any accidental leading /public/
+		const cleaned = path.replace(/^\/?public\//, "");
+
+		// Build correct absolute path
+		const absolutePath = join(process.cwd(), "public", cleaned);
 		await unlink(absolutePath);
 	} catch (error) {
 		// Log but don't throw - graceful fallback
