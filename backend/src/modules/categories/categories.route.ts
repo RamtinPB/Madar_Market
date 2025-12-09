@@ -2,6 +2,11 @@
 import { categoryController } from "./categories.controller";
 import { verifyAccessToken } from "../../utils/jwt";
 import { secureRoute } from "../../utils/securityRoute";
+import {
+	validateCreateCategory,
+	validateUpdateCategory,
+} from "./categories.middleware";
+import { t } from "elysia";
 
 async function authenticateSuperAdmin(ctx: any) {
 	const auth = ctx.request.headers.get("authorization") || "";
@@ -28,40 +33,66 @@ async function authenticateSuperAdmin(ctx: any) {
 }
 
 export function registerCategoryRoutes(router: any) {
-	router.get("/categories", async (ctx: any) => {
+	router.get("/categories/get-all", async (ctx: any) => {
 		const authResult = await authenticateSuperAdmin(ctx);
 		if (authResult) return authResult;
 		return categoryController.getAll(ctx);
 	});
 
-	router.get("/categories/:id", async (ctx: any) => {
+	router.get("/categories/get/:id", async (ctx: any) => {
 		const authResult = await authenticateSuperAdmin(ctx);
 		if (authResult) return authResult;
 		return categoryController.getById(ctx);
 	});
 
+	// Create category — allow optional image (multipart/form-data)
 	router.post(
-		"/categories",
+		"/categories/create",
 		async (ctx: any) => {
 			const authResult = await authenticateSuperAdmin(ctx);
 			if (authResult) return authResult;
+			const validationResult = await validateCreateCategory(ctx);
+			if (validationResult) return validationResult;
 			return categoryController.create(ctx);
 		},
+		// {
+		// 	// title required, order optional, image optional file
+		// 	body: t.Object({
+		// 		title: t.Optional(t.String()),
+		// 		order: t.Optional(t.Numeric()),
+		// 		image: t.Optional(t.File()), // t.File => multipart/form-data
+		// 	}),
+		// 	// explicit type is optional but explicit is fine:
+		// 	type: "multipart/form-data",
+		// },
 		secureRoute()
 	);
 
+	// Update metadata (title + order) — JSON body
 	router.put(
-		"/categories/:id",
+		"/categories/edit/:id",
 		async (ctx: any) => {
 			const authResult = await authenticateSuperAdmin(ctx);
 			if (authResult) return authResult;
+			const validationResult = await validateUpdateCategory(ctx);
+			if (validationResult) return validationResult;
 			return categoryController.update(ctx);
+		},
+		{
+			// Only title and order — JSON expected
+			body: t.Object({
+				title: t.Optional(t.String()),
+				order: t.Optional(t.Numeric()),
+			}),
+			// Elysia will default to JSON parsing for t.Object, but you can set:
+			type: "json",
 		},
 		secureRoute()
 	);
 
+	// Delete category
 	router.delete(
-		"/categories/:id",
+		"/categories/delete/:id",
 		async (ctx: any) => {
 			const authResult = await authenticateSuperAdmin(ctx);
 			if (authResult) return authResult;
@@ -70,12 +101,51 @@ export function registerCategoryRoutes(router: any) {
 		secureRoute()
 	);
 
+	// Upload/replace image — multipart/form-data with 'image' file
+	router.put(
+		"/categories/edit-image/:id/image",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return categoryController.uploadImage(ctx);
+		},
+		{
+			body: t.Object({
+				image: t.File(), // required file field
+			}),
+			type: "multipart/form-data",
+		},
+		secureRoute()
+	);
+
+	// Delete image
+	router.delete(
+		"/categories/delete-image/:id/image",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return categoryController.deleteImage(ctx);
+		},
+		secureRoute()
+	);
+
+	// Reorder categories — JSON body with items array
 	router.put(
 		"/categories/reorder",
 		async (ctx: any) => {
 			const authResult = await authenticateSuperAdmin(ctx);
 			if (authResult) return authResult;
 			return categoryController.reorder(ctx);
+		},
+		{
+			body: t.Object({
+				items: t.Array(
+					t.Object({
+						id: t.String(),
+						order: t.Numeric(),
+					})
+				),
+			}),
 		},
 		secureRoute()
 	);

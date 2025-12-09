@@ -4,6 +4,10 @@ import {
 	UpdateCategoryDto,
 	ReorderCategoriesDto,
 } from "./categories.dto";
+import type {
+	CreateCategoryInput,
+	UpdateCategoryInput,
+} from "./categories.types";
 import { categoryService } from "./categories.service";
 
 export class CategoryController {
@@ -16,31 +20,23 @@ export class CategoryController {
 	}
 
 	async create(ctx: any) {
-		let data: any = {};
-		try {
-			const body = await ctx.request.json();
-			const parsed = CreateCategoryDto.safeParse(body);
-			if (!parsed.success) {
-				ctx.set.status = 400;
-				return parsed.error;
-			}
-			data = parsed.data;
-		} catch (error) {
-			// If no body or invalid JSON, create with defaults
-			data = {};
+		const validatedData: CreateCategoryInput = ctx.validatedData;
+		if (!validatedData) {
+			ctx.set.status = 400;
+			return { error: "Validation failed" };
 		}
 
-		return await categoryService.create(data);
+		return await categoryService.create(validatedData);
 	}
 
 	async update(ctx: any) {
-		const parsed = UpdateCategoryDto.safeParse(await ctx.request.json());
-		if (!parsed.success) {
+		const validatedData: UpdateCategoryInput = ctx.validatedData;
+		if (!validatedData) {
 			ctx.set.status = 400;
-			return parsed.error;
+			return { error: "Validation failed" };
 		}
 
-		return await categoryService.update(ctx.params.id, parsed.data);
+		return await categoryService.update(ctx.params.id, validatedData);
 	}
 
 	async delete(ctx: any) {
@@ -55,6 +51,20 @@ export class CategoryController {
 		}
 
 		return await categoryService.reorder(parsed.data.items);
+	}
+
+	async deleteImage(ctx: any) {
+		return await categoryService.deleteImage(ctx.params.id);
+	}
+
+	async uploadImage(ctx: any) {
+		const body = ctx.body || {};
+		const image = body.image;
+		if (!image) {
+			ctx.set.status = 400;
+			return { error: "Image file is required" };
+		}
+		return await categoryService.uploadImage(ctx.params.id, image);
 	}
 }
 

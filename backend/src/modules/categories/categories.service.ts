@@ -1,5 +1,10 @@
 // src/modules/category/category.service.ts
 import { prisma } from "../../utils/prisma";
+import { saveUploadedFile, deleteFile } from "../../utils/files";
+import type {
+	CreateCategoryInput,
+	UpdateCategoryInput,
+} from "./categories.types";
 
 export class CategoryService {
 	async getAll() {
@@ -14,11 +19,11 @@ export class CategoryService {
 		return cat;
 	}
 
-	async create(data: { title?: string; imagePath?: string; order?: number }) {
+	async create(data: CreateCategoryInput) {
 		const total = await prisma.category.count();
 
 		const order = data.order ?? total + 1;
-		const title = data.title ?? "New Category";
+		const title = data.title;
 
 		if (order > total + 1) {
 			throw new Error("INVALID_ORDER");
@@ -32,19 +37,23 @@ export class CategoryService {
 			});
 		}
 
+		// Save the uploaded file
+		let imagePath: string | null = null;
+		if (data.image) {
+			const targetFolder = "public/uploads/categories";
+			imagePath = await saveUploadedFile(data.image, targetFolder);
+		}
+
 		return prisma.category.create({
 			data: {
 				title,
-				imagePath: data.imagePath ?? null,
+				imagePath,
 				order,
 			},
 		});
 	}
 
-	async update(
-		id: string,
-		data: { title?: string; imagePath?: string; order?: number }
-	) {
+	async update(id: string, data: UpdateCategoryInput) {
 		const category = await this.getById(id);
 
 		// if ordering changes, adjust neighbors
@@ -74,18 +83,16 @@ export class CategoryService {
 					where: { id },
 					data: {
 						title: data.title ?? undefined,
-						imagePath: data.imagePath ?? undefined,
 						order: newOrder,
 					},
 				});
 			});
 		} else {
-			// only updating title/image
+			// only updating title
 			await prisma.category.update({
 				where: { id },
 				data: {
 					title: data.title ?? undefined,
-					imagePath: data.imagePath ?? undefined,
 				},
 			});
 		}
@@ -96,6 +103,20 @@ export class CategoryService {
 	async delete(id: string) {
 		const category = await this.getById(id);
 
+		// Check if category has subcategories
+		const subCategoryCount = await prisma.subCategory.count({
+			where: { categoryId: id },
+		});
+
+		if (subCategoryCount > 0) {
+			throw new Error("CANNOT_DELETE_CATEGORY_WITH_SUBCATEGORIES");
+		}
+
+		// Delete image if exists
+		if (category.imagePath) {
+			await deleteFile(category.imagePath);
+		}
+
 		await prisma.$transaction(async (tx) => {
 			await tx.category.delete({ where: { id } });
 
@@ -105,6 +126,20 @@ export class CategoryService {
 				data: { order: { decrement: 1 } },
 			});
 		});
+
+		return { success: true };
+	}
+
+	async deleteImage(id: string) {
+		const category = await this.getById(id);
+
+		if (category.imagePath) {
+			await deleteFile(category.imagePath);
+			await prisma.category.update({
+				where: { id },
+				data: { imagePath: null },
+			});
+		}
 
 		return { success: true };
 	}
@@ -145,6 +180,27 @@ export class CategoryService {
 		});
 
 		return prisma.category.findMany({ orderBy: { order: "asc" } });
+	}
+
+	async uploadImage(id: string, image: File) {
+		const category = await this.getById(id);
+
+		// Delete old image if exists
+		if (category.imagePath) {
+			await deleteFile(category.imagePath);
+		}
+
+		// Save new image
+		const targetFolder = "public/uploads/categories";
+		const imagePath = await saveUploadedFile(image, targetFolder);
+
+		// Update category
+		await prisma.category.update({
+			where: { id },
+			data: { imagePath },
+		});
+
+		return this.getById(id);
 	}
 }
 

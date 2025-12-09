@@ -6,7 +6,7 @@ import { staticPlugin } from "@elysiajs/static";
 
 import cors from "@elysiajs/cors";
 import { registerCategoryRoutes } from "./modules/categories/categories.route";
-import openapi from "@elysiajs/openapi";
+import swagger from "@elysiajs/swagger";
 
 export const app = new Elysia()
 	.use(
@@ -25,7 +25,7 @@ export const app = new Elysia()
 	)
 	.get("/", () => ({ status: "ok", message: "Backend is running" }))
 	.use(
-		openapi({
+		swagger({
 			documentation: {
 				components: {
 					securitySchemes: {
