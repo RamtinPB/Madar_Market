@@ -2,19 +2,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 let accessToken: string | null = null;
 let refreshPromise: Promise<any> | null = null;
-// Development-only fallback: store the raw refresh token returned by the
-// backend (only when NODE_ENV !== 'production') so the client can supply
-// it in a request body if the cookie isn't stored by the browser.
-let devRefreshToken: string | null = null;
-// Load persisted dev refresh token (dev only) so fallback survives reloads
-if (process.env.NODE_ENV !== "production") {
-	try {
-		const saved = sessionStorage.getItem("devRefreshToken");
-		if (saved) devRefreshToken = saved;
-	} catch (e) {
-		/* ignore */
-	}
-}
 
 const authEvents = new EventTarget();
 
@@ -39,12 +26,6 @@ const clearTokens = () => {
 	authEvents.dispatchEvent(
 		new CustomEvent("auth-change", { detail: { token: null } })
 	);
-	if (process.env.NODE_ENV !== "production") {
-		try {
-			sessionStorage.removeItem("devRefreshToken");
-		} catch (e) {}
-		devRefreshToken = null;
-	}
 };
 
 export async function authenticatedFetch(
@@ -84,7 +65,16 @@ export async function requestOtp(phoneNumber: string, purpose: string) {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ phoneNumber, purpose }),
 	});
-	if (!response.ok) throw new Error("Failed to request OTP");
+
+	if (!response.ok) {
+		let errMsg = "Failed to request OTP";
+		try {
+			const body = await response.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
+
 	return response.json();
 }
 
@@ -93,39 +83,22 @@ export async function refreshAccessToken() {
 
 	refreshPromise = (async () => {
 		try {
-			// First try: standard cookie-based refresh
 			let response = await fetch(`${API_BASE}/auth/refresh`, {
 				method: "POST",
 				credentials: "include",
 			});
 
-			// If cookie-based attempt failed and we have a dev fallback token,
-			// try sending it in the body (dev only).
-			if (
-				!response.ok &&
-				devRefreshToken &&
-				process.env.NODE_ENV !== "production"
-			) {
-				response = await fetch(`${API_BASE}/auth/refresh`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					credentials: "include",
-					body: JSON.stringify({ refreshToken: devRefreshToken }),
-				});
+			if (!response.ok) {
+				let errMsg = "Token refresh failed";
+				try {
+					const body = await response.json();
+					errMsg = body?.error || errMsg;
+				} catch (e) {}
+				throw new Error(errMsg);
 			}
-
-			if (!response.ok) throw new Error("Token refresh failed");
 
 			const data = await response.json();
 			if (data.accessToken) setAccessToken(data.accessToken);
-			// backend may rotate refresh token and return it in dev
-			if (process.env.NODE_ENV !== "production" && data.refreshToken) {
-				devRefreshToken = data.refreshToken;
-				try {
-					if (devRefreshToken)
-						sessionStorage.setItem("devRefreshToken", devRefreshToken);
-				} catch (e) {}
-			}
 			return data;
 		} finally {
 			refreshPromise = null;
@@ -147,18 +120,17 @@ export async function login(
 		body: JSON.stringify({ phoneNumber, password, otp }),
 	});
 
-	if (!res.ok) throw new Error("Login failed");
+	if (!res.ok) {
+		let errMsg = "Login failed";
+		try {
+			const body = await res.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
 
 	const data = await res.json();
 	if (data.accessToken) setAccessToken(data.accessToken);
-	// capture dev-only refresh token if returned (persist across reloads)
-	if (process.env.NODE_ENV !== "production" && data.refreshToken) {
-		devRefreshToken = data.refreshToken;
-		try {
-			if (devRefreshToken)
-				sessionStorage.setItem("devRefreshToken", devRefreshToken);
-		} catch (e) {}
-	}
 	return data;
 }
 
@@ -174,17 +146,17 @@ export async function signup(
 		body: JSON.stringify({ phoneNumber, password, otp }),
 	});
 
-	if (!res.ok) throw new Error("signup failed");
+	if (!res.ok) {
+		let errMsg = "Signup failed";
+		try {
+			const body = await res.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
 
 	const data = await res.json();
 	if (data.accessToken) setAccessToken(data.accessToken);
-	if (process.env.NODE_ENV !== "production" && data.refreshToken) {
-		devRefreshToken = data.refreshToken;
-		try {
-			if (devRefreshToken)
-				sessionStorage.setItem("devRefreshToken", devRefreshToken);
-		} catch (e) {}
-	}
 	return data;
 }
 
@@ -196,15 +168,24 @@ export async function logout() {
 		});
 	} catch (e) {
 		// ignore network errors; still clear local state
+	} finally {
+		clearTokens();
 	}
-
-	clearTokens();
 }
 
 export async function getMe() {
 	const res = await authenticatedFetch(`${API_BASE}/auth/me`, {
 		method: "GET",
 	});
-	if (!res.ok) throw new Error("Failed to get user info");
+
+	if (!res.ok) {
+		let errMsg = "Failed to get user info";
+		try {
+			const body = await res.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
+
 	return res.json();
 }

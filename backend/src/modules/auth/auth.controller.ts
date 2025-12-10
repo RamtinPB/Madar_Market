@@ -40,7 +40,7 @@ export const signup = async (ctx: any) => {
 			value: created.refreshToken,
 			httpOnly: true,
 			sameSite: "none",
-			secure: process.env.NODE_ENV === "production",
+			secure: true,
 			path: "/",
 			maxAge:
 				60 *
@@ -83,7 +83,7 @@ export const login = async (ctx: any) => {
 			value: res.refreshToken,
 			httpOnly: true,
 			sameSite: "none",
-			secure: process.env.NODE_ENV === "production",
+			secure: true,
 			path: "/",
 			maxAge:
 				60 *
@@ -130,7 +130,7 @@ export const refresh = async (ctx: any) => {
 			value: tokens.refreshToken,
 			httpOnly: true,
 			sameSite: "none",
-			secure: process.env.NODE_ENV === "production",
+			secure: true,
 			path: "/",
 			maxAge:
 				60 *
@@ -178,7 +178,7 @@ export const logout = async (ctx: any) => {
 		value: "",
 		httpOnly: true,
 		sameSite: "none",
-		secure: process.env.NODE_ENV === "production",
+		secure: true,
 		path: "/",
 		maxAge: 0, // delete immediately
 	});

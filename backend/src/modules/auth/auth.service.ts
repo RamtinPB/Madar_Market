@@ -190,12 +190,6 @@ export const refreshAccessToken = async (refreshToken: string) => {
 	const user = await prisma.user.findUnique({ where: { id: userId } });
 	if (!user) throw new Error("User not found");
 
-	// In development, skip DB check for easier testing
-	if (process.env.NODE_ENV !== "production") {
-		const accessToken = signAccessToken({ userId, role: user.role });
-		return { accessToken, refreshToken };
-	}
-
 	// Find stored refresh tokens for this user that are not revoked and not expired
 	const tokens = await prisma.refreshToken.findMany({
 		where: { userId, revoked: false, expiresAt: { gte: new Date() } },
