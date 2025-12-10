@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getAccessToken, onAuthChange } from "@/src/lib/api/auth";
 
 export function useAuthState() {
-	const [loggedIn, setLoggedIn] = useState<boolean>(false);
+	const [loggedIn, setLoggedIn] = useState<boolean>(() => !!getAccessToken());
 
 	useEffect(() => {
-		function handleStorage() {
-			const token = sessionStorage.getItem("accessToken");
+		const unsub = onAuthChange((token) => {
 			setLoggedIn(!!token);
-		}
-
-		window.addEventListener("storage", handleStorage);
-		handleStorage();
+		});
+		// initial state already set from memory token
+		return () => unsub();
 	}, []);
 
 	return { loggedIn };

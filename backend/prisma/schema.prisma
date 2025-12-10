@@ -24,6 +24,7 @@ model User {
   refreshTokens  RefreshToken[]
 
   role Role @default(USER)
+  revokedAccessTokens RevokedAccessToken[]
 }
 
 model OTP {
@@ -40,15 +41,29 @@ model OTP {
 }
 
 model RefreshToken {
-  id Int @id @default(autoincrement())
-  tokenHash String
-  revoked Boolean @default(false)
-  expiresAt DateTime
+   id Int @id @default(autoincrement())
+   tokenHash String
+   revoked Boolean @default(false)
+   expiresAt DateTime
 
-  user User @relation(fields: [userId], references: [id])
-  userId Int
+   user User @relation(fields: [userId], references: [id])
+   userId Int
 
-  createdAt DateTime @default(now())
+   createdAt DateTime @default(now())
+}
+
+model RevokedAccessToken {
+   id Int @id @default(autoincrement())
+   tokenHash String @unique
+   expiresAt DateTime
+
+   user User @relation(fields: [userId], references: [id])
+   userId Int
+
+   createdAt DateTime @default(now())
+
+   @@index([tokenHash])
+   @@index([userId])
 }
 
 enum Role {

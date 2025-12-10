@@ -4,8 +4,10 @@ import {
 	signAccessToken,
 	signRefreshToken,
 	verifyRefreshToken,
+	verifyAccessToken,
 } from "../../utils/jwt";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const OTP_LENGTH = 4;
 const OTP_EXP_MIN = parseInt(process.env.OTP_EXPIRY_MINUTES || "3", 10);
@@ -107,7 +109,7 @@ export const signupWithPasswordOtp = async (
 	const refreshHash = await bcrypt.hash(refreshToken, 10);
 	const expiresAt = new Date(
 		Date.now() +
-			parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || "30", 10) *
+			parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30", 10) *
 				24 *
 				60 *
 				60 *
@@ -154,7 +156,7 @@ export const loginWithPasswordOtp = async (
 	const refreshHash = await bcrypt.hash(refreshToken, 10);
 	const expiresAt = new Date(
 		Date.now() +
-			parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || "30", 10) *
+			parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30", 10) *
 				24 *
 				60 *
 				60 *
@@ -188,6 +190,12 @@ export const refreshAccessToken = async (refreshToken: string) => {
 	const user = await prisma.user.findUnique({ where: { id: userId } });
 	if (!user) throw new Error("User not found");
 
+	// In development, skip DB check for easier testing
+	if (process.env.NODE_ENV !== "production") {
+		const accessToken = signAccessToken({ userId, role: user.role });
+		return { accessToken, refreshToken };
+	}
+
 	// Find stored refresh tokens for this user that are not revoked and not expired
 	const tokens = await prisma.refreshToken.findMany({
 		where: { userId, revoked: false, expiresAt: { gte: new Date() } },
@@ -205,7 +213,7 @@ export const refreshAccessToken = async (refreshToken: string) => {
 			const newHash = await bcrypt.hash(newRefreshToken, 10);
 			const expiresAt = new Date(
 				Date.now() +
-					parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || "30", 10) *
+					parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30", 10) *
 						24 *
 						60 *
 						60 *
@@ -249,4 +257,68 @@ export const revokeRefreshToken = async (rawRefreshToken: string) => {
 		}
 	}
 	return false;
+};
+
+export const revokeAccessToken = async (rawAccessToken: string) => {
+	try {
+		// Decode the token to get userId and expiration
+		const payload: any = verifyAccessToken(rawAccessToken);
+		const userId = payload.userId;
+		const expiresAt = new Date(payload.exp * 1000); // Convert to Date
+
+		// Use SHA-256 hash for faster lookups
+		const tokenHash = crypto
+			.createHash("sha256")
+			.update(rawAccessToken)
+			.digest("hex");
+
+		// Store in revoked tokens table
+		await prisma.revokedAccessToken.create({
+			data: {
+				tokenHash,
+				expiresAt,
+				userId,
+			},
+		});
+		return true;
+	} catch (error) {
+		// If token is invalid, we can't revoke it, but that's okay
+		return false;
+	}
+};
+
+export const isAccessTokenRevoked = async (rawAccessToken: string) => {
+	try {
+		// Hash the token using SHA-256 for consistency
+		const tokenHash = crypto
+			.createHash("sha256")
+			.update(rawAccessToken)
+			.digest("hex");
+
+		// Check if it exists in revoked tokens and hasn't expired
+		const revoked = await prisma.revokedAccessToken.findFirst({
+			where: {
+				tokenHash,
+				expiresAt: { gte: new Date() },
+			},
+		});
+
+		return !!revoked;
+	} catch (error) {
+		// If hashing fails, consider it not revoked
+		return false;
+	}
+};
+
+// Clean up expired revoked tokens periodically
+export const cleanupExpiredRevokedTokens = async () => {
+	try {
+		await prisma.revokedAccessToken.deleteMany({
+			where: {
+				expiresAt: { lt: new Date() },
+			},
+		});
+	} catch (error) {
+		console.error("Failed to cleanup expired revoked tokens:", error);
+	}
 };

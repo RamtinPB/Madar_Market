@@ -74,3 +74,8 @@ here is what you need to know about the image uploading logic:
 4. deleting images should be done using a separate endpoint and the stored image will also be deleted. also on update the previous image should be replaced/overwritten.
 
 note that all implementation should be professional, so that the project is organized and well structured.
+
+
+
+nope still didnt work. the logout still doesnt work and the /me is useable after logout.
+i also expected the refresh endpoint to revoke revoke the previous access token when it send a new one. but im still using the same access token for the bearer and it works

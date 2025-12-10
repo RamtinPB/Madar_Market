@@ -42,34 +42,6 @@ export const app = new Elysia()
 		})
 	);
 
-// Test route for authentication
-app.get("/auth-test", async (ctx: any) => {
-	const auth = ctx.request.headers.get("authorization") || "";
-	const parts = auth.split(" ");
-	if (parts.length !== 2 || parts[0] !== "Bearer") {
-		ctx.set.status = 401;
-		return { error: "Unauthorized" };
-	}
-
-	const token = parts[1];
-	try {
-		const { verifyAccessToken } = await import("./utils/jwt");
-		const payload: any = verifyAccessToken(token);
-		const user = { id: payload.userId, role: payload.role };
-		if (user.role !== "SUPER_ADMIN") {
-			ctx.set.status = 403;
-			return { error: "Forbidden" };
-		}
-		return {
-			message: "Authentication successful",
-			user,
-		};
-	} catch (error) {
-		ctx.set.status = 401;
-		return { error: "Invalid token" };
-	}
-});
-
 registerAuthRoutes(app);
 registerCategoryRoutes(app);
 registerSubCategoryRoutes(app);

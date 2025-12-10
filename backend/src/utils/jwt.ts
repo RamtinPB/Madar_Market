@@ -3,10 +3,8 @@ import jwt from "jsonwebtoken";
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 const ACCESS_EXP = process.env.ACCESS_TOKEN_EXPIRY_IN || "15m";
-const REFRESH_DAYS = parseInt(
-	process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30d",
-	10
-);
+// Use a string for refresh expiry so units (e.g. '30d') are preserved.
+const REFRESH_EXP = process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30d";
 
 export const signAccessToken = (payload: object) => {
 	return jwt.sign(payload, ACCESS_SECRET, {
@@ -20,7 +18,7 @@ export const verifyAccessToken = (token: string) => {
 
 export const signRefreshToken = (payload: object) => {
 	return jwt.sign(payload, REFRESH_SECRET, {
-		expiresIn: `${REFRESH_DAYS}` as jwt.SignOptions["expiresIn"],
+		expiresIn: REFRESH_EXP as jwt.SignOptions["expiresIn"],
 	});
 };
 

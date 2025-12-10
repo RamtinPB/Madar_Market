@@ -5,8 +5,10 @@ import {
 	login as apiLogin,
 	signup as apiSignup,
 	logout as apiLogout,
+	refreshAccessToken,
+	getMe,
+	onAuthChange,
 } from "@/src/lib/api/auth";
-import { getAccessToken, setAccessToken } from "@/src/lib/api/auth";
 interface AuthContextType {
 	user: any | null;
 	isAuthenticated: boolean;
@@ -26,50 +28,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	// HYDRATE AUTH STATE ON REFRESH
 	// -----------------------------
 	useEffect(() => {
-		const token = sessionStorage.getItem("accessToken");
+		let unsub: (() => void) | null = null;
 
-		if (!token) {
-			setLoading(false);
-			return;
-		}
+		(async () => {
+			try {
+				// attempt to obtain an access token using refresh cookie
+				const data = await refreshAccessToken();
+				if (data?.user) {
+					setUser(data.user);
+					setLoading(false);
+					return;
+				}
 
-		// restore the in-memory token
-		setAccessToken(token);
-
-		// validate token by calling backend
-		fetch(`${process.env.NEXT_PUBLIC_API_BASE}/auth/me`, {
-			credentials: "include",
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		})
-			.then(async (res) => {
-				if (!res.ok) throw new Error("Invalid token");
-				const data = await res.json();
-				setUser(data.user);
-			})
-			.catch(() => {
-				// Token invalid - clear everything
-				sessionStorage.removeItem("accessToken");
-				setAccessToken(null);
+				// if refresh didn't include user, request /auth/me
+				try {
+					const me = await getMe();
+					setUser(me.user ?? me);
+				} catch (err) {
+					setUser(null);
+				}
+			} catch (err) {
 				setUser(null);
-			})
-			.finally(() => {
+			} finally {
 				setLoading(false);
-			});
+			}
+		})();
+
+		// allow other parts of the app to react to token changes
+		unsub = onAuthChange((token) => {
+			if (!token) setUser(null);
+		});
+
+		return () => {
+			if (unsub) unsub();
+		};
 	}, []);
 
 	// -----------------------------
 	// LOGIN FLOW
 	// -----------------------------
 	const login = async (phone: string, pass: string, otp: string) => {
-		const { user, accessToken } = await apiLogin(phone, pass, otp);
-
-		// store access token
-		sessionStorage.setItem("accessToken", accessToken);
-		setAccessToken(accessToken);
-
-		setUser(user);
+		const data = await apiLogin(phone, pass, otp);
+		setUser(data.user ?? data);
 	};
 
 	// -----------------------------
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	// -----------------------------
 	const signup = async (phone: string, pass: string, otp: string) => {
 		const res = await apiSignup(phone, pass, otp);
-		setUser(res.user);
+		setUser(res.user ?? res);
 	};
 
 	// -----------------------------
@@ -86,8 +86,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const logout = async () => {
 		await apiLogout();
 		setUser(null);
-		sessionStorage.removeItem("accessToken");
-		setAccessToken(null);
 	};
 
 	return (

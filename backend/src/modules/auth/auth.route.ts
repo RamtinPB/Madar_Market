@@ -23,6 +23,19 @@ export function registerAuthRoutes(appInstance: typeof app) {
 			otp: t.String(),
 		}),
 	});
-	appInstance.post("/auth/refresh", authController.refresh);
-	appInstance.post("/auth/logout", authController.logout);
+	appInstance.post("/auth/refresh", authController.refresh, {
+		body: t.Optional(
+			t.Object({
+				refreshToken: t.Optional(t.String()),
+			})
+		),
+	});
+	appInstance.get("/auth/me", authController.me);
+	appInstance.post("/auth/logout", authController.logout, {
+		body: t.Optional(
+			t.Object({
+				refreshToken: t.Optional(t.String()),
+			})
+		),
+	});
 }
