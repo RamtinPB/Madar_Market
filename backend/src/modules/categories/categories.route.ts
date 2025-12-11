@@ -36,8 +36,8 @@ async function authenticateSuperAdmin(ctx: any) {
 
 export function registerCategoryRoutes(router: any) {
 	router.get("/categories/get-all", async (ctx: any) => {
-		const authResult = await authenticateSuperAdmin(ctx);
-		if (authResult) return authResult;
+		// const authResult = await authenticateSuperAdmin(ctx);
+		// if (authResult) return authResult;
 		return categoryController.getAll(ctx);
 	});
 
@@ -156,19 +156,9 @@ export function registerCategoryRoutes(router: any) {
 	router.get(
 		"/categories/:categoryId/get-all-subcategories",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
+			// const authResult = await authenticateSuperAdmin(ctx);
+			// if (authResult) return authResult;
 			return subCategoryController.getAllByCategory(ctx);
-		}
-	);
-
-	// Get all products for a subcategory
-	router.get(
-		"/categories/:categoryId/:subCategoryId/get-all-products",
-		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
-			return productController.getAllBySubCategory(ctx);
 		}
 	);
 }

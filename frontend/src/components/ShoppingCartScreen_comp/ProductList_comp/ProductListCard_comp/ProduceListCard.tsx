@@ -1,17 +1,19 @@
 "use client";
 import { Card, CardContent } from "@/src/components/ui/card";
-import Image, { StaticImageData } from "next/image";
+import CartImage from "@/public/assets/home_screen/special_products/Cart.png";
 
 import { CartButton } from "./CartButton";
 import { DiscountBadge } from "./DiscountBadge";
 import { SponsorPrice } from "./SponsorPrice";
 
 export interface ProduceListCardProps {
-	image?: StaticImageData;
+	id: string;
+	image?: string;
 	title: string;
-	discount?: number;
-	oldPrice?: string;
-	newPrice: string;
+	description: string;
+	discountPercent?: number;
+	price?: string;
+	discountedPrice: string;
 	sponsorPrice?: string;
 	onCardClick?: () => void;
 }
@@ -19,9 +21,9 @@ export interface ProduceListCardProps {
 export default function ProduceListCard({
 	image,
 	title,
-	discount,
-	oldPrice,
-	newPrice,
+	discountPercent,
+	price,
+	discountedPrice,
 	sponsorPrice,
 	onCardClick,
 }: ProduceListCardProps) {
@@ -34,8 +36,8 @@ export default function ProduceListCard({
 		>
 			<CardContent className="flex flex-col justify-between p-0">
 				<div className="flex gap-2 p-3">
-					<Image
-						src={image ?? ""}
+					<img
+						src={image ?? CartImage.src}
 						alt={title}
 						className="aspect-square w-1/4 "
 					/>
@@ -45,11 +47,11 @@ export default function ProduceListCard({
 						</p>
 						<div className="flex flex-row justify-between items-center">
 							<div className="flex flex-col ">
-								<DiscountBadge discount={discount} oldPrice={oldPrice} />
+								<DiscountBadge discount={discountPercent} price={price} />
 
 								{/* NEW PRICE */}
 								<div className="mx-2 mt-1 flex items-center gap-1.5 text-[14px] max-[376px]:text-[11px] font-bold text-[#BA400B]">
-									<span>{newPrice}</span>
+									<span>{discountedPrice}</span>
 									<span>تومان</span>
 								</div>
 							</div>

@@ -112,4 +112,14 @@ export function registerSubCategoryRoutes(router: any) {
 		},
 		secureRoute()
 	);
+
+	// Get all products for a subcategory
+	router.get(
+		"/subcategories/:subCategoryId/get-all-products",
+		async (ctx: any) => {
+			// const authResult = await authenticateSuperAdmin(ctx);
+			// if (authResult) return authResult;
+			return subCategoryController.getAllProducts(ctx);
+		}
+	);
 }

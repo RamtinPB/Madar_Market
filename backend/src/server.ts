@@ -22,7 +22,7 @@ export const app = new Elysia()
 	.use(
 		staticPlugin({
 			assets: "public",
-			prefix: "/static",
+			prefix: "/public",
 		})
 	)
 	.get("/", () => ({ status: "ok", message: "Backend is running" }))

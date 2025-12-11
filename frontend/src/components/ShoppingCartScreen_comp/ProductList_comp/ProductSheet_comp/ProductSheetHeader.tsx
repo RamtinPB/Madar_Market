@@ -1,11 +1,10 @@
 "use client";
 import { BannerCarousel } from "@/src/components/HomeScreen_comp/BannerCarousel";
 import { SheetTitle } from "@/src/components/ui/sheet";
-import { StaticImageData } from "next/image";
 
 interface Props {
 	title: string;
-	image?: StaticImageData;
+	image?: string;
 }
 
 export function ProductSheetHeader({ title, image }: Props) {

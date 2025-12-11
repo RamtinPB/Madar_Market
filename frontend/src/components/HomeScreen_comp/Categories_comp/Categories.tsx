@@ -1,5 +1,6 @@
 "use client";
 
+import apiFetch from "@/src/lib/api/fetcher";
 import CategoryItem from "./CategoryItem";
 import { useEffect, useState } from "react";
 
@@ -10,21 +11,21 @@ export default function Categories() {
 	const [cats, setCats] = useState<{ icon: string; label: string }[]>([]);
 
 	useEffect(() => {
-		// Try to fetch categories from backend, fall back to local static list
-		const API_BASE =
-			process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:4000";
-		fetch(`${API_BASE}/categories`)
+		// fetch categories from backend
+		const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+		apiFetch(`${API_BASE}/categories/get-all`)
 			.then((r) => r.json())
 			.then((data) => {
 				if (Array.isArray(data) && data.length > 0) {
-					setCats(
-						data.map((c: any) => ({
-							icon: c.imageUrl, // string URL from backend
-							label: c.label,
-						}))
-					);
+					const mapped = data.map((c: any) => ({
+						icon: `${API_BASE}${c.imagePath}`,
+						label: c.title,
+					}));
+
+					setCats(mapped);
 				}
 			})
+
 			.catch((e) => {
 				console.warn("Failed to fetch categories from backend:", e);
 			});

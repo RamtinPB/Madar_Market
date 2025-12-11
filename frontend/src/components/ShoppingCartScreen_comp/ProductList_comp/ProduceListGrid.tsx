@@ -16,18 +16,20 @@ export function ProduceListGrid({
 }: ProduceListGridProps) {
 	return (
 		<div className="flex flex-col items-center gap-3">
-			{products.map((p) => (
+			{products.map((p, index) => (
 				<div
-					key={p.title}
+					key={`${p.id}-${index}`}
 					onClick={() => onCardClick(p)}
 					className="cursor-pointer"
 				>
 					<ProduceListCard
-						image={p.image ?? ShoppingCart}
+						id={p.id}
+						image={p.image}
 						title={p.title}
-						discount={p.discount}
-						oldPrice={p.oldPrice}
-						newPrice={p.newPrice}
+						description={p.description}
+						discountPercent={p.discountPercent}
+						price={p.price}
+						discountedPrice={p.discountedPrice}
 						sponsorPrice={p.sponsorPrice}
 						onCardClick={() => onCardClick(p)}
 					/>

@@ -1,5 +1,6 @@
 // src/modules/subCategories/subCategories.service.ts
 import { prisma } from "../../utils/prisma";
+import { productService } from "../product/products.service";
 import type {
 	CreateSubCategoryInput,
 	UpdateSubCategoryInput,
@@ -11,6 +12,10 @@ export class SubCategoryService {
 			where: { categoryId },
 			orderBy: { order: "asc" },
 		});
+	}
+
+	async getAllProducts(subCategoryId: string) {
+		return await productService.getAllBySubCategory(subCategoryId);
 	}
 
 	async getById(id: string) {

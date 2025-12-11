@@ -54,6 +54,11 @@ export class SubCategoryController {
 
 		return await subCategoryService.reorder(categoryId, parsed.data.items);
 	}
+
+	async getAllProducts(ctx: any) {
+		const { subCategoryId } = ctx.params;
+		return await subCategoryService.getAllProducts(subCategoryId);
+	}
 }
 
 export const subCategoryController = new SubCategoryController();

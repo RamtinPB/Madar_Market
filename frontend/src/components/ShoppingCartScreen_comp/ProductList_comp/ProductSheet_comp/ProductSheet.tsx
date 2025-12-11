@@ -9,21 +9,12 @@ import { ProductSheetPriceBox } from "./ProductSheetPriceBox";
 import { ProductSheetFooter } from "./ProductSheetFooter";
 
 // Types
-import { StaticImageData } from "next/image";
-
-interface Product {
-	title: string;
-	image?: StaticImageData;
-	newPrice: string;
-	oldPrice?: string;
-	discount?: number;
-	sponsorPrice?: string;
-}
+import { ProduceListCardProps } from "../ProductListCard_comp/ProduceListCard";
 
 interface ProductSheetProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	product?: Product | null;
+	product?: ProduceListCardProps | null;
 }
 
 export default function ProductSheet({
@@ -49,7 +40,7 @@ export default function ProductSheet({
 				<div className="flex flex-col gap-3">
 					<ProductSheetPriceBox sponsorPrice={product.sponsorPrice} />
 
-					<ProductSheetFooter oldPrice={product.oldPrice} />
+					<ProductSheetFooter price={product.discountedPrice} />
 				</div>
 			</SheetContent>
 		</Sheet>
