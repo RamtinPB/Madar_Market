@@ -1,13 +1,31 @@
-import { LoginHeader } from "@/src/components/Login_comp/LoginHeader";
+"use client";
+
+import { useState } from "react";
+import AdminSidebar from "@/src/components/Admin/Admin_Sidebar";
+import CategoriesManager from "@/src/components/Admin/CategoriesManager";
+import { SidebarProvider } from "@/src/components/ui/sidebar";
 
 export default function Page() {
-	return (
-		<>
-			{/* HEADER */}
-			<LoginHeader />
+	const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-			{/* MAIN CONTENT */}
-			<main className="flex justify-between items-center"></main>
-		</>
+	const handleSelectItem = (item: string) => {
+		setSelectedItem(item);
+	};
+
+	return (
+		<SidebarProvider className="">
+			{/* MAIN CONTENT WITH SIDEBAR */}
+			<AdminSidebar onSelectItem={handleSelectItem}>
+				{/* Contents section */}
+				<div className="p-6">
+					{selectedItem === "CategoriesManager" && <CategoriesManager />}
+					{!selectedItem && (
+						<div className="text-center text-gray-500">
+							گزینه ای از منو انتخاب کنید.
+						</div>
+					)}
+				</div>
+			</AdminSidebar>
+		</SidebarProvider>
 	);
 }
