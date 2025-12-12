@@ -2,9 +2,27 @@ import jwt from "jsonwebtoken";
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
-const ACCESS_EXP = process.env.ACCESS_TOKEN_EXPIRY_IN || "15m";
-// Use a string for refresh expiry so units (e.g. '30d') are preserved.
-const REFRESH_EXP = process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30d";
+const ACCESS_EXP = process.env.ACCESS_TOKEN_EXPIRY_IN;
+const REFRESH_EXP = process.env.REFRESH_TOKEN_EXPIRY_DAYS;
+
+export const parseExpiryToMs = (expiry: string): number => {
+	const match = expiry.match(/^(\d+)([smhd]?)$/);
+	if (!match) return 0;
+	const value = parseInt(match[1]!, 10);
+	const unit = match[2] || "s"; // default to seconds if no unit
+	switch (unit) {
+		case "s":
+			return value * 1000;
+		case "m":
+			return value * 60 * 1000;
+		case "h":
+			return value * 60 * 60 * 1000;
+		case "d":
+			return value * 24 * 60 * 60 * 1000;
+		default:
+			return value * 1000;
+	}
+};
 
 export const signAccessToken = (payload: object) => {
 	return jwt.sign(payload, ACCESS_SECRET, {

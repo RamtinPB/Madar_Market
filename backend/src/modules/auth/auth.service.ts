@@ -5,12 +5,13 @@ import {
 	signRefreshToken,
 	verifyRefreshToken,
 	verifyAccessToken,
+	parseExpiryToMs,
 } from "../../utils/jwt";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
 const OTP_LENGTH = 4;
-const OTP_EXP_MIN = parseInt(process.env.OTP_EXPIRY_MINUTES || "3", 10);
+const OTP_EXP_MIN = parseInt(process.env.OTP_EXPIRY_MINUTES!, 10);
 
 const generateNumericOtp = (length: number) => {
 	// ensures leading zeros allowed
@@ -107,14 +108,11 @@ export const signupWithPasswordOtp = async (
 
 	// store hashed refresh token
 	const refreshHash = await bcrypt.hash(refreshToken, 10);
-	const expiresAt = new Date(
-		Date.now() +
-			parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30", 10) *
-				24 *
-				60 *
-				60 *
-				1000
+	const refreshExpiryMs = parseExpiryToMs(
+		process.env.REFRESH_TOKEN_EXPIRY_DAYS!
 	);
+	const expiresAt = new Date(Date.now() + refreshExpiryMs);
+	console.log("Refresh token DB expiresAt:", expiresAt);
 	await prisma.refreshToken.create({
 		data: {
 			tokenHash: refreshHash,
@@ -154,14 +152,10 @@ export const loginWithPasswordOtp = async (
 	const refreshToken = signRefreshToken({ userId: user.id });
 
 	const refreshHash = await bcrypt.hash(refreshToken, 10);
-	const expiresAt = new Date(
-		Date.now() +
-			parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30", 10) *
-				24 *
-				60 *
-				60 *
-				1000
+	const refreshExpiryMs = parseExpiryToMs(
+		process.env.REFRESH_TOKEN_EXPIRY_DAYS!
 	);
+	const expiresAt = new Date(Date.now() + refreshExpiryMs);
 	await prisma.refreshToken.create({
 		data: {
 			tokenHash: refreshHash,
@@ -205,14 +199,10 @@ export const refreshAccessToken = async (refreshToken: string) => {
 			// Optionally rotate refresh token: issue new refresh token and revoke old one
 			const newRefreshToken = signRefreshToken({ userId });
 			const newHash = await bcrypt.hash(newRefreshToken, 10);
-			const expiresAt = new Date(
-				Date.now() +
-					parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30", 10) *
-						24 *
-						60 *
-						60 *
-						1000
+			const refreshExpiryMs = parseExpiryToMs(
+				process.env.REFRESH_TOKEN_EXPIRY_DAYS!
 			);
+			const expiresAt = new Date(Date.now() + refreshExpiryMs);
 
 			// revoke old
 			await prisma.refreshToken.update({

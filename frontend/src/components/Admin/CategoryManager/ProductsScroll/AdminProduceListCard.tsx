@@ -2,11 +2,11 @@
 import { Card, CardContent } from "@/src/components/ui/card";
 import CartImage from "@/public/assets/home_screen/special_products/Cart.png";
 
-import { CartButton } from "./CartButton";
-import { DiscountBadge } from "./DiscountBadge";
-import { SponsorPrice } from "./SponsorPrice";
+import { CartButton } from "../../../ShoppingCartScreen_comp/ProductList_comp/ProductListCard_comp/CartButton";
+import { DiscountBadge } from "../../../ShoppingCartScreen_comp/ProductList_comp/ProductListCard_comp/DiscountBadge";
+import { SponsorPrice } from "../../../ShoppingCartScreen_comp/ProductList_comp/ProductListCard_comp/SponsorPrice";
 
-export interface ProduceListCardProps {
+export interface AdminProduceListCardProps {
 	id: string;
 	image?: string;
 	title: string;
@@ -18,7 +18,7 @@ export interface ProduceListCardProps {
 	onCardClick?: () => void;
 }
 
-export default function ProduceListCard({
+export default function AdminProduceListCard({
 	id,
 	image,
 	title,
@@ -27,7 +27,7 @@ export default function ProduceListCard({
 	discountedPrice,
 	sponsorPrice,
 	onCardClick,
-}: ProduceListCardProps) {
+}: AdminProduceListCardProps) {
 	return (
 		<Card
 			className="p-0 cursor-pointer"

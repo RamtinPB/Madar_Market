@@ -1,5 +1,3 @@
-import { Header } from "@/src/components/Header_comp/header";
-
 export default function AdminLayout({
 	children,
 }: {

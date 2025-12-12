@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminSidebar from "@/src/components/Admin/Admin_Sidebar";
-import CategoriesManager from "@/src/components/Admin/CategoriesManager";
+import CategoriesManager from "@/src/components/Admin/CategoryManager/CategoriesManager";
 import { SidebarProvider } from "@/src/components/ui/sidebar";
+import { useAuth } from "@/src/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
+	const router = useRouter();
 	const [selectedItem, setSelectedItem] = useState<string | null>(null);
+	const { user } = useAuth();
+
+	// useEffect(() => {
+	// 	if (!user || user.role !== "SUPER_ADMIN") router.push("/");
+	// }, [user]);
 
 	const handleSelectItem = (item: string) => {
 		setSelectedItem(item);

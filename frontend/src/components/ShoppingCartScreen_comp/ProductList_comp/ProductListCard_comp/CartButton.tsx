@@ -31,7 +31,10 @@ export function CartButton({ title }: { title: string }) {
 			dir="ltr"
 			className="h-10 max-[376px]:h-9 items-center bg-[#F7F7F7] border border[#F3F0EC] rounded-[20px] z-10"
 		>
-			<Button onClick={() => setItemCount(title, 0)} className="bg-transparent">
+			<Button
+				onClick={() => setItemCount(title, count - 1)}
+				className="bg-transparent"
+			>
 				<TrashIcon className="w-fit! h-fit!" />
 			</Button>
 			<span>{count}</span>

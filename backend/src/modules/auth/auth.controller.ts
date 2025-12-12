@@ -1,5 +1,5 @@
 import * as authService from "./auth.service";
-import { verifyAccessToken } from "../../utils/jwt";
+import { verifyAccessToken, parseExpiryToMs } from "../../utils/jwt";
 import { prisma } from "../../utils/prisma";
 
 export const requestOtp = async (ctx: any) => {
@@ -42,11 +42,9 @@ export const signup = async (ctx: any) => {
 			sameSite: "none",
 			secure: true,
 			path: "/",
-			maxAge:
-				60 *
-				60 *
-				24 *
-				parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30d", 10),
+			maxAge: Math.floor(
+				parseExpiryToMs(process.env.REFRESH_TOKEN_EXPIRY_DAYS!) / 1000
+			),
 		});
 		// In development return the refreshToken in the response body as a
 		// fallback when cookies might be rejected by the browser. NEVER do
@@ -85,11 +83,9 @@ export const login = async (ctx: any) => {
 			sameSite: "none",
 			secure: true,
 			path: "/",
-			maxAge:
-				60 *
-				60 *
-				24 *
-				parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30d", 10),
+			maxAge: Math.floor(
+				parseExpiryToMs(process.env.REFRESH_TOKEN_EXPIRY_DAYS!) / 1000
+			),
 		});
 		// Development-only: return refresh token in body to help local dev when
 		// SameSite/Secure prevents the cookie from being stored. Do not enable
@@ -132,11 +128,9 @@ export const refresh = async (ctx: any) => {
 			sameSite: "none",
 			secure: true,
 			path: "/",
-			maxAge:
-				60 *
-				60 *
-				24 *
-				parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS || "30d", 10),
+			maxAge: Math.floor(
+				parseExpiryToMs(process.env.REFRESH_TOKEN_EXPIRY_DAYS!) / 1000
+			),
 		});
 		return { accessToken: tokens.accessToken };
 	} catch (err: any) {

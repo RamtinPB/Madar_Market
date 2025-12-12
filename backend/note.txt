@@ -76,6 +76,9 @@ here is what you need to know about the image uploading logic:
 note that all implementation should be professional, so that the project is organized and well structured.
 
 
-
-nope still didnt work. the logout still doesnt work and the /me is useable after logout.
-i also expected the refresh endpoint to revoke revoke the previous access token when it send a new one. but im still using the same access token for the bearer and it works
+configure  @/frontend/src/components/Admin/CategoryManager/CategoriesScroll/AdminScrollCategories.tsx  and  @/frontend/src/components/Admin/CategoryManager/CategoriesScroll/AdminCategoryItem.tsx 
+to work with their relative CRUD api's.
+here's is some needed information:
+1. the اضافه کردن button displayed at the end where the cats.map is used in the AdminScrollCategories.tsx will act as the call to the /categories/create end point.
+2. the حذف button in AdminCategoriesItem.tsx will act as the call to the /categories/delete/{id} endpoint and the ویرایش button will call /categories/edit/{id} endpoint with the relevant data, which simply includes the title (dont touch the order) as well as the category id which will be given to the path parameters. Additionally the ویرایش button will also call the /categories/edit-image/{id}/image​ and upload the newly inputted image (if the input is given an image of course, if the image is not given via the input then it wont proceed with this endpoint call and will skip it).
+3. once anykind of change is made the /categories/get-all should be recalled so that the data can be refreshed.

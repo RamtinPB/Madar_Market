@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent } from "../ui/card";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Card, CardContent } from "../../../ui/card";
+import { Input } from "../../../ui/input";
+import { Button } from "../../../ui/button";
 import CheckMark from "@/public/assets/shopping_cart_screen/CheckMark.svg";
 
 /* ------------------------------------------------------------
@@ -11,10 +11,13 @@ import CheckMark from "@/public/assets/shopping_cart_screen/CheckMark.svg";
  * ------------------------------------------------------------ */
 
 export interface AdminCategoryItemProps {
+	id: string;
 	icon: string;
 	label: string;
 	phase?: 0 | 1 | 2;
 	onToggle?: () => void;
+	onEdit?: (id: string, title: string, imageFile: File | null) => Promise<void>;
+	onDelete?: (id: string) => Promise<void>;
 }
 
 /* ------------------------------------------------------------
@@ -23,16 +26,19 @@ export interface AdminCategoryItemProps {
  * ------------------------------------------------------------ */
 
 export default function AdminCategoryItem({
+	id,
 	icon,
 	label,
 	phase = 0,
 	onToggle,
+	onEdit,
+	onDelete,
 }: AdminCategoryItemProps) {
 	const [title, setTitle] = useState(label);
 	const [imageFile, setImageFile] = useState<File | null>(null);
 
 	return (
-		<Card className="relative flex flex-col items-center p-4 overflow-visible min-w-50">
+		<Card className="relative flex flex-col items-center p-4 overflow-visible min-w-50 h-fit">
 			{/* Icon container with gradient background */}
 			<div
 				onClick={onToggle}
@@ -85,10 +91,20 @@ export default function AdminCategoryItem({
 								className="text-xs"
 							/>
 						</div>
-						<Button size="sm" variant="default" className="w-full">
+						<Button
+							size="sm"
+							variant="default"
+							className="w-full"
+							onClick={() => onEdit?.(id, title, imageFile)}
+						>
 							ویرایش
 						</Button>
-						<Button size="sm" variant="destructive" className="w-full">
+						<Button
+							size="sm"
+							variant="destructive"
+							className="w-full"
+							onClick={() => onDelete?.(id)}
+						>
 							حذف
 						</Button>
 					</div>
