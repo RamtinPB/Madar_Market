@@ -11,7 +11,6 @@ interface SubCategoriesProps {
 	onSelectSubCategory?: (
 		subCategory: {
 			id: string;
-			icon: string;
 			label: string;
 		} | null
 	) => void;
@@ -21,25 +20,25 @@ export default function SubCategories({
 	categoryId,
 	onSelectSubCategory,
 }: SubCategoriesProps) {
-	const [active, setActive] = useState<string | null>(null);
-	const [subCats, setSubCats] = useState<
-		{ id: string; icon: string; label: string }[]
-	>([]);
+	const [title, setTitle] = useState("");
+	const [selected, setSelected] = useState<{ id: string; phase: 1 | 2 } | null>(
+		null
+	);
+	const [subCats, setSubCats] = useState<{ id: string; label: string }[]>([]);
 
-	useEffect(() => {
+	const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+	const fetchSubCategories = () => {
 		if (!categoryId) {
 			setSubCats([]);
 			return;
 		}
-		// fetch categories from backend
-		const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 		apiFetch(`${API_BASE}/categories/${categoryId}/get-all-subcategories`)
 			.then((r) => r.json())
 			.then((data) => {
 				if (Array.isArray(data) && data.length > 0) {
 					const mapped = data.map((c: any) => ({
 						id: c.id,
-						icon: `${API_BASE}${c.imagePath}`,
 						label: c.title,
 					}));
 
@@ -52,7 +51,83 @@ export default function SubCategories({
 			.catch((e) => {
 				console.warn("Failed to fetch categories from backend:", e);
 			});
+	};
+
+	useEffect(() => {
+		fetchSubCategories();
 	}, [categoryId]);
+
+	const handleCreate = async (categoryId: string) => {
+		const formData = new FormData();
+		formData.append("categoryId", `${categoryId}`);
+		try {
+			const response = await apiFetch(`${API_BASE}/subcategories/create`, {
+				method: "POST",
+				body: formData,
+			});
+			if (response.ok) {
+				fetchSubCategories();
+			} else {
+				console.error("Failed to create sub category");
+			}
+		} catch (e) {
+			console.error("Error creating sub category:", e);
+		}
+	};
+
+	const handleEdit = async (categoryId: string, id: string, title: string) => {
+		const formData = new FormData();
+		formData.append("categoryId", `${categoryId}`);
+		formData.append("title", `${title}`);
+		try {
+			const editResponse = await apiFetch(
+				`${API_BASE}/subcategories/edit/${id}`,
+				{
+					method: "PUT",
+					body: formData,
+				}
+			);
+			if (!editResponse.ok) {
+				console.error("Failed to edit sub category");
+				return;
+			}
+			fetchSubCategories();
+		} catch (e) {
+			console.error("Error editing sub category:", e);
+		}
+	};
+
+	const handleDelete = async (id: string) => {
+		try {
+			const response = await apiFetch(
+				`${API_BASE}/subcategories/delete/${id}`,
+				{
+					method: "DELETE",
+				}
+			);
+			if (response.ok) {
+				fetchSubCategories();
+			} else {
+				console.error("Failed to delete sub category");
+			}
+		} catch (e) {
+			console.error("Error deleting sub category:", e);
+		}
+	};
+
+	const handleToggle = (subCat: { id: string; label: string }) => {
+		if (!selected || selected.id !== subCat.id) {
+			setSelected({ id: subCat.id, phase: 1 });
+			setTitle(subCat.label);
+			onSelectSubCategory?.(null);
+		} else if (selected.phase === 1) {
+			setSelected({ id: subCat.id, phase: 2 });
+			onSelectSubCategory?.(subCat);
+		} else {
+			setSelected(null);
+			onSelectSubCategory?.(null);
+		}
+	};
 
 	return (
 		<section>
@@ -62,28 +137,63 @@ export default function SubCategories({
 			>
 				<div className="flex gap-2.5 py-2">
 					{subCats.map((subcat) => (
-						<Button
+						<Card
 							key={subcat.id}
-							onClick={() => {
-								const newActive = active === subcat.label ? null : subcat.label;
-								setActive(newActive);
-								if (newActive === null) {
-									onSelectSubCategory?.(null as any); // optional — depends on your needs
-								} else {
-									onSelectSubCategory?.(subcat);
-								}
-							}}
-							className={`rounded-2xl shadow-sm bg-[#F7F7F7] px-3 py-2 text-[16px] font-normal text-center text-[#787471] border border-transparent ${
-								active === subcat.label && "text-[#FF6A29]  border-[#FF6A29]"
-							}
-`}
+							className={`flex flex-col rounded-lg ${
+								selected && selected.id === subcat.id && selected.phase === 1
+									? "p-2"
+									: "p-0 mt-2"
+							} h-fit`}
 						>
-							{subcat.label}
-						</Button>
+							<Button
+								variant={"ghost"}
+								onClick={() => handleToggle(subcat)}
+								className={`rounded-lg shadow-sm bg-[#F7F7F7] text-[16px] font-normal text-center text-[#787471] 
+							   ${
+										selected && selected.id === subcat.id
+											? selected.phase === 1
+												? "border-2 border-cyan-500"
+												: "border-2 border-[#FF6A29]"
+											: " border-transparent"
+									}
+`}
+							>
+								{subcat.label}
+							</Button>
+							{selected &&
+								selected.id === subcat.id &&
+								selected.phase === 1 && (
+									<>
+										<Input
+											value={title}
+											onChange={(e) => setTitle(e.target.value)}
+											className="rounded-lg text-center text-[12px] p-0"
+										/>
+										<Button
+											size="sm"
+											variant="default"
+											className=" rounded-lg"
+											onClick={() =>
+												handleEdit?.(categoryId!, subcat.id, title)
+											}
+										>
+											ویرایش
+										</Button>
+										<Button
+											size="sm"
+											variant="destructive"
+											className=" rounded-lg"
+											onClick={() => handleDelete?.(subcat.id)}
+										>
+											حذف
+										</Button>
+									</>
+								)}
+						</Card>
 					))}
 					<Button
-						onClick={() => {}}
-						className={`rounded-2xl shadow-sm bg-[#F7F7F7] px-3 py-2 text-[16px] font-normal text-center text-[#787471] border border-transparent `}
+						onClick={() => handleCreate(categoryId!)}
+						className={`rounded-lg shadow-sm bg-[#F7F7F7] mt-2 px-3 py-2 text-center `}
 					>
 						<PlusIcon className="w-fit! h-fit!" />
 					</Button>

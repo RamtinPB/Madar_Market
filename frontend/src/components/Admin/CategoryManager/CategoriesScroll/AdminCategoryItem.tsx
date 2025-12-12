@@ -39,6 +39,7 @@ export default function AdminCategoryItem({
 
 	return (
 		<Card className="relative flex flex-col items-center p-4 overflow-visible min-w-50 h-fit">
+			{phase === 2 && <CheckMark className="absolute -translate-y-1.5" />}
 			{/* Icon container with gradient background */}
 			<div
 				onClick={onToggle}
@@ -48,9 +49,9 @@ export default function AdminCategoryItem({
 	         shadow-xs cursor-pointer
 	         ${
 							phase === 1
-								? "border-2 border-[#FF6A29]"
-								: phase === 2
 								? "border-2 border-cyan-500"
+								: phase === 2
+								? "border-2  border-[#FF6A29]"
 								: "border border-transparent"
 						}
 	       `}
@@ -66,7 +67,7 @@ export default function AdminCategoryItem({
 			</div>
 
 			{/* Title - input when phase > 0, span otherwise */}
-			{phase > 0 ? (
+			{phase === 1 ? (
 				<Input
 					value={title}
 					onChange={(e) => setTitle(e.target.value)}
@@ -79,7 +80,7 @@ export default function AdminCategoryItem({
 			)}
 
 			{/* Expanded content */}
-			{phase > 0 && (
+			{phase === 1 && (
 				<CardContent className="w-full mt-2 p-2">
 					<div className="flex flex-col gap-2">
 						<div className="flex flex-col w-full">
