@@ -9,13 +9,13 @@ interface Props {
 
 export function ProductSheetHeader({ title, image }: Props) {
 	return (
-		<div className="flex flex-col gap-3">
+		<>
 			<BannerCarousel
 				banners={image ? [image] : []}
 				imageObject="contain"
 				shadowAmount="none"
 			/>
-			<SheetTitle className="text-[#6B6866]!">{title}</SheetTitle>
-		</div>
+			<SheetTitle className="text-[#6B6866]! pb-2">{title}</SheetTitle>
+		</>
 	);
 }

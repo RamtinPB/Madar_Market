@@ -56,8 +56,6 @@ export default function AdminProduceListCard({
 									<span>تومان</span>
 								</div>
 							</div>
-
-							<CartButton title={title} />
 						</div>
 					</div>
 				</div>

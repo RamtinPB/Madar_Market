@@ -47,9 +47,10 @@ export function BannerCarousel({
 								<Image
 									src={banner}
 									alt={`banner-${originalIndex}`}
-									fill
+									fill={true}
 									priority={originalIndex === 0}
 									className={`object-${imageObject}`}
+									unoptimized={true}
 								/>
 							</div>
 						</SwiperSlide>
