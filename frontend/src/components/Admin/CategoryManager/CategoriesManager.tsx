@@ -21,15 +21,17 @@ export default function CategoriesManager() {
 	}, [category?.id]);
 
 	return (
-		<div>
+		<div className="flex flex-col gap-2">
 			<AdminScrollCategories onSelectCategory={(cat) => setCategory(cat)} />
 
-			<AdminSubCategories
-				categoryId={category?.id}
-				onSelectSubCategory={(subcat) => setSubCategory(subcat)}
-			/>
+			{category?.id && (
+				<AdminSubCategories
+					categoryId={category?.id}
+					onSelectSubCategory={(subcat) => setSubCategory(subcat)}
+				/>
+			)}
 
-			<AdminProductList subCategoryId={subCategory?.id} />
+			{subCategory?.id && <AdminProductList subCategoryId={subCategory?.id} />}
 		</div>
 	);
 }

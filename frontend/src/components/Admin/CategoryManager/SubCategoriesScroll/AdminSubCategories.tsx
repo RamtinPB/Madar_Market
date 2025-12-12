@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../../ui/button";
 import { ScrollArea, ScrollBar } from "../../../ui/scroll-area";
+import { Card, CardContent } from "../../../ui/card";
+import { Input } from "../../../ui/input";
 import apiFetch from "@/src/lib/api/fetcher";
+import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
 
 interface SubCategoriesProps {
 	categoryId: string | undefined;
-	onSelectSubCategory?: (subCategory: {
-		id: string;
-		icon: string;
-		label: string;
-	}) => void;
+	onSelectSubCategory?: (
+		subCategory: {
+			id: string;
+			icon: string;
+			label: string;
+		} | null
+	) => void;
 }
 
 export default function SubCategories({
@@ -39,8 +44,6 @@ export default function SubCategories({
 					}));
 
 					setSubCats(mapped);
-					setActive(mapped[0].label);
-					onSelectSubCategory?.(mapped[0]);
 				} else {
 					setSubCats([]);
 				}
@@ -57,7 +60,7 @@ export default function SubCategories({
 				dir="rtl"
 				className="w-full whitespace-nowrap pb-2 overflow-hidden"
 			>
-				<div className="flex gap-2.5">
+				<div className="flex gap-2.5 py-2">
 					{subCats.map((subcat) => (
 						<Button
 							key={subcat.id}
@@ -70,7 +73,7 @@ export default function SubCategories({
 									onSelectSubCategory?.(subcat);
 								}
 							}}
-							className={`rounded-2xl bg-[#F7F7F7] px-3 py-2 text-[16px] font-normal text-center text-[#787471] border border-transparent ${
+							className={`rounded-2xl shadow-sm bg-[#F7F7F7] px-3 py-2 text-[16px] font-normal text-center text-[#787471] border border-transparent ${
 								active === subcat.label && "text-[#FF6A29]  border-[#FF6A29]"
 							}
 `}
@@ -78,6 +81,12 @@ export default function SubCategories({
 							{subcat.label}
 						</Button>
 					))}
+					<Button
+						onClick={() => {}}
+						className={`rounded-2xl shadow-sm bg-[#F7F7F7] px-3 py-2 text-[16px] font-normal text-center text-[#787471] border border-transparent `}
+					>
+						<PlusIcon className="w-fit! h-fit!" />
+					</Button>
 				</div>
 				<ScrollBar orientation="horizontal" className="hidden" />
 			</ScrollArea>

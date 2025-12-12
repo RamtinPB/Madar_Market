@@ -1,3 +1,5 @@
+"use client";
+
 import apiFetch from "@/src/lib/api/fetcher";
 import AdminCategoryItem from "./AdminCategoryItem";
 
