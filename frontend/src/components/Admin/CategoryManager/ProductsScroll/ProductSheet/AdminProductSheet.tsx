@@ -7,14 +7,12 @@ import { Sheet, SheetContent, SheetTitle } from "@/src/components/ui/sheet";
 import { AdminProductSheetHeader } from "../ProductSheet/AdminProductSheetHeader";
 import { AdminProductSheetAttributes } from "../ProductSheet/AdminProductSheetAttributes";
 import { AdminProductSheetPriceBox } from "../ProductSheet/AdminProductSheetPriceBox";
-import { AdminProductSheetFooter } from "../ProductSheet/AdminProductSheetFooter";
 
 // Types
 import { AdminProduceListCardProps } from "../AdminProduceListCard";
 import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
 import { Button } from "@/src/components/ui/button";
 import { ProductsAPI, Product } from "@/src/lib/api/products";
-import { SheetIcon } from "lucide-react";
 
 interface AdminProductSheetProps {
 	open: boolean;
@@ -37,7 +35,10 @@ export default function AdminProductSheet({
 
 	// Form state
 	const [title, setTitle] = useState("");
+	const [description, setDescription] = useState("");
 	const [price, setPrice] = useState("");
+	const [discountedPrice, setDiscountedPrice] = useState("");
+	const [discountPercent, setDiscountPercent] = useState("");
 	const [sponsorPrice, setSponsorPrice] = useState("");
 	const [images, setImages] = useState<File[]>([]);
 
@@ -58,8 +59,11 @@ export default function AdminProductSheet({
 
 			// Initialize form state
 			setTitle(fullProductData.title);
+			setDescription(fullProductData.description);
 			setPrice(fullProductData.price);
-			setSponsorPrice(fullProductData.sponsorPrice || "");
+			setSponsorPrice(fullProductData.sponsorPrice);
+			setDiscountedPrice(fullProductData.discountedPrice);
+			setDiscountPercent(fullProductData.discountPercent);
 
 			// Clear any previously selected images
 			setImages([]);
@@ -79,7 +83,10 @@ export default function AdminProductSheet({
 
 			const updateData: any = {
 				title,
+				description,
 				price: parseFloat(price) || 0,
+				discountedPrice: parseFloat(discountedPrice) || 0,
+				discountPercent: parseFloat(discountPercent) || 0,
 			};
 
 			if (sponsorPrice) {
@@ -139,10 +146,12 @@ export default function AdminProductSheet({
 				<SheetTitle>{product.title}</SheetTitle>
 				{/* ----------------------- TOP SECTION ----------------------- */}
 				<ScrollArea dir="rtl" className="whitespace-nowrap min-h-0 pb-2">
-					<div className="flex flex-col gap-3">
+					<div className="flex flex-col gap-3 pb-2">
 						<AdminProductSheetHeader
 							title={title}
 							onTitleChange={setTitle}
+							description={description}
+							onDescriptionChange={setDescription}
 							images={fullProduct?.images || []}
 							newImages={images}
 							onImagesChange={handleImagesChange}
@@ -153,9 +162,13 @@ export default function AdminProductSheet({
 						<AdminProductSheetPriceBox
 							sponsorPrice={sponsorPrice}
 							onSponsorPriceChange={setSponsorPrice}
+							price={price}
+							onPriceChange={setPrice}
+							discountedPrice={discountedPrice}
+							onDiscountedPriceChange={setDiscountedPrice}
+							discountPercent={discountPercent}
+							onDiscountPercentChange={setDiscountPercent}
 						/>
-
-						<AdminProductSheetFooter price={price} onPriceChange={setPrice} />
 					</div>
 					<ScrollBar orientation="vertical" className="z-10" />
 				</ScrollArea>

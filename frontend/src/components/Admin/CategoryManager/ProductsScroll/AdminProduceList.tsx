@@ -19,42 +19,54 @@ export default function ProduceList({ subCategoryId }: ProduceListProps) {
 	const [isDrawerOpen, setDrawerOpen] = useState(false);
 	const [products, setProducts] = useState<AdminProduceListCardProps[]>([]);
 
-	useEffect(() => {
+	const fetchProducts = async () => {
 		if (!subCategoryId) {
 			setProducts([]);
 			return;
 		}
 		// fetch products from backend
 		const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-		apiFetch(`${API_BASE}/subcategories/${subCategoryId}/get-all-products`)
-			.then((r) => r.json())
-			.then((data) => {
-				if (Array.isArray(data) && data.length > 0) {
-					const mapped = data.map((c: any) => ({
-						id: c.id,
-						image:
-							c.images && c.images.length > 0
-								? `${API_BASE}${c.images[0].path}`
-								: undefined,
-						title: c.title,
-						description: c.description,
-						discountPercent: c.discountPercent,
-						price: c.price?.toString(),
-						discountedPrice: c.discountedPrice.toString(),
-						sponsorPrice: c.sponsorPrice?.toString(),
-					}));
+		try {
+			const response = await apiFetch(
+				`${API_BASE}/subcategories/${subCategoryId}/get-all-products`
+			);
+			const data = await response.json();
+			if (Array.isArray(data) && data.length > 0) {
+				const mapped = data.map((c: any) => ({
+					id: c.id,
+					image:
+						c.images && c.images.length > 0
+							? `${API_BASE}${c.images[c.images.length - 1].path}`
+							: undefined,
+					title: c.title,
+					description: c.description,
+					discountPercent: c.discountPercent,
+					price: c.price?.toString(),
+					discountedPrice: c.discountedPrice.toString(),
+					sponsorPrice: c.sponsorPrice?.toString(),
+				}));
 
-					setProducts(mapped);
-				} else {
-					setProducts([]);
-				}
-			})
-
-			.catch((e) => {
-				console.warn("Failed to fetch products from backend:", e);
+				setProducts(mapped);
+			} else {
 				setProducts([]);
-			});
+			}
+		} catch (e) {
+			console.warn("Failed to fetch products from backend:", e);
+			setProducts([]);
+		}
+	};
+
+	useEffect(() => {
+		fetchProducts();
 	}, [subCategoryId]);
+
+	const handleProductUpdate = (updatedProduct: any) => {
+		fetchProducts();
+	};
+
+	const handleProductDelete = (productId: string) => {
+		fetchProducts();
+	};
 
 	return (
 		<section className="flex flex-col gap-5 ">
@@ -77,6 +89,8 @@ export default function ProduceList({ subCategoryId }: ProduceListProps) {
 				open={isDrawerOpen}
 				onOpenChange={setDrawerOpen}
 				product={selectedProduct}
+				onProductUpdate={handleProductUpdate}
+				onProductDelete={handleProductDelete}
 			/>
 		</section>
 	);

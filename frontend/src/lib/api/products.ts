@@ -5,11 +5,11 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 export interface Product {
 	id: string;
 	title: string;
-	description: string | null;
+	description: string;
 	price: string;
-	discountPercent: number;
-	discountedPrice: string | null;
-	sponsorPrice: string | null;
+	discountPercent: string;
+	discountedPrice: string;
+	sponsorPrice: string;
 	order: number;
 	subCategoryId: string;
 	images: ProductImage[];

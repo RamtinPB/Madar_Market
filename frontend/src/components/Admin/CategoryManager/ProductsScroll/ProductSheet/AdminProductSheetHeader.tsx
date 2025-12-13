@@ -7,6 +7,8 @@ import { ProductImage } from "@/src/lib/api/products";
 interface Props {
 	title: string;
 	onTitleChange: (title: string) => void;
+	description: string;
+	onDescriptionChange: (description: string) => void;
 	images: ProductImage[];
 	newImages: File[];
 	onImagesChange: (images: File[]) => void;
@@ -15,6 +17,8 @@ interface Props {
 export function AdminProductSheetHeader({
 	title,
 	onTitleChange,
+	description,
+	onDescriptionChange,
 	images,
 	newImages,
 	onImagesChange,
@@ -57,11 +61,22 @@ export function AdminProductSheetHeader({
 					className="text-xs"
 				/>
 			</div>
-			<Input
-				value={title}
-				onChange={(e) => onTitleChange(e.target.value)}
-				className="rounded-lg text-center text-[12px] p-0"
-			/>
+			<div className="flex flex-col w-full">
+				<label className="text-xs text-gray-600">ویرایش نام محصول</label>
+				<Input
+					value={title}
+					onChange={(e) => onTitleChange(e.target.value)}
+					className="rounded-lg text-center text-[12px] p-0"
+				/>
+			</div>
+			<div className="flex flex-col w-full">
+				<label className="text-xs text-gray-600">ویرایش شرح محصول</label>
+				<Input
+					value={description}
+					onChange={(e) => onDescriptionChange(e.target.value)}
+					className="rounded-lg text-center text-[12px] p-0"
+				/>
+			</div>
 		</>
 	);
 }

@@ -22,6 +22,7 @@ export default function AdminProduceListCard({
 	id,
 	image,
 	title,
+	description,
 	discountPercent,
 	price,
 	discountedPrice,
@@ -44,7 +45,7 @@ export default function AdminProduceListCard({
 					/>
 					<div className="flex flex-col w-full justify-between">
 						<p className="font-normal text-[#787471] text-[14px] text-wrap mt-2">
-							{title}
+							{description}
 						</p>
 						<div className="flex flex-row justify-between items-center">
 							<div className="flex flex-col ">
