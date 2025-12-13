@@ -7,6 +7,7 @@ import { AdminProduceListGrid } from "./AdminProduceListGrid";
 // import ProductSheet from "./ProductSheet_comp/ProductSheet";
 import { AdminProduceListCardProps } from "./AdminProduceListCard";
 import apiFetch from "@/src/lib/api/fetcher";
+import AdminProductSheet from "./ProductSheet/AdminProductSheet";
 
 interface ProduceListProps {
 	subCategoryId: string | undefined;
@@ -72,11 +73,11 @@ export default function ProduceList({ subCategoryId }: ProduceListProps) {
 
 				<ScrollBar orientation="vertical" className="hidden" />
 			</ScrollArea>
-			{/* <ProductSheet
+			<AdminProductSheet
 				open={isDrawerOpen}
 				onOpenChange={setDrawerOpen}
 				product={selectedProduct}
-			/> */}
+			/>
 		</section>
 	);
 }

@@ -3,12 +3,16 @@
 import apiFetch from "@/src/lib/api/fetcher";
 import CategoryItem from "./CategoryItem";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 /* ------------------------------------------------------------
  * MAIN CATEGORIES COMPONENT
  * ------------------------------------------------------------ */
 export default function Categories() {
-	const [cats, setCats] = useState<{ icon: string; label: string }[]>([]);
+	const router = useRouter();
+	const [cats, setCats] = useState<
+		{ id: string; icon: string; label: string }[]
+	>([]);
 
 	useEffect(() => {
 		// fetch categories from backend
@@ -18,6 +22,7 @@ export default function Categories() {
 			.then((data) => {
 				if (Array.isArray(data) && data.length > 0) {
 					const mapped = data.map((c: any) => ({
+						id: c.id,
 						icon: `${API_BASE}${c.imagePath}`,
 						label: c.title,
 					}));
@@ -44,7 +49,12 @@ export default function Categories() {
 			{/* GRID */}
 			<div className="mt-1 grid grid-cols-4 gap-4">
 				{cats.map((cat) => (
-					<CategoryItem key={cat.label} icon={cat.icon} label={cat.label} />
+					<CategoryItem
+						key={cat.id}
+						icon={cat.icon}
+						label={cat.label}
+						onclick={() => router.push(`/cart?categoryId=${cat.id}`)}
+					/>
 				))}
 			</div>
 		</div>

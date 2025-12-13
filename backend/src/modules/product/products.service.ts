@@ -273,7 +273,7 @@ export class ProductService {
 			where: { productId: id },
 		});
 
-		const targetFolder = `public/uploads/products/${product.subCategoryId}`;
+		const targetFolder = `public/uploads/products/${id}`;
 
 		const newImages: { path: string; order: number }[] = [];
 		for (let i = 0; i < images.length; i++) {

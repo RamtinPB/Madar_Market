@@ -7,12 +7,14 @@ import ViewAllCard from "./ViewAllCard";
 import { products } from "./ProductData";
 
 import ShoppingCart from "@/public/assets/home_screen/special_products/Cart.png";
+import { useRouter } from "next/navigation";
 
 /* ------------------------------------------------------------
  *  SPECIAL PRODUCTS SECTION
  * ------------------------------------------------------------ */
 
 export default function SpecialProducts() {
+	const router = useRouter();
 	return (
 		<section className="mt-4 flex flex-col gap-5">
 			{/* HEADER */}
@@ -39,7 +41,7 @@ export default function SpecialProducts() {
 					))}
 
 					{/* FINAL ITEM */}
-					<ViewAllCard />
+					<ViewAllCard onClick={() => router.push("/cart")} />
 				</div>
 				<ScrollBar orientation="horizontal" className="hidden" />
 			</ScrollArea>

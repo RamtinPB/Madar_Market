@@ -61,7 +61,7 @@ export class ProductController {
 
 	async uploadImages(ctx: any) {
 		const body = ctx.body || {};
-		const images = body.images;
+		const images = Array.isArray(body.images) ? body.images : [body.images];
 		if (!images || images.length === 0) {
 			ctx.set.status = 400;
 			return { error: "Images are required" };

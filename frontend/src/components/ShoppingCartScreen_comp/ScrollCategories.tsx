@@ -7,6 +7,7 @@ interface ScrollCategoriesProps {
 		icon: string;
 		label: string;
 	}) => void;
+	initialSelectedId?: string | null;
 }
 
 /* ------------------------------------------------------------
@@ -21,6 +22,7 @@ import { useEffect, useState } from "react";
 
 export default function ScrollCategories({
 	onSelectCategory,
+	initialSelectedId,
 }: ScrollCategoriesProps) {
 	const [active, setActive] = useState<string | null>(null);
 	const [cats, setCats] = useState<
@@ -41,9 +43,22 @@ export default function ScrollCategories({
 
 					setCats(mapped);
 
-					// make first category active
-					setActive(mapped[0].label);
-					onSelectCategory?.(mapped[0]);
+					// set initial category
+					if (initialSelectedId) {
+						const selectedCat = mapped.find((c) => c.id === initialSelectedId);
+						if (selectedCat) {
+							setActive(selectedCat.label);
+							onSelectCategory?.(selectedCat);
+						} else {
+							// fallback to first
+							setActive(mapped[0].label);
+							onSelectCategory?.(mapped[0]);
+						}
+					} else {
+						// default to first
+						setActive(mapped[0].label);
+						onSelectCategory?.(mapped[0]);
+					}
 				}
 			})
 

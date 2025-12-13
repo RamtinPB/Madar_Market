@@ -2,7 +2,6 @@
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import Image, { StaticImageData } from "next/image";
 import { useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
 
@@ -44,13 +43,22 @@ export function BannerCarousel({
 					return (
 						<SwiperSlide key={originalIndex}>
 							<div className={`relative w-full h-full rounded-xl`}>
-								<Image
-									src={banner}
+								<img
+									src={
+										banner.startsWith("blob:")
+											? banner
+											: `http://localhost:4000${banner}`
+									}
 									alt={`banner-${originalIndex}`}
-									fill={true}
-									priority={originalIndex === 0}
-									className={`object-${imageObject}`}
-									unoptimized={true}
+									style={{
+										position: "absolute",
+										top: 0,
+										left: 0,
+										width: "100%",
+										height: "100%",
+										objectFit: imageObject as any,
+									}}
+									loading={originalIndex === 0 ? "eager" : "lazy"}
 								/>
 							</div>
 						</SwiperSlide>

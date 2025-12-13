@@ -133,7 +133,7 @@ export function registerProductRoutes(router: any) {
 		},
 		{
 			body: t.Object({
-				images: t.Array(t.File()), // Required array of files
+				images: t.Union([t.File(), t.Array(t.File())]),
 			}),
 			type: "multipart/form-data",
 		},
