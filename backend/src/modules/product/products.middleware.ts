@@ -22,6 +22,7 @@ export const validateCreateProduct = async (ctx: any) => {
 				: undefined,
 			order: body.order ? parseInt(body.order) : undefined,
 			subCategoryId: body.subCategoryId,
+			attributes: body.attributes || [], // Optional, defaults to empty array
 			images: body.images, // Array of File objects
 		});
 
@@ -58,6 +59,7 @@ export const validateUpdateProduct = async (ctx: any) => {
 				: undefined,
 			order: body.order ? parseInt(body.order) : undefined,
 			subCategoryId: body.subCategoryId,
+			attributes: body.attributes, // Optional
 		});
 
 		// Attach validated data to context

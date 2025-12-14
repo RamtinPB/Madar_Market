@@ -1,16 +1,44 @@
+import { Button } from "@/src/components/ui/button";
+
 interface AdminProductSheetCardProps {
 	title: string;
-	data: string;
+	description: string;
+	onTitleChange?: (value: string) => void;
+	onDescriptionChange?: (value: string) => void;
+	onDelete?: () => void;
 }
 
 export default function AdminProductSheetCard({
 	title,
-	data,
+	description,
+	onTitleChange,
+	onDescriptionChange,
+	onDelete,
 }: AdminProductSheetCardProps) {
 	return (
-		<div className="flex flex-col bg-white rounded-xl p-3">
-			<span className="text-[#979593] text-[12px]">{title}:</span>
-			<span className="text-[#787471] font-medium">{data}</span>
+		<div className="flex justify-between bg-white rounded-xl p-3">
+			<div className="flex flex-col ">
+				<div className="flex gap-2 items-center">
+					<span>سر تیتر:</span>
+					<input
+						className="text-[#979593]"
+						value={title}
+						onChange={(e) => onTitleChange?.(e.target.value)}
+					/>
+				</div>
+
+				<div className="flex gap-2 items-center">
+					<span>محتوا:</span>
+					<input
+						className="text-[#787471]"
+						value={description}
+						onChange={(e) => onDescriptionChange?.(e.target.value)}
+					/>
+				</div>
+			</div>
+			<Button variant={"destructive"} onClick={onDelete}>
+				X
+			</Button>
 		</div>
 	);
 }

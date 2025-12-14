@@ -59,6 +59,15 @@ export function registerProductRoutes(router: any) {
 				sponsorPrice: t.Optional(t.Number()),
 				order: t.Optional(t.Number()),
 				subCategoryId: t.String(),
+				attributes: t.Optional(
+					t.Array(
+						t.Object({
+							title: t.Optional(t.String()),
+							description: t.Optional(t.String()),
+							order: t.Optional(t.Number()),
+						})
+					)
+				),
 			}),
 			type: "json",
 		},
@@ -85,6 +94,15 @@ export function registerProductRoutes(router: any) {
 				sponsorPrice: t.Optional(t.Number()),
 				order: t.Optional(t.Number()),
 				subCategoryId: t.Optional(t.String()),
+				attributes: t.Optional(
+					t.Array(
+						t.Object({
+							title: t.Optional(t.String()),
+							description: t.Optional(t.String()),
+							order: t.Optional(t.Number()),
+						})
+					)
+				),
 			}),
 			type: "json",
 		},

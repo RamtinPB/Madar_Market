@@ -12,7 +12,7 @@ import { AdminProductSheetPriceBox } from "../ProductSheet/AdminProductSheetPric
 import { AdminProduceListCardProps } from "../AdminProduceListCard";
 import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
 import { Button } from "@/src/components/ui/button";
-import { ProductsAPI, Product } from "@/src/lib/api/products";
+import { ProductsAPI, Product, ProductAttribute } from "@/src/lib/api/products";
 
 interface AdminProductSheetProps {
 	open: boolean;
@@ -40,6 +40,7 @@ export default function AdminProductSheet({
 	const [discountedPrice, setDiscountedPrice] = useState("");
 	const [discountPercent, setDiscountPercent] = useState("");
 	const [sponsorPrice, setSponsorPrice] = useState("");
+	const [attributes, setAttributes] = useState<ProductAttribute[]>([]);
 	const [images, setImages] = useState<File[]>([]);
 
 	useEffect(() => {
@@ -64,6 +65,7 @@ export default function AdminProductSheet({
 			setSponsorPrice(fullProductData.sponsorPrice);
 			setDiscountedPrice(fullProductData.discountedPrice);
 			setDiscountPercent(fullProductData.discountPercent);
+			setAttributes(fullProductData.attributes || []);
 
 			// Clear any previously selected images
 			setImages([]);
@@ -87,6 +89,11 @@ export default function AdminProductSheet({
 				price: parseFloat(price) || 0,
 				discountedPrice: parseFloat(discountedPrice) || 0,
 				discountPercent: parseFloat(discountPercent) || 0,
+				attributes: attributes.map((attr, index) => ({
+					title: attr.title || undefined,
+					description: attr.description || undefined,
+					order: index + 1,
+				})),
 			};
 
 			if (sponsorPrice) {
@@ -157,7 +164,10 @@ export default function AdminProductSheet({
 							onImagesChange={handleImagesChange}
 						/>
 
-						<AdminProductSheetAttributes />
+						<AdminProductSheetAttributes
+							attributes={attributes}
+							onAttributesChange={setAttributes}
+						/>
 
 						<AdminProductSheetPriceBox
 							sponsorPrice={sponsorPrice}

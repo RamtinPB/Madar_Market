@@ -6,6 +6,7 @@ import CategoriesManager from "@/src/components/Admin/CategoryManager/Categories
 import { SidebarProvider } from "@/src/components/ui/sidebar";
 import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "next/navigation";
+import CatManager from "@/src/components/Admin/Cats_SubCats_Products_Manager/CatManager/CatManager";
 
 export default function Page() {
 	const router = useRouter();
@@ -27,6 +28,7 @@ export default function Page() {
 				{/* Contents section */}
 				<div className="p-6">
 					{selectedItem === "CategoriesManager" && <CategoriesManager />}
+					{selectedItem === "CatManager" && <CatManager />}
 					{!selectedItem && (
 						<div className="text-center text-gray-500">
 							گزینه ای از منو انتخاب کنید.

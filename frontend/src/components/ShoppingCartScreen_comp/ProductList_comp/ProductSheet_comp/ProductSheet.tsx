@@ -37,7 +37,6 @@ export default function ProductSheet({
 						<ProductSheetHeader title={product.title} image={product.image} />
 
 						<ProductSheetAttributes />
-						<ProductSheetAttributes />
 					</div>
 					<ScrollBar orientation="vertical" className="z-10" />
 				</ScrollArea>

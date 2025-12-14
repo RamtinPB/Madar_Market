@@ -12,6 +12,13 @@ const productFields = z.object({
 	subCategoryId: z.string().min(1, "SubCategory ID is required"),
 });
 
+// Schema for attributes
+const attributeSchema = z.object({
+	title: z.string().optional(),
+	description: z.string().optional(),
+	order: z.number().int().min(0).optional(),
+});
+
 // File validation schema for images
 const imageFileSchema = z
 	.instanceof(File)
@@ -31,6 +38,7 @@ export const CreateProductDto = z.object({
 	sponsorPrice: z.number().positive().optional(),
 	order: z.number().int().min(0, "Order must be >= 0").optional(),
 	subCategoryId: z.string().min(1, "SubCategory ID is required"),
+	attributes: z.array(attributeSchema).optional(),
 	images: z.array(imageFileSchema).optional(), // Multiple images
 });
 
@@ -44,6 +52,7 @@ export const UpdateProductDto = z.object({
 	sponsorPrice: z.number().positive().optional(),
 	order: z.number().int().min(0, "Order must be >= 0").optional(),
 	subCategoryId: z.string().min(1, "SubCategory ID is required").optional(),
+	attributes: z.array(attributeSchema).optional(),
 });
 
 // Response DTO
@@ -57,6 +66,14 @@ export const ProductResponseDto = z.object({
 	sponsorPrice: z.string().nullable(),
 	order: z.number(),
 	subCategoryId: z.string(),
+	attributes: z.array(
+		z.object({
+			id: z.string(),
+			title: z.string().nullable(),
+			description: z.string().nullable(),
+			order: z.number(),
+		})
+	),
 	images: z.array(
 		z.object({
 			id: z.string(),

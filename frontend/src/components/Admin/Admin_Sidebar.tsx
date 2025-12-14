@@ -25,22 +25,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 	const router = useRouter();
 	return (
 		<>
-			<Sidebar side="left">
-				<SidebarHeader className="border-b">
-					<h2 className="text-lg font-semibold p-2">پنل ادمین</h2>
-				</SidebarHeader>
-				<SidebarContent>
-					<SidebarMenu>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								onClick={() => onSelectItem("CategoriesManager")}
-							>
-								مدیریت محصولات و دسته بندی ها
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					</SidebarMenu>
-				</SidebarContent>
-			</Sidebar>
 			<SidebarInset>
 				<header className="flex justify-between h-16 shrink-0 items-center border-b px-6">
 					<Button
@@ -54,6 +38,28 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 				</header>
 				{children}
 			</SidebarInset>
+			<Sidebar side="left" className="">
+				<SidebarHeader className="border-b">
+					<h2 className="text-lg font-semibold p-2">پنل ادمین</h2>
+				</SidebarHeader>
+				<SidebarContent>
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								onClick={() => onSelectItem("CategoriesManager")}
+							>
+								مدیریت محصولات و دسته بندی ها
+							</SidebarMenuButton>
+							<SidebarMenuButton onClick={() => onSelectItem("CatManager")}>
+								مدیریت دسته بندی ها
+							</SidebarMenuButton>
+							<SidebarMenuButton onClick={() => onSelectItem("CatManager")}>
+								مدیریت دسته بندی ها
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					</SidebarMenu>
+				</SidebarContent>
+			</Sidebar>
 		</>
 	);
 };

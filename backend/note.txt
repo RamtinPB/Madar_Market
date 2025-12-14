@@ -74,3 +74,8 @@ here is what you need to know about the image uploading logic:
 4. deleting images should be done using a separate endpoint and the stored image will also be deleted. also on update the previous image should be replaced/overwritten.
 
 note that all implementation should be professional, so that the project is organized and well structured.
+
+ kilo prompt next:
+1. id like you to modify the ProductSheetAttributes.tsx to take in the attributes data from the product.
+2. you will also need to alter produceList.tsx to get the attributes data from the backend.
+3. you will also need to configure the add button at the end of the ProductSheetAttributes to add an attribute and the delete inside ProductSheetCard to delete each individual card. note that the  @

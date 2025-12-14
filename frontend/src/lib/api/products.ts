@@ -12,9 +12,17 @@ export interface Product {
 	sponsorPrice: string;
 	order: number;
 	subCategoryId: string;
+	attributes: ProductAttribute[];
 	images: ProductImage[];
 	createdAt: string;
 	updatedAt: string;
+}
+
+export interface ProductAttribute {
+	id: string;
+	title: string | null;
+	description: string | null;
+	order: number;
 }
 
 export interface ProductImage {
@@ -44,6 +52,13 @@ export interface UpdateProductData {
 	sponsorPrice?: number;
 	order?: number;
 	subCategoryId?: string;
+	attributes?: ProductAttributeInput[];
+}
+
+export interface ProductAttributeInput {
+	title?: string;
+	description?: string;
+	order?: number;
 }
 
 export interface UploadImagesData {

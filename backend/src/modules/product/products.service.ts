@@ -13,6 +13,9 @@ export class ProductService {
 		return prisma.product.findMany({
 			where: { subCategoryId },
 			include: {
+				attributes: {
+					orderBy: { order: "asc" },
+				},
 				images: {
 					orderBy: { order: "asc" },
 				},
@@ -25,6 +28,9 @@ export class ProductService {
 		const product = await prisma.product.findUnique({
 			where: { id },
 			include: {
+				attributes: {
+					orderBy: { order: "asc" },
+				},
 				images: {
 					orderBy: { order: "asc" },
 				},
@@ -67,7 +73,7 @@ export class ProductService {
 
 		// No images in create
 
-		return prisma.product.create({
+		const product = await prisma.product.create({
 			data: {
 				title,
 				description: data.description,
@@ -79,11 +85,30 @@ export class ProductService {
 				order,
 			},
 			include: {
+				attributes: {
+					orderBy: { order: "asc" },
+				},
 				images: {
 					orderBy: { order: "asc" },
 				},
 			},
 		});
+
+		// Create attributes if provided
+		if (data.attributes && data.attributes.length > 0) {
+			await prisma.attributes.createMany({
+				data: data.attributes.map((attr, index) => ({
+					productId: product.id,
+					title: attr.title,
+					description: attr.description,
+					order: attr.order ?? index + 1,
+				})),
+			});
+			// Re-fetch to include attributes
+			return this.getById(product.id);
+		}
+
+		return product;
 	}
 
 	async update(id: string, data: UpdateProductInput) {
@@ -186,6 +211,26 @@ export class ProductService {
 			}
 		}
 
+		// Handle attributes update
+		if (data.attributes !== undefined) {
+			// Delete existing attributes
+			await prisma.attributes.deleteMany({
+				where: { productId: id },
+			});
+
+			// Create new attributes
+			if (data.attributes.length > 0) {
+				await prisma.attributes.createMany({
+					data: data.attributes.map((attr, index) => ({
+						productId: id,
+						title: attr.title,
+						description: attr.description,
+						order: attr.order ?? index + 1,
+					})),
+				});
+			}
+		}
+
 		return this.getById(id);
 	}
 
@@ -198,6 +243,11 @@ export class ProductService {
 		}
 
 		await prisma.$transaction(async (tx) => {
+			// Delete attributes
+			await tx.attributes.deleteMany({
+				where: { productId: id },
+			});
+
 			await tx.product.delete({ where: { id } });
 
 			// shift down remaining items in the same subcategory
@@ -254,6 +304,9 @@ export class ProductService {
 		return prisma.product.findMany({
 			where: { subCategoryId },
 			include: {
+				attributes: {
+					orderBy: { order: "asc" },
+				},
 				images: {
 					orderBy: { order: "asc" },
 				},
