@@ -53,9 +53,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 							<SidebarMenuButton onClick={() => onSelectItem("CatManager")}>
 								مدیریت دسته بندی ها
 							</SidebarMenuButton>
-							<SidebarMenuButton onClick={() => onSelectItem("CatManager")}>
-								مدیریت دسته بندی ها
-							</SidebarMenuButton>
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarContent>

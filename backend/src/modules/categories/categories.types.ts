@@ -17,9 +17,8 @@ const imageFileSchema = z
 
 // DTO for POST /categories
 export const CreateCategoryDto = z.object({
-	title: z.string().optional(),
+	title: z.string().min(1, "Title is required").optional(),
 	order: z.number().int().min(0, "Order must be >= 0").optional(),
-	image: imageFileSchema.optional(), // Required for POST
 });
 
 // DTO for PUT /categories/:id (metadata only)

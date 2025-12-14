@@ -4,14 +4,12 @@ import { CreateCategoryDto, UpdateCategoryDto } from "./categories.types";
 // Middleware for validating POST /categories
 export const validateCreateCategory = async (ctx: any) => {
 	try {
-		// For multipart/form-data, body is in ctx.body
 		const body = ctx.body || {};
 
 		// Validate the DTO
 		const validated = CreateCategoryDto.parse({
-			title: body.title ? body.title : "New Category",
+			title: body.title,
 			order: body.order ? parseInt(body.order) : undefined,
-			image: body.image, // File object
 		});
 
 		// Attach validated data to context

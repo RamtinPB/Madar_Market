@@ -1,4 +1,5 @@
 import apiFetch from "./fetcher";
+import { SubCategory } from "./subcategories";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -103,6 +104,18 @@ export class CategoriesAPI {
 			throw new Error(errorData.error || "Failed to upload image");
 		}
 
+		return response.json();
+	}
+
+	static async getSubcategoriesByCategory(
+		categoryId: string
+	): Promise<SubCategory[]> {
+		const response = await apiFetch(
+			`${API_BASE}/categories/${categoryId}/get-all-subcategories`
+		);
+		if (!response.ok) {
+			throw new Error("Failed to fetch subcategories for category");
+		}
 		return response.json();
 	}
 }

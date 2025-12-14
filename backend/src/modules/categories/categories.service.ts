@@ -37,17 +37,9 @@ export class CategoryService {
 			});
 		}
 
-		// Save the uploaded file
-		let imagePath: string | null = null;
-		if (data.image) {
-			const targetFolder = "public/uploads/categories";
-			imagePath = await saveUploadedFile(data.image, targetFolder);
-		}
-
 		return prisma.category.create({
 			data: {
 				title,
-				imagePath,
 				order,
 			},
 		});

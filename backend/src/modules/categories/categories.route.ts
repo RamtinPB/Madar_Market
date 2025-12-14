@@ -47,7 +47,7 @@ export function registerCategoryRoutes(router: any) {
 		return categoryController.getById(ctx);
 	});
 
-	// Create category — allow optional image (multipart/form-data)
+	// Create category — JSON body
 	router.post(
 		"/categories/create",
 		async (ctx: any) => {
@@ -57,16 +57,13 @@ export function registerCategoryRoutes(router: any) {
 			if (validationResult) return validationResult;
 			return categoryController.create(ctx);
 		},
-		// {
-		// 	// title required, order optional, image optional file
-		// 	body: t.Object({
-		// 		title: t.Optional(t.String()),
-		// 		order: t.Optional(t.Numeric()),
-		// 		image: t.Optional(t.File()), // t.File => multipart/form-data
-		// 	}),
-		// 	// explicit type is optional but explicit is fine:
-		// 	type: "multipart/form-data",
-		// },
+		{
+			body: t.Object({
+				title: t.Optional(t.String()),
+				order: t.Optional(t.Numeric()),
+			}),
+			type: "json",
+		},
 		secureRoute()
 	);
 
