@@ -8,10 +8,17 @@ import {
 	SidebarMenuItem,
 	SidebarInset,
 	SidebarTrigger,
+	SidebarGroup,
 } from "@/src/components/ui/sidebar";
 import { Button } from "../ui/button";
 import RightArrowIcon from "@/public/assets/header/right_arrow.svg";
 import { useRouter } from "next/navigation";
+import {
+	Accordion,
+	AccordionItem,
+	AccordionTrigger,
+	AccordionContent,
+} from "@radix-ui/react-accordion";
 
 interface AdminSidebarProps {
 	children: React.ReactNode;
@@ -45,14 +52,40 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 				<SidebarContent>
 					<SidebarMenu>
 						<SidebarMenuItem>
-							<SidebarMenuButton
-								onClick={() => onSelectItem("CategoriesManager")}
-							>
-								مدیریت محصولات و دسته بندی ها
-							</SidebarMenuButton>
-							<SidebarMenuButton onClick={() => onSelectItem("CatManager")}>
-								مدیریت دسته بندی ها
-							</SidebarMenuButton>
+							<Accordion type="single" collapsible>
+								<AccordionItem value="item-1">
+									<AccordionTrigger className="w-full ">
+										<Button variant={"ghost"} className="w-full ">
+											مدیریت کالا
+										</Button>
+									</AccordionTrigger>
+									<AccordionContent>
+										<SidebarMenuButton
+											onClick={() => onSelectItem("CatSubCatManager")}
+										>
+											مدیریت دسته‌ بندی‌ ها
+										</SidebarMenuButton>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
+						</SidebarMenuItem>
+						<SidebarMenuItem>
+							<Accordion type="single" collapsible>
+								<AccordionItem value="item-1">
+									<AccordionTrigger className="w-full ">
+										<Button variant={"ghost"} className="w-full ">
+											مدیریت کاربران
+										</Button>
+									</AccordionTrigger>
+									<AccordionContent>
+										<SidebarMenuButton
+											onClick={() => onSelectItem("CatSubCatManager")}
+										>
+											مدیریت کاربران ها
+										</SidebarMenuButton>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarContent>

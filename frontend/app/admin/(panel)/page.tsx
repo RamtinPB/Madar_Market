@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import AdminSidebar from "@/src/components/Admin/Admin_Sidebar";
-import CategoriesManager from "@/src/components/Admin/CategoryManager/CategoriesManager";
 import { SidebarProvider } from "@/src/components/ui/sidebar";
 import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "next/navigation";
-import CatManager from "@/src/components/Admin/Cats_SubCats_Products_Manager/CatManager/CatManager";
-import SubCatManager from "@/src/components/Admin/Cats_SubCats_Products_Manager/CatManager/SubCatManager/SubCatManager";
+import CatSubCatManager from "@/src/components/Admin/cat-subcat-manager/CatSubCatManager";
 
 export default function Page() {
 	const router = useRouter();
@@ -28,8 +26,7 @@ export default function Page() {
 			<AdminSidebar onSelectItem={handleSelectItem}>
 				{/* Contents section */}
 				<div className="p-6">
-					{selectedItem === "CategoriesManager" && <CategoriesManager />}
-					{selectedItem === "CatManager" && <CatManager />}
+					{selectedItem === "CatSubCatManager" && <CatSubCatManager />}
 					{!selectedItem && (
 						<div className="text-center text-gray-500">
 							گزینه ای از منو انتخاب کنید.

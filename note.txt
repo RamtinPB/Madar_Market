@@ -1,4 +1,6 @@
-Cat Manager:
+old category management:
+
+    Cat Manager:
     @/frontend/src/components/Admin/Cats_SubCats_Products_Manager/CatManager/ 
     id like you to professionally implement this structure (using mostly shadcn components) in CatManager:
     i want you to use the Table component from shadcn to make a table to display all the categories data (you can get said data using /categories/get-all)​.
@@ -12,32 +14,47 @@ Cat Manager:
     important note!: use mainly shadcn components as much as you can (you're encouraged to recommend any).
 
 
-CatManager dialog:
+    CatManager dialog:
+        @/frontend/src/components/Admin/Cats_SubCats_Products_Manager/CatManager/ 
+        id like you to professionally implement this structure (using mostly shadcn components) in CatManager's dialog component:
+        from the top (not including the dialog header which should simply display the category title on the right and the X for closing the dialog on the left--change dir if needed), there will be a section which contains the category's image in an enlarged shadcn avatar component positioned in the middle of the section and the title displayed beneath it.
+        after this section (use a seporator component from shadcn), there will be edit section with from the top, an image upload input (use shadcn's input component) which will take in the new image for the category. once uploaded it will replace the preview shown in the avatar (simply visual and no backend change).
+        under that will be a text input (again use shadcn) which will enable the user to alter the title (this should also alter the preview).
+        and finally at the footer of the dialog there will be an apply button which will call​ /categories/edit-image/{id}/image​ (if an image is provided, otherwise it will skip this call) and /categories/edit/{id} with the altered data.
+
+
+    SubCat Manager:
+        @/frontend/src/components/Admin/Cats_SubCats_Products_Manager/SubCatManager/ 
+        id like you to professionally implement this structure (using mostly shadcn components) in SubCatManager:
+        i want you to use the Table component from shadcn to make a table to display all the sub categories data (you can get said data using /admin/subcategories​ )​.
+        each row will show each individual sub category.
+        the table should be equipt with a working searchbar dual equipt with search by sub category title and also using category id.
+        the table should have pagination enabled (use shadcn pagination).
+        each row will have a delete button and edit button at the end of the row (the table should be oriented rtl and the delete and edit buttons should be at the end to the left), so here is what each row should look like: from the right, it will show the individual sub category's id, title, category id, category title, createdAt, updatedAt, and lastly the edit and then the delete buttons.
+        the edit button should trigger a shadcn dialog component to open (we will design the dialog later--for now just know that after openning the dialog the /categories/get/{id}​ should be called to get that individual category's data).
+        the delete button should initiate the /subcategories/delete/{id}​ call.
+        additionally at the end of the table there will always (even if there are no sub categories) display an add button which will call /subcategories/create​ (after which /admin/subcategories​ must be recalled to refresh the data)
+        important note!: use mainly shadcn components as much as you can (you're encouraged to recommend any).
+
+    SubCatManager dialog:
     @/frontend/src/components/Admin/Cats_SubCats_Products_Manager/CatManager/ 
-    id like you to professionally implement this structure (using mostly shadcn components) in CatManager's dialog component:
-    from the top (not including the dialog header which should simply display the category title on the right and the X for closing the dialog on the left--change dir if needed), there will be a section which contains the category's image in an enlarged shadcn avatar component positioned in the middle of the section and the title displayed beneath it.
-    after this section (use a seporator component from shadcn), there will be edit section with from the top, an image upload input (use shadcn's input component) which will take in the new image for the category. once uploaded it will replace the preview shown in the avatar (simply visual and no backend change).
-    under that will be a text input (again use shadcn) which will enable the user to alter the title (this should also alter the preview).
-    and finally at the footer of the dialog there will be an apply button which will call​ /categories/edit-image/{id}/image​ (if an image is provided, otherwise it will skip this call) and /categories/edit/{id} with the altered data.
+        id like you to professionally implement this structure (using mostly shadcn components) in CatManager's dialog component:
+        from the top (not including the dialog header which should simply display the category title on the right and the X for closing the dialog on the left--change dir if needed), there will be a section which contains the category's image in an enlarged shadcn avatar component positioned in the middle of the section and the title displayed beneath it.
+        after this section (use a seporator component from shadcn), there will be edit section with from the top, an image upload input (use shadcn's input component) which will take in the new image for the category. once uploaded it will replace the preview shown in the avatar (simply visual and no backend change).
+        under that will be a text input (again use shadcn) which will enable the user to alter the title (this should also alter the preview).
+        and finally at the footer of the dialog there will be an apply button which will call​ /categories/edit-image/{id}/image​ (if an image is provided, otherwise it will skip this call) and /categories/edit/{id} with the altered data.
+
+new cat - sub cat - products structure:
 
 
-SubCat Manager:
-    @/frontend/src/components/Admin/Cats_SubCats_Products_Manager/SubCatManager/ 
-    id like you to professionally implement this structure (using mostly shadcn components) in SubCatManager:
-    i want you to use the Table component from shadcn to make a table to display all the sub categories data (you can get said data using /admin/subcategories​ )​.
-    each row will show each individual sub category.
-    the table should be equipt with a working searchbar dual equipt with search by sub category title and also using category id.
-    the table should have pagination enabled (use shadcn pagination).
-    each row will have a delete button and edit button at the end of the row (the table should be oriented rtl and the delete and edit buttons should be at the end to the left), so here is what each row should look like: from the right, it will show the individual sub category's id, title, category id, category title, createdAt, updatedAt, and lastly the edit and then the delete buttons.
-    the edit button should trigger a shadcn dialog component to open (we will design the dialog later--for now just know that after openning the dialog the /categories/get/{id}​ should be called to get that individual category's data).
-    the delete button should initiate the /subcategories/delete/{id}​ call.
-    additionally at the end of the table there will always (even if there are no sub categories) display an add button which will call /subcategories/create​ (after which /admin/subcategories​ must be recalled to refresh the data)
-    important note!: use mainly shadcn components as much as you can (you're encouraged to recommend any).
-
-SubCatManager dialog:
- @/frontend/src/components/Admin/Cats_SubCats_Products_Manager/CatManager/ 
-    id like you to professionally implement this structure (using mostly shadcn components) in CatManager's dialog component:
-    from the top (not including the dialog header which should simply display the category title on the right and the X for closing the dialog on the left--change dir if needed), there will be a section which contains the category's image in an enlarged shadcn avatar component positioned in the middle of the section and the title displayed beneath it.
-    after this section (use a seporator component from shadcn), there will be edit section with from the top, an image upload input (use shadcn's input component) which will take in the new image for the category. once uploaded it will replace the preview shown in the avatar (simply visual and no backend change).
-    under that will be a text input (again use shadcn) which will enable the user to alter the title (this should also alter the preview).
-    and finally at the footer of the dialog there will be an apply button which will call​ /categories/edit-image/{id}/image​ (if an image is provided, otherwise it will skip this call) and /categories/edit/{id} with the altered data.
+New cat and subcat management:
+    @/frontend/src/components/Admin/
+    id like you to professionally implement this structure (using shadcn components) in CatSubCatManager:
+    the content will be split to a 1/3 edit section on the right and 2/3 display categories section on the left.
+    the display categories section will host from the top, a search bar equipt to search through category titles and sub category titles and display results accordingly (under the saerch bar).
+    under the search bar will be a vertically scrollable area hosting two columns of shadcn AccordionItem components, with their AccordionTrigger being a category Card and their AccordionContent displaying two columns of sub category cards for that individual category card.
+    each category card will display from the left, an image (use shadcn's aspect ratio component), then a section with the category title on the top and two shadcn badge components one displaying the number of sub categories the individual category has (on the right) it also comes with a file icon, and one displaying the number of products within the individual category (on the left) comes with a box icon. at the left most side a button which when clicked will switch between the edit icon and cancel edit icon as well as select and deselect the edit section previously mentioned with that individual category's data for editing.
+    each sub category card will display from the left, a box icon, then the title of the sub category (squished to fit in--you can even use Ellipses at the end of the text), and at the most left, the same edit and cancel edit button with the same functionality but for the sub category's data.
+    the edit section will from the top have a "نام دسته بندی" input to edit the title (category title if the data loaded is a category and sub category title if a sub category is selected for editing), then below that a shadcn combobox component (its a combination of shadcn's popover and command components--you can see how its implemented in the combobox section in the components section of the official shadcn website) with the PopoverTrigger hosting a button with "گروه اصلی" written in it. and then in the PopoverContent there will be a Command component with a CommandInput (acting as the searchbar equipt to find all category titles) and the category titles being the command groups in the command list (also include a command empty) (the purpose of the combobox will be when the user selects a sub category to edit the category it belongs to).
+    under the combobox there will be a section with an button (to the right) with an image icon in the middle acting as the image upload input (the categories have images not the sub categories), and to the left of the button, a text section with two <p> components.
+    lastly, at the bottom of the edit section there will be an edit button to initiate the edit backend call based on if a category of sub category is selected.

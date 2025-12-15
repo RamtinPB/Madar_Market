@@ -35,7 +35,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { CategoriesAPI, Category } from "@/src/lib/api/categories";
 import { SubCategory } from "@/src/lib/api/subcategories";
-import { Edit, Trash2, Plus, Eye } from "lucide-react";
+import { Edit3, Trash2, Plus, Eye } from "lucide-react";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -45,6 +45,8 @@ import {
 	BreadcrumbSeparator,
 } from "@/src/components/ui/breadcrumb";
 import SubCatManager from "./SubCatManager/SubCatManager";
+import { Tooltip, TooltipContent } from "@/src/components/ui/tooltip";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
 
 export default function CatManager() {
 	const [categories, setCategories] = useState<Category[]>([]);
@@ -243,7 +245,7 @@ export default function CatManager() {
 
 	return (
 		<div className="flex flex-col gap-4 p-4" dir="rtl">
-			<Breadcrumb className="font-extrabold pb-2">
+			<Breadcrumb className="font-extrabold pb-2 cursor-pointer">
 				<BreadcrumbList>
 					<BreadcrumbItem>
 						<BreadcrumbLink onClick={() => setCurrentView("categories")}>
@@ -279,7 +281,7 @@ export default function CatManager() {
 						<TableHeader>
 							<TableRow>
 								<TableHead className="text-right">تصویر</TableHead>
-								<TableHead className="text-right">شناسه</TableHead>
+								{/* <TableHead className="text-right">شناسه</TableHead> */}
 								<TableHead className="text-right">عنوان</TableHead>
 								<TableHead className="text-right">تاریخ ساخت</TableHead>
 								<TableHead className="text-right">تاریخ آخرین ویرایش</TableHead>
@@ -300,7 +302,7 @@ export default function CatManager() {
 											</AvatarFallback>
 										</Avatar>
 									</TableCell>
-									<TableCell>{category.id}</TableCell>
+									{/* <TableCell>{category.id}</TableCell> */}
 									<TableCell>{category.title}</TableCell>
 									<TableCell>
 										{new Date(category.createdAt).toLocaleDateString()}
@@ -310,28 +312,49 @@ export default function CatManager() {
 									</TableCell>
 									<TableCell>
 										<div className="flex gap-5">
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => handleViewSubcategories(category)}
-											>
-												<Eye className="h-4 w-4" />
-												{subcategoryCounts[category.id] || 0}
-											</Button>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => handleEdit(category)}
-											>
-												<Edit className="h-4 w-4" />
-											</Button>
-											<Button
-												variant="destructive"
-												size="sm"
-												onClick={() => handleDelete(category.id)}
-											>
-												<Trash2 className="h-4 w-4" />
-											</Button>
+											<Tooltip>
+												<TooltipTrigger>
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={() => handleViewSubcategories(category)}
+													>
+														<Eye className="h-4 w-4" />
+														{`${subcategoryCounts[category.id] || 0}`}
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>
+													<p>مشاهده زیردسته ها</p>
+												</TooltipContent>
+											</Tooltip>
+											<Tooltip>
+												<TooltipTrigger>
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={() => handleEdit(category)}
+													>
+														<Edit3 className="h-4 w-4" />
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>
+													<p>ویرایش دسته بندی</p>
+												</TooltipContent>
+											</Tooltip>
+											<Tooltip>
+												<TooltipTrigger>
+													<Button
+														variant="destructive"
+														size="sm"
+														onClick={() => handleDelete(category.id)}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>
+													<p>حذف دسته بندی</p>
+												</TooltipContent>
+											</Tooltip>
 										</div>
 									</TableCell>
 								</TableRow>
@@ -391,7 +414,7 @@ export default function CatManager() {
 							<div className="space-y-6">
 								{/* Preview Section */}
 								<div className="flex flex-col items-center space-y-4">
-									<Avatar className="w-24 h-24">
+									<Avatar className="w-24 h-24 rounded-xl">
 										<AvatarImage
 											src={
 												editedImage
@@ -402,7 +425,7 @@ export default function CatManager() {
 										/>
 										<AvatarFallback>{editedTitle.charAt(0)}</AvatarFallback>
 									</Avatar>
-									<p className="text-lg font-medium">{editedTitle}</p>
+									<p className="text-lg font-medium">{editedTitle || "جدید"}</p>
 								</div>
 
 								<Separator />
@@ -429,7 +452,7 @@ export default function CatManager() {
 										<Input
 											value={editedTitle}
 											onChange={(e) => setEditedTitle(e.target.value)}
-											placeholder="Enter category title"
+											placeholder="عنوان دسته بندی را وارد کنید"
 										/>
 									</div>
 								</div>
@@ -455,9 +478,7 @@ export default function CatManager() {
 										/>
 										<AvatarFallback>{newTitle.charAt(0) || "?"}</AvatarFallback>
 									</Avatar>
-									<p className="text-lg font-medium">
-										{newTitle || "New Category"}
-									</p>
+									<p className="text-lg font-medium">{newTitle || "جدید"}</p>
 								</div>
 
 								<Separator />
@@ -484,7 +505,7 @@ export default function CatManager() {
 										<Input
 											value={newTitle}
 											onChange={(e) => setNewTitle(e.target.value)}
-											placeholder="Enter category title"
+											placeholder="عنوان دسته بندی را وارد کنید"
 										/>
 									</div>
 								</div>

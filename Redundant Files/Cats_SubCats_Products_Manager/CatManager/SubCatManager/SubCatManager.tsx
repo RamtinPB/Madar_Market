@@ -147,7 +147,7 @@ export default function SubCatManager({
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead className="text-right">شناسه زیردسته</TableHead>
+						{/* <TableHead className="text-right">شناسه زیردسته</TableHead> */}
 						<TableHead className="text-right">عنوان زیردسته</TableHead>
 						<TableHead className="text-right">تاریخ ساخت</TableHead>
 						<TableHead className="text-right">تاریخ آخرین ویرایش</TableHead>
@@ -157,7 +157,7 @@ export default function SubCatManager({
 				<TableBody>
 					{paginatedSubCategories.map((subCategory) => (
 						<TableRow key={subCategory.id}>
-							<TableCell>{subCategory.id}</TableCell>
+							{/* <TableCell>{subCategory.id}</TableCell> */}
 							<TableCell>{subCategory.title}</TableCell>
 							<TableCell>
 								{new Date(subCategory.createdAt).toLocaleDateString()}

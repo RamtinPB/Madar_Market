@@ -10,6 +10,19 @@ export class CategoryService {
 	async getAll() {
 		return prisma.category.findMany({
 			orderBy: { order: "asc" },
+			include: {
+				subCategories: {
+					orderBy: { order: "asc" },
+					include: {
+						_count: {
+							select: { products: true },
+						},
+					},
+				},
+				_count: {
+					select: { subCategories: true },
+				},
+			},
 		});
 	}
 
