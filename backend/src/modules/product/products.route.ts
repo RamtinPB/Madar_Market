@@ -1,55 +1,38 @@
 // src/modules/product/products.route.ts
 import { productController } from "./products.controller";
-import { verifyAccessToken } from "../../utils/jwt";
-import { secureRoute } from "../../utils/securityRoute";
+import { requireAuth, requireRole } from "../auth/auth.middleware";
 import {
 	validateCreateProduct,
 	validateUpdateProduct,
 } from "./products.middleware";
 import { t } from "elysia";
 
-async function authenticateSuperAdmin(ctx: any) {
-	const auth = ctx.request.headers.get("authorization") || "";
-	const parts = auth.split(" ");
-	if (parts.length !== 2 || parts[0] !== "Bearer") {
-		ctx.set.status = 401;
-		return { error: "Unauthorized" };
-	}
-
-	const token = parts[1];
-	try {
-		const payload: any = await verifyAccessToken(token);
-		const user = { id: payload.userId, role: payload.role };
-		if (user.role !== "SUPER_ADMIN") {
-			ctx.set.status = 403;
-			return { error: "Forbidden" };
-		}
-		ctx.user = user;
-		return null; // continue
-	} catch (error) {
-		ctx.set.status = 401;
-		return { error: "Invalid token" };
-	}
-}
-
 export function registerProductRoutes(router: any) {
-	router.get("/products/get/:id", async (ctx: any) => {
-		const authResult = await authenticateSuperAdmin(ctx);
-		if (authResult) return authResult;
-		return productController.getById(ctx);
-	});
+	// ===============================
+	// SUPER ADMIN AUTHENTICATED ROUTES
+	// ===============================
+
+	// Get product by ID
+	router.get(
+		"/products/:id",
+		async (ctx: any) => {
+			return productController.getById(ctx);
+		},
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
+	);
 
 	// Create product — JSON body, no images
 	router.post(
-		"/products/create",
+		"/products",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
 			const validationResult = await validateCreateProduct(ctx);
 			if (validationResult) return validationResult;
 			return productController.create(ctx);
 		},
 		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				title: t.Optional(t.String()),
 				description: t.Optional(t.String()),
@@ -70,21 +53,19 @@ export function registerProductRoutes(router: any) {
 				),
 			}),
 			type: "json",
-		},
-		secureRoute()
+		}
 	);
 
 	// Update product metadata — JSON body
 	router.put(
-		"/products/edit/:id",
+		"/products/:id",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
 			const validationResult = await validateUpdateProduct(ctx);
 			if (validationResult) return validationResult;
 			return productController.update(ctx);
 		},
 		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				title: t.Optional(t.String()),
 				description: t.Optional(t.String()),
@@ -105,30 +86,28 @@ export function registerProductRoutes(router: any) {
 				),
 			}),
 			type: "json",
-		},
-		secureRoute()
+		}
 	);
 
 	// Delete product
 	router.delete(
-		"/products/delete/:id",
+		"/products/:id",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
 			return productController.delete(ctx);
 		},
-		secureRoute()
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
 	);
 
 	// Reorder products — JSON body with items array
 	router.put(
 		"/products/reorder/:subCategoryId",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
 			return productController.reorder(ctx);
 		},
 		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				items: t.Array(
 					t.Object({
@@ -137,47 +116,47 @@ export function registerProductRoutes(router: any) {
 					})
 				),
 			}),
-		},
-		secureRoute()
+		}
 	);
+
+	// ===============================
+	// PRODUCT IMAGE MANAGEMENT ROUTES (SUPER ADMIN AUTHENTICATED)
+	// ===============================
 
 	// Upload/replace images — multipart/form-data
 	router.put(
-		"/products/upload-images/:id",
+		"/products/:id/images",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
 			return productController.uploadImages(ctx);
 		},
 		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				images: t.Union([t.File(), t.Array(t.File())]),
 			}),
 			type: "multipart/form-data",
-		},
-		secureRoute()
+		}
 	);
 
 	// Delete specific image
 	router.delete(
-		"/products/delete-image/:id/:imageId",
+		"/products/:id/images/:imageId",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
 			return productController.deleteImage(ctx);
 		},
-		secureRoute()
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
 	);
 
 	// Reorder product images — JSON body
 	router.put(
-		"/products/reorder-images/:id",
+		"/products/:id/images/reorder",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
 			return productController.reorderImages(ctx);
 		},
 		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				items: t.Array(
 					t.Object({
@@ -186,18 +165,17 @@ export function registerProductRoutes(router: any) {
 					})
 				),
 			}),
-		},
-		secureRoute()
+		}
 	);
 
 	// Get upload URL for product image
 	router.get(
-		"/products/get-upload-url/:id",
+		"/products/:id/upload-url",
 		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
 			return productController.getProductImageUploadUrl(ctx);
 		},
-		secureRoute()
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
 	);
 }

@@ -1,16 +1,10 @@
 // src/modules/category/category.controller.ts
-import {
-	CreateCategoryDto,
-	UpdateCategoryDto,
-	ReorderCategoriesDto,
-} from "./categories.dto";
+import { ReorderCategoriesDto } from "./categories.dto";
 import type {
 	CreateCategoryInput,
 	UpdateCategoryInput,
 } from "./categories.types";
 import { categoryService } from "./categories.service";
-import { storageService } from "../storage/storage.service";
-import { prisma } from "../../utils/prisma";
 
 export class CategoryController {
 	async getAll(ctx: any) {

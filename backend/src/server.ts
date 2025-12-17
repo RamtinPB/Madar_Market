@@ -49,11 +49,3 @@ registerProductRoutes(app);
 app.listen(4000);
 
 console.log("🚀 Backend running on http://localhost:4000");
-
-/*
-app.group('/user', group => {
-	group.use(requireAuth);
-
-	group.get('/me', getprofile);
-})
-*/
