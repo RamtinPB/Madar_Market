@@ -1,15 +1,13 @@
 import "dotenv/config";
 import { Elysia } from "elysia";
+import { staticPlugin } from "@elysiajs/static";
+import cors from "@elysiajs/cors";
+import swagger from "@elysiajs/swagger";
 
 import { registerAuthRoutes } from "./modules/auth/auth.route";
-
-import { staticPlugin } from "@elysiajs/static";
-
-import cors from "@elysiajs/cors";
 import { registerCategoryRoutes } from "./modules/categories/categories.route";
 import { registerSubCategoryRoutes } from "./modules/subCategories/subCategories.route";
 import { registerProductRoutes } from "./modules/product/products.route";
-import swagger from "@elysiajs/swagger";
 
 export const app = new Elysia()
 	.use(

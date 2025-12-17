@@ -17,7 +17,7 @@ const imageFileSchema = z
 
 // DTO for POST /categories
 export const CreateCategoryDto = z.object({
-	title: z.string().min(1, "Title is required").optional(),
+	title: z.string().min(1, "Title is required"),
 	order: z.number().int().min(0, "Order must be >= 0").optional(),
 });
 
@@ -32,7 +32,7 @@ export const CategoryResponseDto = z.object({
 	id: z.string(),
 	title: z.string(),
 	order: z.number(),
-	imagePath: z.string().nullable(),
+	imageKey: z.string().nullable(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });

@@ -13,6 +13,7 @@ import type {
 	ReorderProductImagesInput,
 } from "./products.types";
 import { productService } from "./products.service";
+import { storageService } from "../storage/storage.service";
 
 export class ProductController {
 	async getAllBySubCategory(ctx: any) {
@@ -81,6 +82,30 @@ export class ProductController {
 		}
 
 		return await productService.reorderImages(ctx.params.id, parsed.data.items);
+	}
+
+	async getProductImageUploadUrl(ctx: any) {
+		const productId = ctx.params.id;
+
+		// Generate key
+		const key = storageService.generateProductImageKey(
+			productId,
+			crypto.randomUUID() + ".webp"
+		);
+
+		// Issue upload URL
+		const uploadUrl = await storageService.getUploadUrl(key, "image/webp", 120);
+
+		// Save key in DB
+		await ctx.db.productImage.create({
+			data: {
+				productId,
+				key,
+				order: 999, // temporary, will be reordered later
+			},
+		});
+
+		return { uploadUrl, key };
 	}
 }
 

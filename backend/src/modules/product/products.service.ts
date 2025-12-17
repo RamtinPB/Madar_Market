@@ -1,6 +1,6 @@
 // src/modules/product/products.service.ts
 import { prisma } from "../../utils/prisma";
-import { saveUploadedFile, deleteFile } from "../../utils/files";
+import { storageService } from "../storage/storage.service";
 import type {
 	CreateProductInput,
 	UpdateProductInput,
@@ -239,7 +239,7 @@ export class ProductService {
 
 		// Delete all images
 		for (const image of product.images) {
-			await deleteFile(image.path);
+			await storageService.deleteObject(image.key);
 		}
 
 		await prisma.$transaction(async (tx) => {
@@ -320,24 +320,24 @@ export class ProductService {
 
 		// Delete existing images
 		for (const image of product.images) {
-			await deleteFile(image.path);
+			await storageService.deleteObject(image.key);
 		}
 		await prisma.productImage.deleteMany({
 			where: { productId: id },
 		});
 
-		const targetFolder = `public/uploads/products/${id}`;
-
-		const newImages: { path: string; order: number }[] = [];
+		const newImages: { key: string; order: number }[] = [];
 		for (let i = 0; i < images.length; i++) {
-			const imagePath = await saveUploadedFile(images[i] as File, targetFolder);
-			newImages.push({ path: imagePath, order: i + 1 });
+			const filename = `${crypto.randomUUID()}.webp`;
+			const key = storageService.generateProductImageKey(id, filename);
+			await storageService.uploadFile(key, images[i] as File, "image/webp");
+			newImages.push({ key, order: i + 1 });
 		}
 
 		await prisma.productImage.createMany({
 			data: newImages.map((img) => ({
 				productId: id,
-				path: img.path,
+				key: img.key,
 				order: img.order,
 			})),
 		});
@@ -353,7 +353,7 @@ export class ProductService {
 			throw new Error("IMAGE_NOT_FOUND");
 		}
 
-		await deleteFile(image.path);
+		await storageService.deleteObject(image.key);
 
 		await prisma.productImage.delete({ where: { id: imageId } });
 

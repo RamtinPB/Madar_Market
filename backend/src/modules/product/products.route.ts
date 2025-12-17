@@ -189,4 +189,15 @@ export function registerProductRoutes(router: any) {
 		},
 		secureRoute()
 	);
+
+	// Get upload URL for product image
+	router.get(
+		"/products/get-upload-url/:id",
+		async (ctx: any) => {
+			const authResult = await authenticateSuperAdmin(ctx);
+			if (authResult) return authResult;
+			return productController.getProductImageUploadUrl(ctx);
+		},
+		secureRoute()
+	);
 }

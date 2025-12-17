@@ -2,17 +2,18 @@ import * as authService from "./auth.service";
 import { verifyAccessToken, parseExpiryToMs } from "../../utils/jwt";
 import { prisma } from "../../utils/prisma";
 
+const REFRESH_TOKEN_EXP = process.env.REFRESH_TOKEN_EXPIRE_IN!;
+
 export const requestOtp = async (ctx: any) => {
 	const body = await ctx.body;
 	const phoneNumber = body.phoneNumber;
-	const purpose = body.purpose || "login"; // could be 'login' or 'signup'
+	const purpose = body.purpose; // could be 'login' or 'signup'
 	if (!phoneNumber) {
 		ctx.set.status = 400;
 		return { error: "Phone number is required" };
 	}
 
 	const result = await authService.generateAndStoreOTP(phoneNumber, purpose);
-	// In development we return the otp so you can test; remove in prod.
 	return { success: true, otp: result.otp };
 };
 
@@ -42,20 +43,11 @@ export const signup = async (ctx: any) => {
 			sameSite: "none",
 			secure: true,
 			path: "/",
-			maxAge: Math.floor(
-				parseExpiryToMs(process.env.REFRESH_TOKEN_EXPIRY_DAYS!) / 1000
-			),
+			maxAge: Math.floor(parseExpiryToMs(REFRESH_TOKEN_EXP!) / 1000),
 		});
 		// In development return the refreshToken in the response body as a
 		// fallback when cookies might be rejected by the browser. NEVER do
 		// this in production.
-		if (process.env.NODE_ENV !== "production") {
-			return {
-				user: created.user,
-				accessToken: created.accessToken,
-				refreshToken: created.refreshToken,
-			};
-		}
 		return { user: created.user, accessToken: created.accessToken };
 	} catch (err: any) {
 		ctx.set.status = 400;
@@ -83,20 +75,8 @@ export const login = async (ctx: any) => {
 			sameSite: "none",
 			secure: true,
 			path: "/",
-			maxAge: Math.floor(
-				parseExpiryToMs(process.env.REFRESH_TOKEN_EXPIRY_DAYS!) / 1000
-			),
+			maxAge: Math.floor(parseExpiryToMs(REFRESH_TOKEN_EXP!) / 1000),
 		});
-		// Development-only: return refresh token in body to help local dev when
-		// SameSite/Secure prevents the cookie from being stored. Do not enable
-		// in production.
-		if (process.env.NODE_ENV !== "production") {
-			return {
-				user: res.user,
-				accessToken: res.accessToken,
-				refreshToken: res.refreshToken,
-			};
-		}
 		return { user: res.user, accessToken: res.accessToken };
 	} catch (err: any) {
 		ctx.set.status = 400;
@@ -128,9 +108,7 @@ export const refresh = async (ctx: any) => {
 			sameSite: "none",
 			secure: true,
 			path: "/",
-			maxAge: Math.floor(
-				parseExpiryToMs(process.env.REFRESH_TOKEN_EXPIRY_DAYS!) / 1000
-			),
+			maxAge: Math.floor(parseExpiryToMs(REFRESH_TOKEN_EXP!) / 1000),
 		});
 		return { accessToken: tokens.accessToken };
 	} catch (err: any) {

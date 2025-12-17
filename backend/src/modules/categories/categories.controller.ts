@@ -9,6 +9,8 @@ import type {
 	UpdateCategoryInput,
 } from "./categories.types";
 import { categoryService } from "./categories.service";
+import { storageService } from "../storage/storage.service";
+import { prisma } from "../../utils/prisma";
 
 export class CategoryController {
 	async getAll(ctx: any) {
@@ -57,14 +59,8 @@ export class CategoryController {
 		return await categoryService.deleteImage(ctx.params.id);
 	}
 
-	async uploadImage(ctx: any) {
-		const body = ctx.body || {};
-		const image = body.image;
-		if (!image) {
-			ctx.set.status = 400;
-			return { error: "Image file is required" };
-		}
-		return await categoryService.uploadImage(ctx.params.id, image);
+	async getCategoryImageUploadUrl(ctx: any) {
+		return await categoryService.getCategoryImageUploadUrl(ctx.params.id);
 	}
 }
 

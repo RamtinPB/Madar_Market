@@ -2,6 +2,23 @@ import { mkdir, writeFile, unlink } from "fs/promises";
 import { join, extname } from "path";
 import { createId } from "@paralleldrive/cuid2";
 
+// Add file validation middleware
+export const validateImageUpload = async (ctx: any) => {
+	const { image } = ctx.body;
+	const maxSize = 5 * 1024 * 1024; // 5MB
+	const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+	if (image.size > maxSize) {
+		ctx.set.status = 400;
+		return { error: "File too large" };
+	}
+
+	if (!allowedTypes.includes(image.type)) {
+		ctx.set.status = 400;
+		return { error: "Invalid file type" };
+	}
+};
+
 // Ensure the folder exists
 export async function ensureFolderExists(path: string): Promise<void> {
 	try {

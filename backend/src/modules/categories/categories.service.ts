@@ -1,10 +1,10 @@
-// src/modules/category/category.service.ts
 import { prisma } from "../../utils/prisma";
-import { saveUploadedFile, deleteFile } from "../../utils/files";
+import { storageService } from "../storage/storage.service";
 import type {
 	CreateCategoryInput,
 	UpdateCategoryInput,
 } from "./categories.types";
+import { NotFoundError, ValidationError } from "../../utils/errors";
 
 export class CategoryService {
 	async getAll() {
@@ -28,7 +28,7 @@ export class CategoryService {
 
 	async getById(id: string) {
 		const cat = await prisma.category.findUnique({ where: { id } });
-		if (!cat) throw new Error("NOT_FOUND");
+		if (!cat) throw new NotFoundError("Category");
 		return cat;
 	}
 
@@ -38,8 +38,9 @@ export class CategoryService {
 		const order = data.order ?? total + 1;
 		const title = data.title;
 
-		if (order > total + 1) {
-			throw new Error("INVALID_ORDER");
+		// Validate order against actual count
+		if (order < 1 || order > total + 1) {
+			throw new ValidationError(`Order must be between 1 and ${total + 1}`);
 		}
 
 		// shift existing items if necessary
@@ -68,7 +69,7 @@ export class CategoryService {
 
 			const maxOrder = await prisma.category.count();
 			if (newOrder < 1 || newOrder > maxOrder) {
-				throw new Error("INVALID_ORDER");
+				throw new ValidationError(`Order must be between 1 and ${maxOrder}`);
 			}
 
 			await prisma.$transaction(async (tx) => {
@@ -114,12 +115,14 @@ export class CategoryService {
 		});
 
 		if (subCategoryCount > 0) {
-			throw new Error("CANNOT_DELETE_CATEGORY_WITH_SUBCATEGORIES");
+			throw new ValidationError(
+				"Cannot delete category with existing subcategories"
+			);
 		}
 
 		// Delete image if exists
-		if (category.imagePath) {
-			await deleteFile(category.imagePath);
+		if (category.imageKey) {
+			await storageService.deleteObject(category.imageKey);
 		}
 
 		await prisma.$transaction(async (tx) => {
@@ -138,11 +141,11 @@ export class CategoryService {
 	async deleteImage(id: string) {
 		const category = await this.getById(id);
 
-		if (category.imagePath) {
-			await deleteFile(category.imagePath);
+		if (category.imageKey) {
+			await storageService.deleteObject(category.imageKey);
 			await prisma.category.update({
 				where: { id },
-				data: { imagePath: null },
+				data: { imageKey: null },
 			});
 		}
 
@@ -187,25 +190,22 @@ export class CategoryService {
 		return prisma.category.findMany({ orderBy: { order: "asc" } });
 	}
 
-	async uploadImage(id: string, image: File) {
-		const category = await this.getById(id);
+	async getCategoryImageUploadUrl(categoryId: string) {
+		const key = storageService.generateCategoryImageKey(
+			categoryId,
+			crypto.randomUUID() + ".webp"
+		);
 
-		// Delete old image if exists
-		if (category.imagePath) {
-			await deleteFile(category.imagePath);
-		}
+		// 3. Issue upload URL
+		const uploadUrl = await storageService.getUploadUrl(key, "image/webp", 120);
 
-		// Save new image
-		const targetFolder = "public/uploads/categories";
-		const imagePath = await saveUploadedFile(image, targetFolder);
-
-		// Update category
+		// 4. Save key in prisma (Prisma)
 		await prisma.category.update({
-			where: { id },
-			data: { imagePath },
+			where: { id: categoryId },
+			data: { imageKey: key },
 		});
 
-		return this.getById(id);
+		return { uploadUrl };
 	}
 }
 

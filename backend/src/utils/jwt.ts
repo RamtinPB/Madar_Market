@@ -2,8 +2,8 @@ import jwt from "jsonwebtoken";
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
-const ACCESS_EXP = process.env.ACCESS_TOKEN_EXPIRY_IN;
-const REFRESH_EXP = process.env.REFRESH_TOKEN_EXPIRY_DAYS;
+const ACCESS_EXP = process.env.ACCESS_TOKEN_EXPIRE_IN;
+const REFRESH_EXP = process.env.REFRESH_TOKEN_EXPIRE_IN;
 
 export const parseExpiryToMs = (expiry: string): number => {
 	const match = expiry.match(/^(\d+)([smhd]?)$/);

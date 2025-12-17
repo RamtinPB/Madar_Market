@@ -1,8 +1,8 @@
-// src/modules/category/category.routes.ts
+// src/modules/categories/categories.route.ts
 import { categoryController } from "./categories.controller";
 import { subCategoryController } from "../subCategories/subCategories.controller";
-import { productController } from "../product/products.controller";
 import { verifyAccessToken } from "../../utils/jwt";
+import { requireAuth, requireRole } from "../auth/auth.middleware";
 import { secureRoute } from "../../utils/securityRoute";
 import {
 	validateCreateCategory,
@@ -35,21 +35,23 @@ async function authenticateSuperAdmin(ctx: any) {
 }
 
 export function registerCategoryRoutes(router: any) {
-	router.get("/categories/get-all", async (ctx: any) => {
-		// const authResult = await authenticateSuperAdmin(ctx);
-		// if (authResult) return authResult;
+	router.get("/categories", async (ctx: any) => {
 		return categoryController.getAll(ctx);
 	});
 
-	router.get("/categories/get/:id", async (ctx: any) => {
-		const authResult = await authenticateSuperAdmin(ctx);
-		if (authResult) return authResult;
-		return categoryController.getById(ctx);
-	});
+	router.get(
+		"/categories/:id",
+		async (ctx: any) => {
+			return categoryController.getById(ctx);
+		},
+		{
+			beforehandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
+	);
 
 	// Create category — JSON body
 	router.post(
-		"/categories/create",
+		"/categories",
 		async (ctx: any) => {
 			const authResult = await authenticateSuperAdmin(ctx);
 			if (authResult) return authResult;
@@ -69,7 +71,7 @@ export function registerCategoryRoutes(router: any) {
 
 	// Update metadata (title + order) — JSON body
 	router.put(
-		"/categories/edit/:id",
+		"/categories/:id",
 		async (ctx: any) => {
 			const authResult = await authenticateSuperAdmin(ctx);
 			if (authResult) return authResult;
@@ -91,7 +93,7 @@ export function registerCategoryRoutes(router: any) {
 
 	// Delete category
 	router.delete(
-		"/categories/delete/:id",
+		"/categories/:id",
 		async (ctx: any) => {
 			const authResult = await authenticateSuperAdmin(ctx);
 			if (authResult) return authResult;
@@ -101,25 +103,17 @@ export function registerCategoryRoutes(router: any) {
 	);
 
 	// Upload/replace image — multipart/form-data with 'image' file
-	router.put(
-		"/categories/edit-image/:id/image",
-		async (ctx: any) => {
-			const authResult = await authenticateSuperAdmin(ctx);
-			if (authResult) return authResult;
-			return categoryController.uploadImage(ctx);
-		},
+	router.post(
+		"/categories/:id/image-upload-url",
+		categoryController.getCategoryImageUploadUrl,
 		{
-			body: t.Object({
-				image: t.File(), // required file field
-			}),
-			type: "multipart/form-data",
-		},
-		secureRoute()
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
 	);
 
 	// Delete image
 	router.delete(
-		"/categories/delete-image/:id/image",
+		"/categories/:id/image",
 		async (ctx: any) => {
 			const authResult = await authenticateSuperAdmin(ctx);
 			if (authResult) return authResult;
@@ -150,12 +144,9 @@ export function registerCategoryRoutes(router: any) {
 	);
 
 	// Get all subcategories for a category
-	router.get(
-		"/categories/:categoryId/get-all-subcategories",
-		async (ctx: any) => {
-			// const authResult = await authenticateSuperAdmin(ctx);
-			// if (authResult) return authResult;
-			return subCategoryController.getAllByCategory(ctx);
-		}
-	);
+	router.get("/categories/:id/subcategories", async (ctx: any) => {
+		// const authResult = await authenticateSuperAdmin(ctx);
+		// if (authResult) return authResult;
+		return subCategoryController.getAllByCategory(ctx);
+	});
 }
