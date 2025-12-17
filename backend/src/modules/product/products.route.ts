@@ -138,11 +138,33 @@ export function registerProductRoutes(router: any) {
 		}
 	);
 
-	// Delete specific image
+	// Delete specific image by ID
 	router.delete(
 		"/products/:id/images/:imageId",
 		async (ctx: any) => {
 			return productController.deleteImage(ctx);
+		},
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
+	);
+
+	// NEW: Delete image by filename
+	router.delete(
+		"/products/:id/images/by-filename",
+		async (ctx: any) => {
+			return productController.deleteImageByFilename(ctx);
+		},
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
+	);
+
+	// NEW: Delete image by URL parameter
+	router.delete(
+		"/products/:id/images/by-url",
+		async (ctx: any) => {
+			return productController.deleteImageByUrlParameter(ctx);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],

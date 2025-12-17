@@ -14,98 +14,215 @@ import type {
 } from "./products.types";
 import { productService } from "./products.service";
 import { storageService } from "../storage/storage.service";
+import { createErrorResponse } from "../../utils/errors";
 
 export class ProductController {
 	async getAllBySubCategory(ctx: any) {
-		const { subCategoryId } = ctx.params;
-		return await productService.getAllBySubCategory(subCategoryId);
+		try {
+			const { subCategoryId } = ctx.params;
+			const products = await productService.getAllBySubCategory(subCategoryId);
+			return { success: true, data: products };
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async getById(ctx: any) {
-		return await productService.getById(ctx.params.id);
+		try {
+			const product = await productService.getById(ctx.params.id);
+			return { success: true, data: product };
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async create(ctx: any) {
-		const validatedData: CreateProductInput = ctx.validatedData;
-		if (!validatedData) {
-			ctx.set.status = 400;
-			return { error: "Validation failed" };
-		}
+		try {
+			const validatedData: CreateProductInput = ctx.validatedData;
+			if (!validatedData) {
+				return createErrorResponse(new Error("Validation failed"), 400);
+			}
 
-		return await productService.create(validatedData);
+			const product = await productService.create(validatedData);
+			return {
+				success: true,
+				data: product,
+				message: "Product created successfully",
+			};
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async update(ctx: any) {
-		const validatedData: UpdateProductInput = ctx.validatedData;
-		if (!validatedData) {
-			ctx.set.status = 400;
-			return { error: "Validation failed" };
-		}
+		try {
+			const validatedData: UpdateProductInput = ctx.validatedData;
+			if (!validatedData) {
+				return createErrorResponse(new Error("Validation failed"), 400);
+			}
 
-		return await productService.update(ctx.params.id, validatedData);
+			const product = await productService.update(ctx.params.id, validatedData);
+			return {
+				success: true,
+				data: product,
+				message: "Product updated successfully",
+			};
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async delete(ctx: any) {
-		return await productService.delete(ctx.params.id);
+		try {
+			const result = await productService.delete(ctx.params.id);
+			return result;
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async reorder(ctx: any) {
-		const { subCategoryId } = ctx.params;
-		const parsed = ReorderProductsDto.safeParse(await ctx.body);
-		if (!parsed.success) {
-			ctx.set.status = 400;
-			return parsed.error;
-		}
+		try {
+			const { subCategoryId } = ctx.params;
+			const parsed = ReorderProductsDto.safeParse(await ctx.body);
+			if (!parsed.success) {
+				return createErrorResponse(parsed.error, 400);
+			}
 
-		return await productService.reorder(subCategoryId, parsed.data.items);
+			const products = await productService.reorder(
+				subCategoryId,
+				parsed.data.items
+			);
+			return {
+				success: true,
+				data: products,
+				message: "Products reordered successfully",
+			};
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async uploadImages(ctx: any) {
-		const body = ctx.body || {};
-		const images = Array.isArray(body.images) ? body.images : [body.images];
-		if (!images || images.length === 0) {
-			ctx.set.status = 400;
-			return { error: "Images are required" };
+		try {
+			const body = ctx.body || {};
+			const images = Array.isArray(body.images) ? body.images : [body.images];
+
+			if (!images || images.length === 0) {
+				return createErrorResponse(new Error("Images are required"), 400);
+			}
+
+			const result = await productService.uploadImages(ctx.params.id, images);
+			return result;
+		} catch (error) {
+			return createErrorResponse(error);
 		}
-		return await productService.uploadImages(ctx.params.id, images);
 	}
 
+	// Enhanced deleteImage by ID with better error handling
 	async deleteImage(ctx: any) {
-		return await productService.deleteImage(ctx.params.id, ctx.params.imageId);
+		try {
+			const result = await productService.deleteImage(
+				ctx.params.id,
+				ctx.params.imageId
+			);
+			return result;
+		} catch (error) {
+			return createErrorResponse(error);
+		}
+	}
+
+	// New controller method: Delete image by filename
+	async deleteImageByFilename(ctx: any) {
+		try {
+			const { productId } = ctx.params;
+			const { filename } = ctx.query;
+
+			if (!filename) {
+				return createErrorResponse(new Error("Filename is required"), 400);
+			}
+
+			const result = await productService.deleteImageByFilename(
+				productId,
+				filename
+			);
+			return result;
+		} catch (error) {
+			return createErrorResponse(error);
+		}
+	}
+
+	// New controller method: Delete image by URL parameter
+	async deleteImageByUrlParameter(ctx: any) {
+		try {
+			const { productId } = ctx.params;
+			const { url } = ctx.query;
+
+			if (!url) {
+				return createErrorResponse(new Error("URL parameter is required"), 400);
+			}
+
+			const result = await productService.deleteImageByUrlParameter(
+				productId,
+				url
+			);
+			return result;
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async reorderImages(ctx: any) {
-		const parsed = ReorderProductImagesDto.safeParse(await ctx.body);
-		if (!parsed.success) {
-			ctx.set.status = 400;
-			return parsed.error;
-		}
+		try {
+			const parsed = ReorderProductImagesDto.safeParse(await ctx.body);
+			if (!parsed.success) {
+				return createErrorResponse(parsed.error, 400);
+			}
 
-		return await productService.reorderImages(ctx.params.id, parsed.data.items);
+			const result = await productService.reorderImages(
+				ctx.params.id,
+				parsed.data.items
+			);
+			return result;
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async getProductImageUploadUrl(ctx: any) {
-		const productId = ctx.params.id;
+		try {
+			const productId = ctx.params.id;
 
-		// Generate key
-		const key = storageService.generateProductImageKey(
-			productId,
-			crypto.randomUUID() + ".webp"
-		);
-
-		// Issue upload URL
-		const uploadUrl = await storageService.getUploadUrl(key, "image/webp", 120);
-
-		// Save key in DB
-		await ctx.db.productImage.create({
-			data: {
+			// Generate key
+			const key = storageService.generateProductImageKey(
 				productId,
-				key,
-				order: 999, // temporary, will be reordered later
-			},
-		});
+				crypto.randomUUID() + ".webp"
+			);
 
-		return { uploadUrl, key };
+			// Issue upload URL
+			const uploadUrl = await storageService.getUploadUrl(
+				key,
+				"image/webp",
+				120
+			);
+
+			// Save key in DB
+			await ctx.db.productImage.create({
+				data: {
+					productId,
+					key,
+					order: 999, // temporary, will be reordered later
+				},
+			});
+
+			return {
+				success: true,
+				data: { uploadUrl, key },
+				message: "Upload URL generated successfully",
+			};
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 }
 

@@ -1,6 +1,11 @@
 // src/modules/product/products.service.ts
 import { prisma } from "../../utils/prisma";
 import { storageService } from "../storage/storage.service";
+import {
+	ValidationError,
+	NotFoundError,
+	BadRequestError,
+} from "../../utils/errors";
 import type {
 	CreateProductInput,
 	UpdateProductInput,
@@ -9,6 +14,9 @@ import type {
 } from "./products.types";
 
 export class ProductService {
+	private readonly MAX_IMAGES_PER_PRODUCT = 10;
+	private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 	async getAllBySubCategory(subCategoryId: string) {
 		return prisma.product.findMany({
 			where: { subCategoryId },
@@ -36,7 +44,7 @@ export class ProductService {
 				},
 			},
 		});
-		if (!product) throw new Error("NOT_FOUND");
+		if (!product) throw new NotFoundError("Product not found");
 		return product;
 	}
 
@@ -45,7 +53,7 @@ export class ProductService {
 		const subCategory = await prisma.subCategory.findUnique({
 			where: { id: data.subCategoryId },
 		});
-		if (!subCategory) throw new Error("SUBCATEGORY_NOT_FOUND");
+		if (!subCategory) throw new NotFoundError("SubCategory not found");
 
 		const total = await prisma.product.count({
 			where: { subCategoryId: data.subCategoryId },
@@ -57,7 +65,7 @@ export class ProductService {
 		const discountPercent = data.discountPercent ?? 0;
 
 		if (order > total + 1) {
-			throw new Error("INVALID_ORDER");
+			throw new BadRequestError("Invalid order position");
 		}
 
 		// shift existing items if necessary
@@ -120,7 +128,7 @@ export class ProductService {
 			const newSubCategory = await prisma.subCategory.findUnique({
 				where: { id: data.subCategoryId },
 			});
-			if (!newSubCategory) throw new Error("SUBCATEGORY_NOT_FOUND");
+			if (!newSubCategory) throw new NotFoundError("SubCategory not found");
 
 			// Remove from old subcategory order
 			await prisma.product.updateMany({
@@ -160,7 +168,7 @@ export class ProductService {
 					where: { subCategoryId: product.subCategoryId },
 				});
 				if (newOrder < 1 || newOrder > maxOrder) {
-					throw new Error("INVALID_ORDER");
+					throw new BadRequestError("Invalid order position");
 				}
 
 				await prisma.$transaction(async (tx) => {
@@ -260,7 +268,7 @@ export class ProductService {
 			});
 		});
 
-		return { success: true };
+		return { success: true, message: "Product deleted successfully" };
 	}
 
 	async reorder(subCategoryId: string, items: { id: string; order: number }[]) {
@@ -270,26 +278,26 @@ export class ProductService {
 		});
 
 		if (existing.length !== items.length) {
-			throw new Error("MISMATCH_COUNT");
+			throw new BadRequestError("Mismatched item count");
 		}
 
 		const existingIds = new Set(existing.map((x) => x.id));
 		const providedIds = new Set(items.map((x) => x.id));
 
 		if (existingIds.size !== providedIds.size) {
-			throw new Error("INVALID_IDS");
+			throw new BadRequestError("Invalid product IDs");
 		}
 
 		const orders = items.map((x) => x.order);
 		const uniqueOrders = new Set(orders);
 
 		if (uniqueOrders.size !== orders.length) {
-			throw new Error("DUPLICATE_ORDER");
+			throw new BadRequestError("Duplicate order values");
 		}
 
 		const max = existing.length;
 		for (const o of orders) {
-			if (o < 1 || o > max) throw new Error("OUT_OF_RANGE");
+			if (o < 1 || o > max) throw new BadRequestError("Order out of range");
 		}
 
 		await prisma.$transaction(async (tx) => {
@@ -315,10 +323,37 @@ export class ProductService {
 		});
 	}
 
+	// Enhanced uploadImages with validation and error handling
 	async uploadImages(id: string, images: File[]) {
 		const product = await this.getById(id);
 
-		// Delete existing images
+		// Validate image count
+		if (images.length === 0) {
+			throw new BadRequestError("At least one image is required");
+		}
+
+		if (images.length > this.MAX_IMAGES_PER_PRODUCT) {
+			throw new BadRequestError(
+				`Maximum ${this.MAX_IMAGES_PER_PRODUCT} images allowed per product`
+			);
+		}
+
+		// Validate each image
+		for (const image of images) {
+			if (image.size > this.MAX_FILE_SIZE) {
+				throw new ValidationError(
+					`File size exceeds ${this.MAX_FILE_SIZE / 1024 / 1024}MB limit`
+				);
+			}
+
+			if (!["image/jpeg", "image/png", "image/webp"].includes(image.type)) {
+				throw new ValidationError(
+					"Only JPEG, PNG, and WebP images are allowed"
+				);
+			}
+		}
+
+		// Delete existing images (bulk deletion for replacement workflow)
 		for (const image of product.images) {
 			await storageService.deleteObject(image.key);
 		}
@@ -342,19 +377,24 @@ export class ProductService {
 			})),
 		});
 
-		return this.getById(id);
+		const updatedProduct = await this.getById(id);
+		return {
+			success: true,
+			message: `${images.length} images uploaded successfully`,
+			data: updatedProduct,
+		};
 	}
 
+	// Enhanced deleteImage by ID with better error handling
 	async deleteImage(productId: string, imageId: string) {
 		const image = await prisma.productImage.findUnique({
 			where: { id: imageId },
 		});
 		if (!image || image.productId !== productId) {
-			throw new Error("IMAGE_NOT_FOUND");
+			throw new NotFoundError("Image not found");
 		}
 
 		await storageService.deleteObject(image.key);
-
 		await prisma.productImage.delete({ where: { id: imageId } });
 
 		// Reorder remaining images
@@ -372,7 +412,51 @@ export class ProductService {
 			}
 		});
 
-		return this.getById(productId);
+		const updatedProduct = await this.getById(productId);
+		return {
+			success: true,
+			message: "Image deleted successfully",
+			data: updatedProduct,
+		};
+	}
+
+	// New method: Delete image by filename
+	async deleteImageByFilename(productId: string, filename: string) {
+		const image = await prisma.productImage.findFirst({
+			where: {
+				productId,
+				key: {
+					contains: `/${productId}/${filename}`,
+				},
+			},
+		});
+
+		if (!image) {
+			throw new NotFoundError("Image not found");
+		}
+
+		return this.deleteImage(productId, image.id);
+	}
+
+	// New method: Delete image by URL parameter (filename without UUID prefix)
+	async deleteImageByUrlParameter(productId: string, urlParam: string) {
+		// Extract filename from URL parameter (remove .webp extension if present)
+		const cleanFilename = urlParam.replace(/\.webp$/, "") + ".webp";
+
+		const image = await prisma.productImage.findFirst({
+			where: {
+				productId,
+				key: {
+					contains: `/${productId}/${cleanFilename}`,
+				},
+			},
+		});
+
+		if (!image) {
+			throw new NotFoundError("Image not found");
+		}
+
+		return this.deleteImage(productId, image.id);
 	}
 
 	async reorderImages(
@@ -385,26 +469,26 @@ export class ProductService {
 		});
 
 		if (existing.length !== items.length) {
-			throw new Error("MISMATCH_COUNT");
+			throw new BadRequestError("Mismatched item count");
 		}
 
 		const existingIds = new Set(existing.map((x) => x.id));
 		const providedIds = new Set(items.map((x) => x.id));
 
 		if (existingIds.size !== providedIds.size) {
-			throw new Error("INVALID_IDS");
+			throw new BadRequestError("Invalid image IDs");
 		}
 
 		const orders = items.map((x) => x.order);
 		const uniqueOrders = new Set(orders);
 
 		if (uniqueOrders.size !== orders.length) {
-			throw new Error("DUPLICATE_ORDER");
+			throw new BadRequestError("Duplicate order values");
 		}
 
 		const max = existing.length;
 		for (const o of orders) {
-			if (o < 1 || o > max) throw new Error("OUT_OF_RANGE");
+			if (o < 1 || o > max) throw new BadRequestError("Order out of range");
 		}
 
 		await prisma.$transaction(async (tx) => {
@@ -416,7 +500,12 @@ export class ProductService {
 			}
 		});
 
-		return this.getById(productId);
+		const updatedProduct = await this.getById(productId);
+		return {
+			success: true,
+			message: "Images reordered successfully",
+			data: updatedProduct,
+		};
 	}
 }
 

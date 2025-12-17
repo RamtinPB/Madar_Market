@@ -20,6 +20,13 @@ export class ForbiddenError extends Error {
 	}
 }
 
+export class BadRequestError extends Error {
+	constructor(message: string = "Bad Request") {
+		super(message);
+		this.name = "BadRequestError";
+	}
+}
+
 export class UnauthorizedError extends Error {
 	constructor(message: string = "Unauthorized") {
 		super(message);
@@ -39,6 +46,9 @@ export const createErrorResponse = (error: any, statusCode: number = 500) => {
 		return { success: false, error: error.message };
 	}
 	if (error instanceof UnauthorizedError) {
+		return { success: false, error: error.message };
+	}
+	if (error instanceof BadRequestError) {
 		return { success: false, error: error.message };
 	}
 
