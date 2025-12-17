@@ -330,7 +330,7 @@ export class CategoriesAPI {
 	// ============================================
 
 	/**
-	 * Get all categories
+	 * Get all categories (public)
 	 */
 	static async getAll(): Promise<Category[]> {
 		this.setLoading("getAll", true);
@@ -343,7 +343,7 @@ export class CategoriesAPI {
 	}
 
 	/**
-	 * Get category by ID
+	 * Get category by ID (public)
 	 */
 	static async getById(id: string): Promise<Category> {
 		if (!id || id.trim().length === 0) {
@@ -360,7 +360,7 @@ export class CategoriesAPI {
 	}
 
 	/**
-	 * Create a new category
+	 * Create a new category (admin only)
 	 */
 	static async create(data: CreateCategoryData): Promise<Category> {
 		const validationErrors = validateCreateData(data);
@@ -387,7 +387,7 @@ export class CategoriesAPI {
 	}
 
 	/**
-	 * Update an existing category
+	 * Update an existing category (admin only)
 	 */
 	static async update(id: string, data: UpdateCategoryData): Promise<Category> {
 		if (!id || id.trim().length === 0) {
@@ -418,7 +418,7 @@ export class CategoriesAPI {
 	}
 
 	/**
-	 * Delete a category
+	 * Delete a category (admin only)
 	 */
 	static async delete(id: string): Promise<void> {
 		if (!id || id.trim().length === 0) {
