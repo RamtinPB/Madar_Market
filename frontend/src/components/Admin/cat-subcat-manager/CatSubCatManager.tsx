@@ -16,12 +16,14 @@ import { Combobox } from "@/src/components/ui/combobox";
 import { ScrollArea } from "@/src/components/ui/scroll-area";
 import { File, Box, Edit, X, Image as ImageIcon, Search } from "lucide-react";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import apiFetch from "@/src/lib/api/fetcher";
 
 // Types
 interface Category {
 	id: string;
 	title?: string;
-	imagePath?: string | null;
+	imageKey?: string | null;
+	imageUrl?: string | null;
 	order: number;
 	subCategories: SubCategory[];
 	_count: {
@@ -69,7 +71,7 @@ export default function CatSubCatManager() {
 
 	const fetchData = async () => {
 		try {
-			const categoriesRes = await fetch(`${API_BASE}/categories/get-all`);
+			const categoriesRes = await apiFetch(`${API_BASE}/categories`);
 			const categoriesData: Category[] = await categoriesRes.json();
 
 			setCategories(categoriesData);
@@ -127,7 +129,7 @@ export default function CatSubCatManager() {
 		if (!editData) return;
 
 		const currentCategory = categories.find((cat) => cat.id === editData.id);
-		const hasExistingImage = currentCategory?.imagePath;
+		const hasExistingImage = currentCategory?.imageUrl;
 
 		setEditData({
 			...editData,
@@ -144,7 +146,7 @@ export default function CatSubCatManager() {
 
 			if (editData.type === "category") {
 				// Update category title
-				await fetch(`${API_BASE}/categories/${editData.id}`, {
+				await apiFetch(`${API_BASE}/categories/${editData.id}`, {
 					method: "PUT",
 					headers: {
 						"Content-Type": "application/json",
@@ -157,7 +159,7 @@ export default function CatSubCatManager() {
 
 				// Delete image if requested
 				if (editData.shouldDeleteImage) {
-					await fetch(`${API_BASE}/categories/delete-image/${editData.id}`, {
+					await apiFetch(`${API_BASE}/categories/${editData.id}/image`, {
 						method: "DELETE",
 						headers: {
 							...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -170,8 +172,8 @@ export default function CatSubCatManager() {
 					const formData = new FormData();
 					formData.append("image", editData.imageFile);
 
-					await fetch(`${API_BASE}/categories/${editData.id}/upload-image`, {
-						method: "POST",
+					await apiFetch(`${API_BASE}/categories/${editData.id}/image`, {
+						method: "PUT",
 						headers: {
 							...(token ? { Authorization: `Bearer ${token}` } : {}),
 						},
@@ -180,7 +182,7 @@ export default function CatSubCatManager() {
 				}
 			} else {
 				// Update subcategory
-				await fetch(`${API_BASE}/subcategories/edit/${editData.id}`, {
+				await apiFetch(`${API_BASE}/sub-categories/${editData.id}`, {
 					method: "PUT",
 					headers: {
 						"Content-Type": "application/json",
@@ -188,7 +190,7 @@ export default function CatSubCatManager() {
 					},
 					body: JSON.stringify({
 						title: editData.title,
-						categoryId: editData.categoryId,
+						id: editData.categoryId,
 					}),
 				});
 			}
@@ -234,11 +236,7 @@ export default function CatSubCatManager() {
 									<Card className="w-full p-4 flex flex-row-reverse items-center gap-4">
 										<div className="shrink">
 											<img
-												src={
-													category.imagePath
-														? `${API_BASE}${category.imagePath}`
-														: "/placeholder.png"
-												}
+												src={category.imageUrl ?? "/placeholder.png"}
 												alt={category.title || "Category"}
 												className="object-cover rounded"
 											/>
@@ -366,11 +364,11 @@ export default function CatSubCatManager() {
 									(cat) => cat.id === editData.id
 								);
 								const hasExistingImage =
-									currentCategory?.imagePath && !editData.shouldDeleteImage;
+									currentCategory?.imageUrl && !editData.shouldDeleteImage;
 								const imageSrc = editData.imageFile
 									? URL.createObjectURL(editData.imageFile)
 									: hasExistingImage
-									? `${API_BASE}${currentCategory.imagePath}`
+									? `${API_BASE}${currentCategory.imageUrl}`
 									: null;
 
 								return (

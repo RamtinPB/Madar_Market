@@ -76,12 +76,13 @@ export class StorageService {
 			Key: key,
 			Body: buffer,
 			ContentType: contentType || file.type,
+			ACL: "public-read",
 		});
 		await s3.send(command);
 	}
 
 	getPublicUrl(key: string): string {
-		return `${process.env.ARVAN_ENDPOINT}/${key}`;
+		return `https://${process.env.ARVAN_BUCKET_NAME}.s3.${process.env.ARVAN_REGION}.arvanstorage.ir/${key}`;
 	}
 
 	// Helper method to generate key for category images

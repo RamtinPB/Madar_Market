@@ -15,7 +15,7 @@ export class CategoryService {
 	private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 	async getAll() {
-		return prisma.category.findMany({
+		const categories = prisma.category.findMany({
 			orderBy: { order: "asc" },
 			include: {
 				subCategories: {
@@ -31,6 +31,10 @@ export class CategoryService {
 				},
 			},
 		});
+		return (await categories).map((cat) => ({
+			...cat,
+			imageUrl: cat.imageKey ? storageService.getPublicUrl(cat.imageKey) : null,
+		}));
 	}
 
 	async getById(id: string) {
@@ -231,8 +235,9 @@ export class CategoryService {
 			throw new ValidationError("Only JPEG, PNG, and WebP image are allowed");
 		}
 
-		if (category?.imageKey)
+		if (category?.imageKey) {
 			await storageService.deleteObject(category.imageKey);
+		}
 
 		const filename = `${crypto.randomUUID()}.webp`;
 		const key = storageService.generateCategoryImageKey(categoryId, filename);

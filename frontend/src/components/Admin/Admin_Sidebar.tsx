@@ -52,40 +52,18 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 				<SidebarContent>
 					<SidebarMenu>
 						<SidebarMenuItem>
-							<Accordion type="single" collapsible>
-								<AccordionItem value="item-1">
-									<AccordionTrigger className="w-full ">
-										<Button variant={"ghost"} className="w-full ">
-											مدیریت کالا
-										</Button>
-									</AccordionTrigger>
-									<AccordionContent>
-										<SidebarMenuButton
-											onClick={() => onSelectItem("CatSubCatManager")}
-										>
-											مدیریت دسته‌ بندی‌ ها
-										</SidebarMenuButton>
-									</AccordionContent>
-								</AccordionItem>
-							</Accordion>
+							<SidebarMenuButton
+								onClick={() => onSelectItem("CatSubCatManager")}
+							>
+								مدیریت دسته‌ بندی‌ ها
+							</SidebarMenuButton>
 						</SidebarMenuItem>
 						<SidebarMenuItem>
-							<Accordion type="single" collapsible>
-								<AccordionItem value="item-1">
-									<AccordionTrigger className="w-full ">
-										<Button variant={"ghost"} className="w-full ">
-											مدیریت کاربران
-										</Button>
-									</AccordionTrigger>
-									<AccordionContent>
-										<SidebarMenuButton
-											onClick={() => onSelectItem("CatSubCatManager")}
-										>
-											مدیریت کاربران ها
-										</SidebarMenuButton>
-									</AccordionContent>
-								</AccordionItem>
-							</Accordion>
+							<SidebarMenuButton
+								onClick={() => onSelectItem("CatSubCatManager")}
+							>
+								مدیریت کاربران ها
+							</SidebarMenuButton>
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarContent>
