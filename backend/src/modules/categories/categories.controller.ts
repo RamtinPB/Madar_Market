@@ -5,6 +5,7 @@ import type {
 	UpdateCategoryInput,
 } from "./categories.types";
 import { categoryService } from "./categories.service";
+import { createErrorResponse } from "../../utils/errors";
 
 export class CategoryController {
 	async getAll(ctx: any) {
@@ -51,6 +52,22 @@ export class CategoryController {
 
 	async deleteImage(ctx: any) {
 		return await categoryService.deleteImage(ctx.params.id);
+	}
+
+	async uploadImage(ctx: any) {
+		try {
+			const body = ctx.body || {};
+			const image = body.image;
+
+			if (!image || image.length === 0) {
+				return createErrorResponse(new Error("image are required"), 400);
+			}
+
+			const result = await categoryService.uploadImage(ctx.params.id, image);
+			return result;
+		} catch (error) {
+			return createErrorResponse(error);
+		}
 	}
 
 	async getCategoryImageUploadUrl(ctx: any) {

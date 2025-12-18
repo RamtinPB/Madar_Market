@@ -84,13 +84,28 @@ export function registerCategoryRoutes(router: any) {
 	);
 
 	// Upload/replace image — multipart/form-data with 'image' file
-	router.post(
-		"/categories/:id/image-upload-url",
-		categoryController.getCategoryImageUploadUrl,
+	router.put(
+		"/categories/:id/image",
+		async (ctx: any) => {
+			return categoryController.uploadImage(ctx);
+		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+			body: t.Object({
+				image: t.File(),
+			}),
+			type: "multipart/form-data",
 		}
 	);
+
+	// // get image upload url
+	// router.post(
+	// 	"/categories/:id/image-upload-url",
+	// 	categoryController.getCategoryImageUploadUrl,
+	// 	{
+	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+	// 	}
+	// );
 
 	// Delete image
 	router.delete(

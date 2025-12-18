@@ -4,9 +4,16 @@ import type {
 	CreateCategoryInput,
 	UpdateCategoryInput,
 } from "./categories.types";
-import { NotFoundError, ValidationError } from "../../utils/errors";
+import {
+	createErrorResponse,
+	NotFoundError,
+	ValidationError,
+} from "../../utils/errors";
+import { error } from "node:console";
 
 export class CategoryService {
+	private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 	async getAll() {
 		return prisma.category.findMany({
 			orderBy: { order: "asc" },
@@ -206,6 +213,41 @@ export class CategoryService {
 		});
 
 		return { uploadUrl };
+	}
+
+	// Enhanced uploadImages with validation and error handling
+	async uploadImage(categoryId: string, image: File) {
+		const category = await prisma.category.findUnique({
+			where: { id: categoryId },
+		});
+
+		if (image.size > this.MAX_FILE_SIZE) {
+			throw new ValidationError(
+				`File size exceeds ${this.MAX_FILE_SIZE / 1024 / 1024}MB limit`
+			);
+		}
+
+		if (!["image/jpeg", "image/png", "image/webp"].includes(image.type)) {
+			throw new ValidationError("Only JPEG, PNG, and WebP image are allowed");
+		}
+
+		if (category?.imageKey)
+			await storageService.deleteObject(category.imageKey);
+
+		const filename = `${crypto.randomUUID()}.webp`;
+		const key = storageService.generateCategoryImageKey(categoryId, filename);
+		await storageService.uploadFile(key, image, "image/webp");
+
+		// 4. Save key in prisma (Prisma)
+		await prisma.category.update({
+			where: { id: categoryId },
+			data: { imageKey: key },
+		});
+
+		return {
+			success: true,
+			message: `${image} image uploaded successfully`,
+		};
 	}
 }
 

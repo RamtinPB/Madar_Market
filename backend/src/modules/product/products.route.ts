@@ -190,14 +190,14 @@ export function registerProductRoutes(router: any) {
 		}
 	);
 
-	// Get upload URL for product image
-	router.get(
-		"/products/:id/upload-url",
-		async (ctx: any) => {
-			return productController.getProductImageUploadUrl(ctx);
-		},
-		{
-			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
-		}
-	);
+	// // Get upload URL for product image
+	// router.get(
+	// 	"/products/:id/upload-url",
+	// 	async (ctx: any) => {
+	// 		return productController.getProductImageUploadUrl(ctx);
+	// 	},
+	// 	{
+	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+	// 	}
+	// );
 }
