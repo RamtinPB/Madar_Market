@@ -84,7 +84,7 @@ export function registerCategoryRoutes(router: any) {
 	router.put(
 		"/categories/:id/image",
 		async (ctx: any) => {
-			return categoryService.uploadImage(ctx.params.id, ctx.body);
+			return categoryService.uploadImage(ctx.params.id, ctx.body.image);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -108,7 +108,7 @@ export function registerCategoryRoutes(router: any) {
 	router.delete(
 		"/categories/:id/image",
 		async (ctx: any) => {
-			return categoryService.deleteImage(ctx.params.id);
+			return categoryService.deleteImage(Number(ctx.params.id));
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],

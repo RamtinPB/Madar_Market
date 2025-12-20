@@ -162,7 +162,7 @@ export class CategoryService {
 
 		return {
 			success: true,
-			message: `${image} image uploaded successfully`,
+			message: `Image uploaded successfully`,
 		};
 	}
 }

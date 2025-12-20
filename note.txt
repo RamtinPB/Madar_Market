@@ -60,7 +60,7 @@ New cat and subcat management:
     lastly, at the bottom of the edit section there will be an edit button to initiate the edit backend call based on if a category of sub category is selected.
 
 
-
+PROMPT FOR FRONTEND RESTRUCTURE
 ok ive restructured the backend. now lets move on to the frontend.
 for context, here is the project structure i used to have:
 "# Madar Market - Project Structure Documentation
