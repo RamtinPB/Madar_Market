@@ -1,5 +1,6 @@
 // src/modules/product/products.route.ts
-import { requireAuth, requireRole } from "../auth/auth.middleware";
+import { requireAuth } from "../../infrastructure/auth/auth.guard";
+import { requireRole } from "../../infrastructure/auth/role.guard";
 import { t } from "elysia";
 import {
 	CreateProductSchema,

@@ -1,17 +1,14 @@
 // src/modules/subCategories/subCategories.service.ts
-import { prisma } from "../../infrastructure/db/prisma.client";
 import { productService } from "../product/products.service";
+import { subCategoriesRepository } from "./subCategories.repository";
 import type {
 	CreateSubCategoryInput,
 	UpdateSubCategoryInput,
-} from "./subCategories.types";
+} from "./subCategories.schema";
 
 export class SubCategoryService {
 	async getAllByCategory(categoryId: string) {
-		return prisma.subCategory.findMany({
-			where: { categoryId },
-			orderBy: { order: "asc" },
-		});
+		return subCategoriesRepository.getAllByCategory(categoryId);
 	}
 
 	async getAllProducts(subCategoryId: string) {
@@ -19,21 +16,21 @@ export class SubCategoryService {
 	}
 
 	async getById(id: string) {
-		const subCat = await prisma.subCategory.findUnique({ where: { id } });
+		const subCat = await subCategoriesRepository.getSubCategoryById(id);
 		if (!subCat) throw new Error("NOT_FOUND");
 		return subCat;
 	}
 
 	async create(data: CreateSubCategoryInput) {
 		// Check if category exists
-		const category = await prisma.category.findUnique({
-			where: { id: data.categoryId },
-		});
+		const category = await subCategoriesRepository.getCategoryById(
+			data.categoryId
+		);
 		if (!category) throw new Error("CATEGORY_NOT_FOUND");
 
-		const total = await prisma.subCategory.count({
-			where: { categoryId: data.categoryId },
-		});
+		const total = await subCategoriesRepository.getSubCategoryCountByCategory(
+			data.categoryId
+		);
 
 		const order = data.order ?? total + 1;
 		const title = data.title ?? "New SubCategory";
@@ -44,21 +41,17 @@ export class SubCategoryService {
 
 		// shift existing items if necessary
 		if (order <= total) {
-			await prisma.subCategory.updateMany({
-				where: {
-					categoryId: data.categoryId,
-					order: { gte: order },
-				},
-				data: { order: { increment: 1 } },
-			});
+			await subCategoriesRepository.updateSubCategoriesOrder(
+				data.categoryId,
+				order,
+				true
+			);
 		}
 
-		return prisma.subCategory.create({
-			data: {
-				title,
-				categoryId: data.categoryId,
-				order,
-			},
+		return subCategoriesRepository.createSubCategory({
+			...data,
+			order,
+			title,
 		});
 	}
 
@@ -68,82 +61,80 @@ export class SubCategoryService {
 		// if categoryId changes, need to handle order in both categories
 		if (data.categoryId && data.categoryId !== subCategory.categoryId) {
 			// Check new category exists
-			const newCategory = await prisma.category.findUnique({
-				where: { id: data.categoryId },
-			});
+			const newCategory = await subCategoriesRepository.getCategoryById(
+				data.categoryId
+			);
 			if (!newCategory) throw new Error("CATEGORY_NOT_FOUND");
 
 			// Remove from old category order
-			await prisma.subCategory.updateMany({
-				where: {
-					categoryId: subCategory.categoryId,
-					order: { gt: subCategory.order },
-				},
-				data: { order: { decrement: 1 } },
-			});
+			await subCategoriesRepository.updateSubCategoriesOrder(
+				subCategory.categoryId,
+				subCategory.order,
+				false
+			);
 
 			// Add to new category
-			const newTotal = await prisma.subCategory.count({
-				where: { categoryId: data.categoryId },
-			});
+			const newTotal =
+				await subCategoriesRepository.getSubCategoryCountByCategory(
+					data.categoryId
+				);
 			const newOrder = data.order ?? newTotal + 1;
 
-			await prisma.subCategory.update({
-				where: { id },
-				data: {
-					title: data.title ?? undefined,
-					categoryId: data.categoryId,
-					order: newOrder,
-				},
-			});
+			const updateData = {
+				...(data.title !== undefined && { title: data.title }),
+				categoryId: data.categoryId,
+				order: newOrder,
+			};
+
+			await subCategoriesRepository.updateSubCategory(id, updateData);
 		} else {
 			// Same category, handle order change
 			if (data.order && data.order !== subCategory.order) {
 				const oldOrder = subCategory.order;
 				const newOrder = data.order;
 
-				const maxOrder = await prisma.subCategory.count({
-					where: { categoryId: subCategory.categoryId },
-				});
+				const maxOrder =
+					await subCategoriesRepository.getSubCategoryCountByCategory(
+						subCategory.categoryId
+					);
 				if (newOrder < 1 || newOrder > maxOrder) {
 					throw new Error("INVALID_ORDER");
 				}
 
-				await prisma.$transaction(async (tx) => {
-					if (newOrder < oldOrder) {
-						await tx.subCategory.updateMany({
-							where: {
-								categoryId: subCategory.categoryId,
-								order: { gte: newOrder, lt: oldOrder },
-							},
-							data: { order: { increment: 1 } },
-						});
-					} else {
-						await tx.subCategory.updateMany({
-							where: {
-								categoryId: subCategory.categoryId,
-								order: { gt: oldOrder, lte: newOrder },
-							},
-							data: { order: { decrement: 1 } },
-						});
-					}
+				const updateData = {
+					...(data.title !== undefined && { title: data.title }),
+					order: newOrder,
+				};
 
-					await tx.subCategory.update({
-						where: { id },
-						data: {
-							title: data.title ?? undefined,
-							order: newOrder,
-						},
-					});
-				});
+				await subCategoriesRepository.updateSubCategoryWithTransaction(
+					id,
+					updateData,
+					async (tx) => {
+						if (newOrder < oldOrder) {
+							await tx.subCategory.updateMany({
+								where: {
+									categoryId: subCategory.categoryId,
+									order: { gte: newOrder, lt: oldOrder },
+								},
+								data: { order: { increment: 1 } },
+							});
+						} else {
+							await tx.subCategory.updateMany({
+								where: {
+									categoryId: subCategory.categoryId,
+									order: { gt: oldOrder, lte: newOrder },
+								},
+								data: { order: { decrement: 1 } },
+							});
+						}
+					}
+				);
 			} else {
 				// only updating title
-				await prisma.subCategory.update({
-					where: { id },
-					data: {
-						title: data.title ?? undefined,
-					},
-				});
+				const updateData: any = {};
+				if (data.title !== undefined) updateData.title = data.title;
+
+				await subCategoriesRepository.updateSubCategory(id, updateData);
 			}
 		}
 
@@ -154,35 +145,29 @@ export class SubCategoryService {
 		const subCategory = await this.getById(id);
 
 		// Check if subcategory has products
-		const productCount = await prisma.product.count({
-			where: { subCategoryId: id },
-		});
+		const productCount =
+			await subCategoriesRepository.getProductCountBySubCategory(id);
 
 		if (productCount > 0) {
 			throw new Error("CANNOT_DELETE_SUBCATEGORY_WITH_PRODUCTS");
 		}
 
-		await prisma.$transaction(async (tx) => {
-			await tx.subCategory.delete({ where: { id } });
-
-			// shift down remaining items in the same category
-			await tx.subCategory.updateMany({
-				where: {
-					categoryId: subCategory.categoryId,
-					order: { gt: subCategory.order },
-				},
-				data: { order: { decrement: 1 } },
-			});
-		});
+		await subCategoriesRepository.deleteSubCategoryWithTransaction(
+			id,
+			{ categoryId: subCategory.categoryId, order: subCategory.order },
+			async (tx) => {
+				// No additional transaction work needed
+			}
+		);
 
 		return { success: true };
 	}
 
 	async reorder(categoryId: string, items: { id: string; order: number }[]) {
-		const existing = await prisma.subCategory.findMany({
-			where: { categoryId },
-			select: { id: true },
-		});
+		const existing =
+			await subCategoriesRepository.getSubCategoriesByCategoryForReorder(
+				categoryId
+			);
 
 		if (existing.length !== items.length) {
 			throw new Error("MISMATCH_COUNT");
@@ -207,19 +192,15 @@ export class SubCategoryService {
 			if (o < 1 || o > max) throw new Error("OUT_OF_RANGE");
 		}
 
-		await prisma.$transaction(async (tx) => {
-			for (const item of items) {
-				await tx.subCategory.update({
-					where: { id: item.id },
-					data: { order: item.order },
-				});
+		await subCategoriesRepository.reorderSubCategoriesTransaction(
+			categoryId,
+			items,
+			async (tx) => {
+				// Validation completed above, no additional transaction work needed
 			}
-		});
+		);
 
-		return prisma.subCategory.findMany({
-			where: { categoryId },
-			orderBy: { order: "asc" },
-		});
+		return subCategoriesRepository.getSubCategoriesByCategorySimple(categoryId);
 	}
 }
 

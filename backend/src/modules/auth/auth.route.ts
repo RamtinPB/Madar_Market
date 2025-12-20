@@ -1,6 +1,7 @@
 import { t } from "elysia";
 import { app } from "../../server";
 import * as authController from "./auth.controller";
+import { requireAuth } from "../../infrastructure/auth/auth.guard";
 
 export function registerAuthRoutes(appInstance: typeof app) {
 	appInstance.post("/auth/request-otp", authController.requestOtp, {
@@ -30,7 +31,9 @@ export function registerAuthRoutes(appInstance: typeof app) {
 			})
 		),
 	});
-	appInstance.get("/auth/me", authController.me);
+	appInstance.get("/auth/me", authController.me, {
+		beforeHandle: requireAuth,
+	});
 	appInstance.post("/auth/logout", authController.logout, {
 		body: t.Optional(
 			t.Object({

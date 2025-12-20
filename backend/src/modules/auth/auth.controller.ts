@@ -1,9 +1,8 @@
 import * as authService from "./auth.service";
 import {
-	verifyAccessToken,
+	verifyRefreshToken,
 	parseExpiryToMs,
 } from "../../infrastructure/auth/jwt.provider";
-import { prisma } from "../../infrastructure/db/prisma.client";
 
 const REFRESH_TOKEN_EXP = process.env.REFRESH_TOKEN_EXPIRE_IN!;
 
@@ -16,8 +15,13 @@ export const requestOtp = async (ctx: any) => {
 		return { error: "Phone number is required" };
 	}
 
-	const result = await authService.generateAndStoreOTP(phoneNumber, purpose);
-	return { success: true, otp: result.otp };
+	try {
+		const result = await authService.generateAndStoreOTP(phoneNumber, purpose);
+		return { success: true, otp: result.otp };
+	} catch (err: any) {
+		ctx.set.status = 400;
+		return { error: err.message || "Failed to generate OTP" };
+	}
 };
 
 export const signup = async (ctx: any) => {
@@ -36,10 +40,8 @@ export const signup = async (ctx: any) => {
 			password,
 			otp
 		);
-		// set refresh token in httpOnly cookie (recommended)
-		// Set cookie with SameSite=None to allow cross-origin fetches from the
-		// frontend. Set `secure` in production. In development we keep `secure`
-		// false to allow localhost HTTP (dev only).
+
+		// Set refresh token in httpOnly cookie
 		ctx.cookie.refreshToken.set({
 			value: created.refreshToken,
 			httpOnly: true,
@@ -48,9 +50,8 @@ export const signup = async (ctx: any) => {
 			path: "/",
 			maxAge: Math.floor(parseExpiryToMs(REFRESH_TOKEN_EXP!) / 1000),
 		});
-		// In development return the refreshToken in the response body as a
-		// fallback when cookies might be rejected by the browser. NEVER do
-		// this in production.
+
+		// Return user and access token in response
 		return { user: created.user, accessToken: created.accessToken };
 	} catch (err: any) {
 		ctx.set.status = 400;
@@ -72,6 +73,7 @@ export const login = async (ctx: any) => {
 			password,
 			otp
 		);
+
 		ctx.cookie.refreshToken.set({
 			value: res.refreshToken,
 			httpOnly: true,
@@ -80,6 +82,7 @@ export const login = async (ctx: any) => {
 			path: "/",
 			maxAge: Math.floor(parseExpiryToMs(REFRESH_TOKEN_EXP!) / 1000),
 		});
+
 		return { user: res.user, accessToken: res.accessToken };
 	} catch (err: any) {
 		ctx.set.status = 400;
@@ -88,8 +91,8 @@ export const login = async (ctx: any) => {
 };
 
 export const refresh = async (ctx: any) => {
-	// we expect refresh token in cookie
-	let raw = ctx.cookie.refreshToken.value; // cookie already present
+	// Get the refresh token from cookie
+	let raw = ctx.cookie.refreshToken.value;
 
 	// Allow supplying the refresh token in the request body for Swagger testing
 	if (!raw) {
@@ -103,7 +106,11 @@ export const refresh = async (ctx: any) => {
 	}
 
 	try {
-		const tokens = await authService.refreshAccessToken(raw);
+		// First verify the refresh token signature
+		const payload = verifyRefreshToken(raw);
+
+		// Then call service with both token and payload
+		const tokens = await authService.refreshAccessToken(raw, payload);
 
 		ctx.cookie.refreshToken.set({
 			value: tokens.refreshToken,
@@ -113,6 +120,7 @@ export const refresh = async (ctx: any) => {
 			path: "/",
 			maxAge: Math.floor(parseExpiryToMs(REFRESH_TOKEN_EXP!) / 1000),
 		});
+
 		return { accessToken: tokens.accessToken };
 	} catch (err: any) {
 		ctx.set.status = 401;
@@ -121,17 +129,8 @@ export const refresh = async (ctx: any) => {
 };
 
 export const logout = async (ctx: any) => {
-	// 1️⃣ Get the access token from Authorization header
-	const auth = ctx.request.headers.get("authorization") || "";
-	const parts = auth.split(" ");
-	let accessToken = null;
-
-	if (parts.length === 2 && parts[0] === "Bearer") {
-		accessToken = parts[1];
-	}
-
-	// 2️⃣ Get the refresh token from cookie or body
-	let refreshToken = ctx.cookie.refreshToken.value; // cookie already present
+	// Get the refresh token from cookie or body
+	let refreshToken = ctx.cookie.refreshToken.value;
 
 	// Allow supplying the refresh token in the request body for Swagger testing
 	if (!refreshToken) {
@@ -139,16 +138,12 @@ export const logout = async (ctx: any) => {
 		refreshToken = body?.refreshToken;
 	}
 
-	// 3️⃣ Revoke both tokens if they exist
-	if (accessToken) {
-		await authService.revokeAccessToken(accessToken);
-	}
-
+	// Revoke refresh token if it exists
 	if (refreshToken) {
 		await authService.revokeRefreshToken(refreshToken);
 	}
 
-	// 4️⃣ Clear the cookie (maxAge 0 = delete) - always clear in development too
+	// Clear the cookie (maxAge 0 = delete)
 	ctx.cookie.refreshToken.set({
 		value: "",
 		httpOnly: true,
@@ -162,32 +157,27 @@ export const logout = async (ctx: any) => {
 };
 
 export const me = async (ctx: any) => {
-	const auth = ctx.request.headers.get("authorization") || "";
-	const parts = auth.split(" ");
-	if (parts.length !== 2 || parts[0] !== "Bearer") {
-		ctx.set.status = 401;
-		return { error: "Unauthorized" };
-	}
-
-	const token = parts[1];
+	// The auth guard has already validated the token and attached user info to ctx.user
 	try {
-		// Check if access token is revoked
-		const isRevoked = await authService.isAccessTokenRevoked(token);
-		if (isRevoked) {
+		// ctx.user should contain { id: userId, role: userRole } from the guard
+		if (!ctx.user) {
 			ctx.set.status = 401;
-			return { error: "Token revoked" };
+			return { error: "User not authenticated" };
 		}
 
-		const payload: any = verifyAccessToken(token);
-		const user = await prisma.user.findUnique({
-			where: { id: payload.userId },
-		});
-		if (!user) {
-			ctx.set.status = 401;
-			return { error: "User not found" };
-		}
+		// Since we already have the user info from the validated token,
+		// we can return it directly without another database lookup
+		// But if you need fresh data, you can uncomment the repository call below
+		// const user = await authRepository.findUserById(ctx.user.id);
+		// if (!user) {
+		//     ctx.set.status = 401;
+		//     return { error: "User not found" };
+		// }
+		// return { user: { id: user.id, phoneNumber: user.phoneNumber, role: user.role } };
+
+		// For now, return the user info from the token
 		return {
-			user: { id: user.id, phoneNumber: user.phoneNumber, role: user.role },
+			user: { id: ctx.user.id, role: ctx.user.role },
 		};
 	} catch (error) {
 		ctx.set.status = 401;

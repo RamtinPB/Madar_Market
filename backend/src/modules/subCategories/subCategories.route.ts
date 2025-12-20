@@ -1,10 +1,10 @@
 // src/modules/subCategories/subCategories.route.ts
-import { subCategoryController } from "./subCategories.controller";
-import { requireAuth, requireRole } from "../auth/auth.middleware";
+import { subCategoryService } from "./subCategories.service";
+import { requireAuth, requireRole } from "../../infrastructure/auth/auth.guard";
 import {
-	validateCreateSubCategory,
-	validateUpdateSubCategory,
-} from "./subCategories.middleware";
+	CreateSubCategorySchema,
+	UpdateSubCategorySchema,
+} from "./subCategories.schema";
 import { t } from "elysia";
 
 export function registerSubCategoryRoutes(router: any) {
@@ -16,7 +16,7 @@ export function registerSubCategoryRoutes(router: any) {
 	router.get(
 		"/sub-categories/:id",
 		async (ctx: any) => {
-			return subCategoryController.getById(ctx);
+			return subCategoryService.getById(ctx);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -27,9 +27,8 @@ export function registerSubCategoryRoutes(router: any) {
 	router.post(
 		"/sub-categories",
 		async (ctx: any) => {
-			const validationResult = await validateCreateSubCategory(ctx);
-			if (validationResult) return validationResult;
-			return subCategoryController.create(ctx);
+			const body = await CreateSubCategorySchema.parse(ctx.body);
+			return subCategoryService.create(body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -46,9 +45,8 @@ export function registerSubCategoryRoutes(router: any) {
 	router.put(
 		"/sub-categories/:id",
 		async (ctx: any) => {
-			const validationResult = await validateUpdateSubCategory(ctx);
-			if (validationResult) return validationResult;
-			return subCategoryController.update(ctx);
+			const body = await UpdateSubCategorySchema.parse(ctx.body);
+			return subCategoryService.update(ctx.id, body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -65,7 +63,7 @@ export function registerSubCategoryRoutes(router: any) {
 	router.delete(
 		"/sub-categories/:id",
 		async (ctx: any) => {
-			return subCategoryController.delete(ctx);
+			return subCategoryService.delete(ctx);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -76,7 +74,7 @@ export function registerSubCategoryRoutes(router: any) {
 	router.put(
 		"/sub-categories/reorder/:categoryId",
 		async (ctx: any) => {
-			return subCategoryController.reorder(ctx);
+			return subCategoryService.reorder(ctx.id, ctx.body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -97,6 +95,6 @@ export function registerSubCategoryRoutes(router: any) {
 
 	// Get all products for a subcategory
 	router.get("/sub-categories/:id/products", async (ctx: any) => {
-		return subCategoryController.getAllProducts(ctx);
+		return subCategoryService.getAllProducts(ctx);
 	});
 }

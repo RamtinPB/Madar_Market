@@ -1,7 +1,7 @@
 // src/modules/categories/categories.route.ts
 import { categoryService } from "./categories.service";
 import { subCategoryService } from "../subCategories/subCategories.service";
-import { requireAuth, requireRole } from "../auth/auth.middleware";
+import { requireAuth, requireRole } from "../../infrastructure/auth/auth.guard";
 import { secureRoute } from "../../shared/http/swagger";
 import {
 	CreateCategorySchema,
