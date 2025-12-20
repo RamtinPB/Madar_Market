@@ -1,16 +1,5 @@
+// src/modules/product/products.Schema.ts
 import { z } from "zod";
-
-// Base schema for product fields
-const productFields = z.object({
-	title: z.string().min(1, "Title is required"),
-	description: z.string().optional(),
-	price: z.number().positive("Price must be positive"),
-	discountPercent: z.number().int().min(0).max(100).default(0),
-	discountedPrice: z.number().positive().optional(),
-	sponsorPrice: z.number().positive().optional(),
-	order: z.number().int().min(0, "Order must be >= 0").optional(),
-	subCategoryId: z.string().min(1, "SubCategory ID is required"),
-});
 
 // Schema for attributes
 const attributeSchema = z.object({
@@ -28,8 +17,7 @@ const imageFileSchema = z
 		"File must be PNG, JPEG, or WebP"
 	);
 
-// DTO for POST /products
-export const CreateProductDto = z.object({
+export const CreateProductSchema = z.object({
 	title: z.string().min(1, "Title is required").optional(),
 	description: z.string().optional(),
 	price: z.number().positive("Price must be positive").optional(),
@@ -42,8 +30,7 @@ export const CreateProductDto = z.object({
 	images: z.array(imageFileSchema).optional(), // Multiple images
 });
 
-// DTO for PUT /products/:id (metadata only)
-export const UpdateProductDto = z.object({
+export const UpdateProductSchema = z.object({
 	title: z.string().min(1, "Title is required").optional(),
 	description: z.string().optional(),
 	price: z.number().positive("Price must be positive").optional(),
@@ -55,8 +42,30 @@ export const UpdateProductDto = z.object({
 	attributes: z.array(attributeSchema).optional(),
 });
 
-// Response DTO
-export const ProductResponseDto = z.object({
+export const ReorderProductsSchema = z.object({
+	items: z.array(
+		z.object({
+			id: z.string(),
+			order: z.number().int().min(1),
+		})
+	),
+});
+
+export const ReorderProductImagesSchema = z.object({
+	items: z.array(
+		z.object({
+			id: z.string(),
+			order: z.number().int().min(1),
+		})
+	),
+});
+
+export const UploadProductImagesSchema = z.object({
+	images: z.array(imageFileSchema).min(1, "At least one image required"),
+});
+
+// Response Schema
+export const ProductResponseSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	description: z.string().nullable(),
@@ -85,34 +94,13 @@ export const ProductResponseDto = z.object({
 	updatedAt: z.date(),
 });
 
-// DTO for reordering products
-export const ReorderProductsDto = z.object({
-	items: z.array(
-		z.object({
-			id: z.string(),
-			order: z.number().int().min(1),
-		})
-	),
-});
-
-// DTO for uploading images
-export const UploadProductImagesDto = z.object({
-	images: z.array(imageFileSchema).min(1, "At least one image required"),
-});
-
-// DTO for reordering product images
-export const ReorderProductImagesDto = z.object({
-	items: z.array(
-		z.object({
-			id: z.string(),
-			order: z.number().int().min(1),
-		})
-	),
-});
-
 // Type exports
-export type CreateProductInput = z.infer<typeof CreateProductDto>;
-export type UpdateProductInput = z.infer<typeof UpdateProductDto>;
-export type ProductResponse = z.infer<typeof ProductResponseDto>;
-export type UploadProductImagesInput = z.infer<typeof UploadProductImagesDto>;
-export type ReorderProductImagesInput = z.infer<typeof ReorderProductImagesDto>;
+export type CreateProductInput = z.infer<typeof CreateProductSchema>;
+export type UpdateProductInput = z.infer<typeof UpdateProductSchema>;
+export type ProductResponse = z.infer<typeof ProductResponseSchema>;
+export type UploadProductImagesInput = z.infer<
+	typeof UploadProductImagesSchema
+>;
+export type ReorderProductImagesInput = z.infer<
+	typeof ReorderProductImagesSchema
+>;

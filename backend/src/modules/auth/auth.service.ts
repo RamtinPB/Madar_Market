@@ -1,12 +1,12 @@
-import { prisma } from "../../../src/utils/prisma";
-import { hashPassword, comparePassword } from "../../utils/hash";
+import { prisma } from "../../infrastructure/db/prisma.client";
+import { hashPassword, comparePassword } from "../../shared/security/hash";
 import {
 	signAccessToken,
 	signRefreshToken,
 	verifyRefreshToken,
 	verifyAccessToken,
 	parseExpiryToMs,
-} from "../../utils/jwt";
+} from "../../infrastructure/auth/jwt.provider";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 

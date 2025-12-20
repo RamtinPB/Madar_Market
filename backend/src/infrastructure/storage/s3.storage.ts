@@ -4,13 +4,23 @@ import {
 	DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { s3 } from "../../s3";
-import { ValidationError } from "../../utils/errors";
+
+import { S3Client } from "@aws-sdk/client-s3";
+import { ValidationError } from "../../shared/errors/http-errors";
 
 export interface ImageValidationOptions {
 	maxSize?: number; // in bytes
 	allowedTypes?: string[];
 }
+
+export const s3 = new S3Client({
+	region: process.env.ARVAN_REGION!,
+	endpoint: process.env.ARVAN_ENDPOINT!,
+	credentials: {
+		accessKeyId: process.env.ARVAN_ACCESS_KEY_ID!,
+		secretAccessKey: process.env.ARVAN_SECRET_ACCESS_KEY!,
+	},
+});
 
 export class StorageService {
 	private bucketName = process.env.ARVAN_BUCKET_NAME!;

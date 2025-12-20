@@ -1,4 +1,4 @@
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../infrastructure/db/prisma.client";
 import { Role } from "../../../generated/prisma/enums";
 import { randomUUID } from "crypto";
 

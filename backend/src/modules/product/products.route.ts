@@ -1,11 +1,13 @@
 // src/modules/product/products.route.ts
-import { productController } from "./products.controller";
 import { requireAuth, requireRole } from "../auth/auth.middleware";
-import {
-	validateCreateProduct,
-	validateUpdateProduct,
-} from "./products.middleware";
 import { t } from "elysia";
+import {
+	CreateProductSchema,
+	ReorderProductsSchema,
+	UpdateProductSchema,
+	UploadProductImagesSchema,
+} from "./products.schema";
+import { productService } from "./products.service";
 
 export function registerProductRoutes(router: any) {
 	// ===============================
@@ -16,7 +18,7 @@ export function registerProductRoutes(router: any) {
 	router.get(
 		"/products/:id",
 		async (ctx: any) => {
-			return productController.getById(ctx);
+			return productService.getById(ctx);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -27,9 +29,8 @@ export function registerProductRoutes(router: any) {
 	router.post(
 		"/products",
 		async (ctx: any) => {
-			const validationResult = await validateCreateProduct(ctx);
-			if (validationResult) return validationResult;
-			return productController.create(ctx);
+			const body = CreateProductSchema.parse(ctx.body);
+			return productService.create(body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -60,9 +61,8 @@ export function registerProductRoutes(router: any) {
 	router.put(
 		"/products/:id",
 		async (ctx: any) => {
-			const validationResult = await validateUpdateProduct(ctx);
-			if (validationResult) return validationResult;
-			return productController.update(ctx);
+			const body = UpdateProductSchema.parse(ctx.body);
+			return productService.update(ctx.id, body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -93,31 +93,33 @@ export function registerProductRoutes(router: any) {
 	router.delete(
 		"/products/:id",
 		async (ctx: any) => {
-			return productController.delete(ctx);
+			// place zod validation here <---
+			return productService.delete(ctx.id);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 		}
 	);
 
-	// Reorder products — JSON body with items array
-	router.put(
-		"/products/reorder/:subCategoryId",
-		async (ctx: any) => {
-			return productController.reorder(ctx);
-		},
-		{
-			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
-			body: t.Object({
-				items: t.Array(
-					t.Object({
-						id: t.String(),
-						order: t.Number(),
-					})
-				),
-			}),
-		}
-	);
+	// // Reorder products — JSON body with items array
+	// router.put(
+	// 	"/products/reorder/:subCategoryId",
+	// 	async (ctx: any) => {
+	// 		const body = ReorderProductsSchema.parse(ctx.body);
+	// 		return productService.reorder(ctx.subCategoryId, body);
+	// 	},
+	// 	{
+	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+	// 		body: t.Object({
+	// 			items: t.Array(
+	// 				t.Object({
+	// 					id: t.String(),
+	// 					order: t.Number(),
+	// 				})
+	// 			),
+	// 		}),
+	// 	}
+	// );
 
 	// ===============================
 	// PRODUCT IMAGE MANAGEMENT ROUTES (SUPER ADMIN AUTHENTICATED)
@@ -127,7 +129,8 @@ export function registerProductRoutes(router: any) {
 	router.put(
 		"/products/:id/images",
 		async (ctx: any) => {
-			return productController.uploadImages(ctx);
+			const body = UploadProductImagesSchema.parse(ctx.body);
+			return productService.uploadImages(ctx.id, ctx); // should be body - check error later <---
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -142,59 +145,59 @@ export function registerProductRoutes(router: any) {
 	router.delete(
 		"/products/:id/images/:imageId",
 		async (ctx: any) => {
-			return productController.deleteImage(ctx);
+			return productService.deleteImage(ctx.id, ctx.imageId);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 		}
 	);
 
-	// NEW: Delete image by filename
-	router.delete(
-		"/products/:id/images/by-filename",
-		async (ctx: any) => {
-			return productController.deleteImageByFilename(ctx);
-		},
-		{
-			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
-		}
-	);
+	// // NEW: Delete image by filename
+	// router.delete(
+	// 	"/products/:id/images/by-filename",
+	// 	async (ctx: any) => {
+	// 		return productService.deleteImageByFilename(ctx);
+	// 	},
+	// 	{
+	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+	// 	}
+	// );
 
 	// NEW: Delete image by URL parameter
 	router.delete(
 		"/products/:id/images/by-url",
 		async (ctx: any) => {
-			return productController.deleteImageByUrlParameter(ctx);
+			return productService.deleteImageByUrlParameter(ctx.id, ctx);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 		}
 	);
 
-	// Reorder product images — JSON body
-	router.put(
-		"/products/:id/images/reorder",
-		async (ctx: any) => {
-			return productController.reorderImages(ctx);
-		},
-		{
-			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
-			body: t.Object({
-				items: t.Array(
-					t.Object({
-						id: t.String(),
-						order: t.Number(),
-					})
-				),
-			}),
-		}
-	);
+	// // Reorder product images — JSON body
+	// router.put(
+	// 	"/products/:id/images/reorder",
+	// 	async (ctx: any) => {
+	// 		return productService.reorderImages(ctx);
+	// 	},
+	// 	{
+	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+	// 		body: t.Object({
+	// 			items: t.Array(
+	// 				t.Object({
+	// 					id: t.String(),
+	// 					order: t.Number(),
+	// 				})
+	// 			),
+	// 		}),
+	// 	}
+	// );
 
 	// // Get upload URL for product image
 	// router.get(
 	// 	"/products/:id/upload-url",
 	// 	async (ctx: any) => {
-	// 		return productController.getProductImageUploadUrl(ctx);
+	// 		return productService.getProductImageUploadUrl(ctx);
 	// 	},
 	// 	{
 	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],

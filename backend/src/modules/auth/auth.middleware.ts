@@ -1,4 +1,4 @@
-import { verifyAccessToken } from "../../utils/jwt";
+import { verifyAccessToken } from "../../infrastructure/auth/jwt.provider";
 
 export const requireAuth = async (ctx: any) => {
 	const auth = ctx.request.headers.get("authorization") || "";

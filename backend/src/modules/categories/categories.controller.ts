@@ -5,7 +5,7 @@ import type {
 	UpdateCategoryInput,
 } from "./categories.types";
 import { categoryService } from "./categories.service";
-import { createErrorResponse } from "../../utils/errors";
+import { createErrorResponse } from "../../shared/errors/http-errors";
 
 export class CategoryController {
 	async getAll(ctx: any) {

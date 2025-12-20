@@ -1,4 +1,4 @@
-import { prisma } from "./src/utils/prisma";
+import { prisma } from "./src/infrastructure/db/prisma.client";
 
 async function main() {
 	// ... you will write your Prisma ORM queries here

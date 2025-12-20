@@ -1,5 +1,5 @@
 // src/modules/subCategories/subCategories.service.ts
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../infrastructure/db/prisma.client";
 import { productService } from "../product/products.service";
 import type {
 	CreateSubCategoryInput,

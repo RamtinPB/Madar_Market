@@ -24,7 +24,6 @@ export const app = new Elysia()
 			prefix: "/public",
 		})
 	)
-	.get("/", () => ({ status: "ok", message: "Backend is running" }))
 	.use(
 		swagger({
 			documentation: {
@@ -39,7 +38,8 @@ export const app = new Elysia()
 				},
 			},
 		})
-	);
+	)
+	.get("/", () => ({ status: "ok", message: "Backend is running" }));
 
 registerAuthRoutes(app);
 registerCategoryRoutes(app);

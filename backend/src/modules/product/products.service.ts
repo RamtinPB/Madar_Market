@@ -1,64 +1,37 @@
 // src/modules/product/products.service.ts
-import { prisma } from "../../utils/prisma";
-import { storageService } from "../storage/storage.service";
+import { storageService } from "../../infrastructure/storage/s3.storage";
 import {
 	ValidationError,
 	NotFoundError,
 	BadRequestError,
-} from "../../utils/errors";
-import type {
-	CreateProductInput,
-	UpdateProductInput,
-	UploadProductImagesInput,
-	ReorderProductImagesInput,
-} from "./products.types";
+} from "../../shared/errors/http-errors";
+import { productRepository } from "./products.repository";
+import type { CreateProductInput, UpdateProductInput } from "./products.schema";
 
 export class ProductService {
 	private readonly MAX_IMAGES_PER_PRODUCT = 10;
 	private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 	async getAllBySubCategory(subCategoryId: string) {
-		return prisma.product.findMany({
-			where: { subCategoryId },
-			include: {
-				attributes: {
-					orderBy: { order: "asc" },
-				},
-				images: {
-					orderBy: { order: "asc" },
-				},
-			},
-			orderBy: { order: "asc" },
-		});
+		return await productRepository.getSubCatProducts(subCategoryId);
 	}
 
 	async getById(id: string) {
-		const product = await prisma.product.findUnique({
-			where: { id },
-			include: {
-				attributes: {
-					orderBy: { order: "asc" },
-				},
-				images: {
-					orderBy: { order: "asc" },
-				},
-			},
-		});
+		const product = await productRepository.findProductById(id);
 		if (!product) throw new NotFoundError("Product not found");
 		return product;
 	}
 
 	async create(data: CreateProductInput) {
 		// Check if subCategory exists
-		const subCategory = await prisma.subCategory.findUnique({
-			where: { id: data.subCategoryId },
-		});
+		const subCategory = await productRepository.findSubCatById(
+			data.subCategoryId
+		);
 		if (!subCategory) throw new NotFoundError("SubCategory not found");
 
-		const total = await prisma.product.count({
-			where: { subCategoryId: data.subCategoryId },
-		});
-
+		const total = await productRepository.getProductCountBySubCategory(
+			data.subCategoryId
+		);
 		const order = data.order ?? total + 1;
 		const title = data.title ?? "New Product";
 		const price = data.price ?? 0;
@@ -70,48 +43,26 @@ export class ProductService {
 
 		// shift existing items if necessary
 		if (order <= total) {
-			await prisma.product.updateMany({
-				where: {
-					subCategoryId: data.subCategoryId,
-					order: { gte: order },
-				},
-				data: { order: { increment: 1 } },
-			});
+			await productRepository.updateProductsOrder(
+				data.subCategoryId,
+				order,
+				true
+			);
 		}
 
 		// No images in create
 
-		const product = await prisma.product.create({
-			data: {
-				title,
-				description: data.description,
-				price,
-				discountPercent,
-				discountedPrice: data.discountedPrice,
-				sponsorPrice: data.sponsorPrice,
-				subCategoryId: data.subCategoryId,
-				order,
-			},
-			include: {
-				attributes: {
-					orderBy: { order: "asc" },
-				},
-				images: {
-					orderBy: { order: "asc" },
-				},
-			},
+		const product = await productRepository.createProduct({
+			...data,
+			order,
+			title,
+			price,
+			discountPercent,
 		});
 
 		// Create attributes if provided
 		if (data.attributes && data.attributes.length > 0) {
-			await prisma.attributes.createMany({
-				data: data.attributes.map((attr, index) => ({
-					productId: product.id,
-					title: attr.title,
-					description: attr.description,
-					order: attr.order ?? index + 1,
-				})),
-			});
+			await productRepository.createAttributes(product.id, data.attributes);
 			// Re-fetch to include attributes
 			return this.getById(product.id);
 		}
@@ -125,117 +76,129 @@ export class ProductService {
 		// if subCategoryId changes, need to handle order in both subcategories
 		if (data.subCategoryId && data.subCategoryId !== product.subCategoryId) {
 			// Check new subCategory exists
-			const newSubCategory = await prisma.subCategory.findUnique({
-				where: { id: data.subCategoryId },
-			});
+			const newSubCategory = await productRepository.findSubCatById(
+				data.subCategoryId
+			);
 			if (!newSubCategory) throw new NotFoundError("SubCategory not found");
 
 			// Remove from old subcategory order
-			await prisma.product.updateMany({
-				where: {
-					subCategoryId: product.subCategoryId,
-					order: { gt: product.order },
-				},
-				data: { order: { decrement: 1 } },
-			});
+			await productRepository.updateProductsOrder(
+				product.subCategoryId,
+				product.order,
+				false
+			);
 
 			// Add to new subcategory
-			const newTotal = await prisma.product.count({
-				where: { subCategoryId: data.subCategoryId },
-			});
+			const newTotal = await productRepository.getProductCountBySubCategory(
+				data.subCategoryId
+			);
 			const newOrder = data.order ?? newTotal + 1;
 
-			await prisma.product.update({
-				where: { id },
-				data: {
-					title: data.title,
+			const updateData = {
+				...(data.title !== undefined && { title: data.title }),
+				...(data.description !== undefined && {
 					description: data.description,
-					price: data.price,
+				}),
+				...(data.price !== undefined && { price: data.price }),
+				...(data.discountPercent !== undefined && {
 					discountPercent: data.discountPercent,
+				}),
+				...(data.discountedPrice !== undefined && {
 					discountedPrice: data.discountedPrice,
+				}),
+				...(data.sponsorPrice !== undefined && {
 					sponsorPrice: data.sponsorPrice,
-					subCategoryId: data.subCategoryId,
-					order: newOrder,
-				},
-			});
+				}),
+				subCategoryId: data.subCategoryId,
+				order: newOrder,
+			};
+
+			await productRepository.updateProduct(id, updateData);
 		} else {
 			// Same subcategory, handle order change
 			if (data.order && data.order !== product.order) {
 				const oldOrder = product.order;
 				const newOrder = data.order;
 
-				const maxOrder = await prisma.product.count({
-					where: { subCategoryId: product.subCategoryId },
-				});
+				const maxOrder = await productRepository.getProductCountBySubCategory(
+					product.subCategoryId
+				);
 				if (newOrder < 1 || newOrder > maxOrder) {
 					throw new BadRequestError("Invalid order position");
 				}
 
-				await prisma.$transaction(async (tx) => {
-					if (newOrder < oldOrder) {
-						await tx.product.updateMany({
-							where: {
-								subCategoryId: product.subCategoryId,
-								order: { gte: newOrder, lt: oldOrder },
-							},
-							data: { order: { increment: 1 } },
-						});
-					} else {
-						await tx.product.updateMany({
-							where: {
-								subCategoryId: product.subCategoryId,
-								order: { gt: oldOrder, lte: newOrder },
-							},
-							data: { order: { decrement: 1 } },
-						});
-					}
+				const updateData = {
+					...(data.title !== undefined && { title: data.title }),
+					...(data.description !== undefined && {
+						description: data.description,
+					}),
+					...(data.price !== undefined && { price: data.price }),
+					...(data.discountPercent !== undefined && {
+						discountPercent: data.discountPercent,
+					}),
+					...(data.discountedPrice !== undefined && {
+						discountedPrice: data.discountedPrice,
+					}),
+					...(data.sponsorPrice !== undefined && {
+						sponsorPrice: data.sponsorPrice,
+					}),
+					order: newOrder,
+				};
 
-					await tx.product.update({
-						where: { id },
-						data: {
-							title: data.title,
-							description: data.description,
-							price: data.price,
-							discountPercent: data.discountPercent,
-							discountedPrice: data.discountedPrice,
-							sponsorPrice: data.sponsorPrice,
-							order: newOrder,
-						},
-					});
-				});
+				await productRepository.updateProductWithTransaction(
+					id,
+					updateData,
+					async (tx) => {
+						if (newOrder < oldOrder) {
+							await tx.product.updateMany({
+								where: {
+									subCategoryId: product.subCategoryId,
+									order: { gte: newOrder, lt: oldOrder },
+								},
+								data: { order: { increment: 1 } },
+							});
+						} else {
+							await tx.product.updateMany({
+								where: {
+									subCategoryId: product.subCategoryId,
+									order: { gt: oldOrder, lte: newOrder },
+								},
+								data: { order: { decrement: 1 } },
+							});
+						}
+					}
+				);
 			} else {
 				// only updating other fields
-				await prisma.product.update({
-					where: { id },
-					data: {
-						title: data.title,
+				const updateData = {
+					...(data.title !== undefined && { title: data.title }),
+					...(data.description !== undefined && {
 						description: data.description,
-						price: data.price,
+					}),
+					...(data.price !== undefined && { price: data.price }),
+					...(data.discountPercent !== undefined && {
 						discountPercent: data.discountPercent,
+					}),
+					...(data.discountedPrice !== undefined && {
 						discountedPrice: data.discountedPrice,
+					}),
+					...(data.sponsorPrice !== undefined && {
 						sponsorPrice: data.sponsorPrice,
-					},
-				});
+					}),
+				};
+
+				await productRepository.updateProduct(id, updateData);
 			}
 		}
 
 		// Handle attributes update
 		if (data.attributes !== undefined) {
 			// Delete existing attributes
-			await prisma.attributes.deleteMany({
-				where: { productId: id },
-			});
+			await productRepository.deleteAttributes(id);
 
 			// Create new attributes
 			if (data.attributes.length > 0) {
-				await prisma.attributes.createMany({
-					data: data.attributes.map((attr, index) => ({
-						productId: id,
-						title: attr.title,
-						description: attr.description,
-						order: attr.order ?? index + 1,
-					})),
-				});
+				await productRepository.createAttributes(id, data.attributes);
 			}
 		}
 
@@ -250,32 +213,21 @@ export class ProductService {
 			await storageService.deleteObject(image.key);
 		}
 
-		await prisma.$transaction(async (tx) => {
-			// Delete attributes
-			await tx.attributes.deleteMany({
-				where: { productId: id },
-			});
-
-			await tx.product.delete({ where: { id } });
-
-			// shift down remaining items in the same subcategory
-			await tx.product.updateMany({
-				where: {
-					subCategoryId: product.subCategoryId,
-					order: { gt: product.order },
-				},
-				data: { order: { decrement: 1 } },
-			});
-		});
+		await productRepository.deleteProductWithTransaction(
+			id,
+			{ subCategoryId: product.subCategoryId, order: product.order },
+			async (tx) => {
+				// Image deletion handled above, no need in transaction
+			}
+		);
 
 		return { success: true, message: "Product deleted successfully" };
 	}
 
 	async reorder(subCategoryId: string, items: { id: string; order: number }[]) {
-		const existing = await prisma.product.findMany({
-			where: { subCategoryId },
-			select: { id: true },
-		});
+		const existing = await productRepository.getProductsBySubCategoryForReorder(
+			subCategoryId
+		);
 
 		if (existing.length !== items.length) {
 			throw new BadRequestError("Mismatched item count");
@@ -300,27 +252,13 @@ export class ProductService {
 			if (o < 1 || o > max) throw new BadRequestError("Order out of range");
 		}
 
-		await prisma.$transaction(async (tx) => {
-			for (const item of items) {
-				await tx.product.update({
-					where: { id: item.id },
-					data: { order: item.order },
-				});
-			}
+		await productRepository.reorderProductsTransaction(items, async (tx) => {
+			// Validation completed above, no additional transaction work needed
 		});
 
-		return prisma.product.findMany({
-			where: { subCategoryId },
-			include: {
-				attributes: {
-					orderBy: { order: "asc" },
-				},
-				images: {
-					orderBy: { order: "asc" },
-				},
-			},
-			orderBy: { order: "asc" },
-		});
+		return productRepository.getProductsBySubCategoryWithIncludes(
+			subCategoryId
+		);
 	}
 
 	// Enhanced uploadImages with validation and error handling
@@ -357,9 +295,7 @@ export class ProductService {
 		for (const image of product.images) {
 			await storageService.deleteObject(image.key);
 		}
-		await prisma.productImage.deleteMany({
-			where: { productId: id },
-		});
+		await productRepository.deleteAllProductImages(id);
 
 		const newImages: { key: string; order: number }[] = [];
 		for (let i = 0; i < images.length; i++) {
@@ -369,13 +305,7 @@ export class ProductService {
 			newImages.push({ key, order: i + 1 });
 		}
 
-		await prisma.productImage.createMany({
-			data: newImages.map((img) => ({
-				productId: id,
-				key: img.key,
-				order: img.order,
-			})),
-		});
+		await productRepository.createProductImages(id, newImages);
 
 		const updatedProduct = await this.getById(id);
 		return {
@@ -387,30 +317,28 @@ export class ProductService {
 
 	// Enhanced deleteImage by ID with better error handling
 	async deleteImage(productId: string, imageId: string) {
-		const image = await prisma.productImage.findUnique({
-			where: { id: imageId },
-		});
+		const image = await productRepository.findProductImageById(imageId);
 		if (!image || image.productId !== productId) {
 			throw new NotFoundError("Image not found");
 		}
 
 		await storageService.deleteObject(image.key);
-		await prisma.productImage.delete({ where: { id: imageId } });
+		await productRepository.deleteProductImage(imageId);
 
 		// Reorder remaining images
-		const remainingImages = await prisma.productImage.findMany({
-			where: { productId },
-			orderBy: { order: "asc" },
-		});
+		const remainingImages = await productRepository.findProductImagesByProduct(
+			productId
+		);
 
-		await prisma.$transaction(async (tx) => {
-			for (let i = 0; i < remainingImages.length; i++) {
-				await tx.productImage.update({
-					where: { id: remainingImages[i]!.id },
-					data: { order: i + 1 },
-				});
+		await productRepository.reorderProductImagesTransaction(
+			remainingImages.map((img, index) => ({
+				id: img.id,
+				order: index + 1,
+			})),
+			async (tx) => {
+				// No additional transaction work needed
 			}
-		});
+		);
 
 		const updatedProduct = await this.getById(productId);
 		return {
@@ -422,14 +350,10 @@ export class ProductService {
 
 	// New method: Delete image by filename
 	async deleteImageByFilename(productId: string, filename: string) {
-		const image = await prisma.productImage.findFirst({
-			where: {
-				productId,
-				key: {
-					contains: `/${productId}/${filename}`,
-				},
-			},
-		});
+		const image = await productRepository.findProductImageByFilename(
+			productId,
+			filename
+		);
 
 		if (!image) {
 			throw new NotFoundError("Image not found");
@@ -443,14 +367,10 @@ export class ProductService {
 		// Extract filename from URL parameter (remove .webp extension if present)
 		const cleanFilename = urlParam.replace(/\.webp$/, "") + ".webp";
 
-		const image = await prisma.productImage.findFirst({
-			where: {
-				productId,
-				key: {
-					contains: `/${productId}/${cleanFilename}`,
-				},
-			},
-		});
+		const image = await productRepository.findProductImageByFilename(
+			productId,
+			cleanFilename
+		);
 
 		if (!image) {
 			throw new NotFoundError("Image not found");
@@ -463,10 +383,9 @@ export class ProductService {
 		productId: string,
 		items: { id: string; order: number }[]
 	) {
-		const existing = await prisma.productImage.findMany({
-			where: { productId },
-			select: { id: true },
-		});
+		const existing = await productRepository.findProductImagesByProduct(
+			productId
+		);
 
 		if (existing.length !== items.length) {
 			throw new BadRequestError("Mismatched item count");
@@ -491,14 +410,12 @@ export class ProductService {
 			if (o < 1 || o > max) throw new BadRequestError("Order out of range");
 		}
 
-		await prisma.$transaction(async (tx) => {
-			for (const item of items) {
-				await tx.productImage.update({
-					where: { id: item.id },
-					data: { order: item.order },
-				});
+		await productRepository.reorderProductImagesTransaction(
+			items,
+			async (tx) => {
+				// Validation completed above, no additional transaction work needed
 			}
-		});
+		);
 
 		const updatedProduct = await this.getById(productId);
 		return {

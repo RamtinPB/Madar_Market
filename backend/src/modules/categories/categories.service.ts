@@ -1,4 +1,4 @@
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../infrastructure/db/prisma.client";
 import { storageService } from "../storage/storage.service";
 import type {
 	CreateCategoryInput,
@@ -8,7 +8,7 @@ import {
 	createErrorResponse,
 	NotFoundError,
 	ValidationError,
-} from "../../utils/errors";
+} from "../../shared/errors/http-errors";
 import { error } from "node:console";
 
 export class CategoryService {

@@ -2,7 +2,7 @@
 import { categoryController } from "./categories.controller";
 import { subCategoryController } from "../subCategories/subCategories.controller";
 import { requireAuth, requireRole } from "../auth/auth.middleware";
-import { secureRoute } from "../../utils/securityRoute";
+import { secureRoute } from "../../shared/http/swagger";
 import {
 	validateCreateCategory,
 	validateUpdateCategory,

@@ -1,6 +1,9 @@
 import * as authService from "./auth.service";
-import { verifyAccessToken, parseExpiryToMs } from "../../utils/jwt";
-import { prisma } from "../../utils/prisma";
+import {
+	verifyAccessToken,
+	parseExpiryToMs,
+} from "../../infrastructure/auth/jwt.provider";
+import { prisma } from "../../infrastructure/db/prisma.client";
 
 const REFRESH_TOKEN_EXP = process.env.REFRESH_TOKEN_EXPIRE_IN!;
 
