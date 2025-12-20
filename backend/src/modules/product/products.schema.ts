@@ -5,7 +5,6 @@ import { z } from "zod";
 const attributeSchema = z.object({
 	title: z.string().optional(),
 	description: z.string().optional(),
-	order: z.number().int().min(0).optional(),
 });
 
 // File validation schema for images
@@ -24,7 +23,6 @@ export const CreateProductSchema = z.object({
 	discountPercent: z.number().int().min(0).max(100).optional(),
 	discountedPrice: z.number().positive().optional(),
 	sponsorPrice: z.number().positive().optional(),
-	order: z.number().int().min(0, "Order must be >= 0").optional(),
 	subCategoryId: z.string().min(1, "SubCategory ID is required"),
 	attributes: z.array(attributeSchema).optional(),
 	images: z.array(imageFileSchema).optional(), // Multiple images
@@ -37,7 +35,6 @@ export const UpdateProductSchema = z.object({
 	discountPercent: z.number().int().min(0).max(100).optional(),
 	discountedPrice: z.number().positive().optional(),
 	sponsorPrice: z.number().positive().optional(),
-	order: z.number().int().min(0, "Order must be >= 0").optional(),
 	subCategoryId: z.string().min(1, "SubCategory ID is required").optional(),
 	attributes: z.array(attributeSchema).optional(),
 });
@@ -66,28 +63,25 @@ export const UploadProductImagesSchema = z.object({
 
 // Response Schema
 export const ProductResponseSchema = z.object({
-	id: z.string(),
+	id: z.number(),
 	title: z.string(),
 	description: z.string().nullable(),
 	price: z.string(), // Decimal as string
 	discountPercent: z.number(),
 	discountedPrice: z.string().nullable(),
 	sponsorPrice: z.string().nullable(),
-	order: z.number(),
-	subCategoryId: z.string(),
+	subCategoryId: z.number(),
 	attributes: z.array(
 		z.object({
-			id: z.string(),
+			id: z.number(),
 			title: z.string().nullable(),
 			description: z.string().nullable(),
-			order: z.number(),
 		})
 	),
 	images: z.array(
 		z.object({
-			id: z.string(),
-			path: z.string(),
-			order: z.number(),
+			id: z.number(),
+			key: z.string(),
 		})
 	),
 	createdAt: z.date(),

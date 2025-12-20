@@ -3,23 +3,20 @@ import { z } from "zod";
 // Schema for POST /subcategories
 export const CreateSubCategorySchema = z.object({
 	title: z.string().optional(),
-	order: z.number().int().min(0, "Order must be >= 0").optional(),
 	categoryId: z.string().min(1, "Category ID is required"),
 });
 
 // Schema for PUT /subcategories/:id (metadata only)
 export const UpdateSubCategorySchema = z.object({
 	title: z.string().min(1, "Title is required").optional(),
-	order: z.number().int().min(0, "Order must be >= 0").optional(),
 	categoryId: z.string().min(1, "Category ID is required").optional(),
 });
 
 // Response Schema
 export const SubCategoryResponseSchema = z.object({
-	id: z.string(),
+	id: z.number(),
 	title: z.string(),
-	order: z.number(),
-	categoryId: z.string(),
+	categoryId: z.number(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });

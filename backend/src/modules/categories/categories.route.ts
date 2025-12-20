@@ -1,7 +1,8 @@
 // src/modules/categories/categories.route.ts
 import { categoryService } from "./categories.service";
 import { subCategoryService } from "../subCategories/subCategories.service";
-import { requireAuth, requireRole } from "../../infrastructure/auth/auth.guard";
+import { requireAuth } from "../../infrastructure/auth/auth.guard";
+import { requireRole } from "../../infrastructure/auth/role.guard";
 import { secureRoute } from "../../shared/http/swagger";
 import {
 	CreateCategorySchema,
@@ -21,12 +22,12 @@ export function registerCategoryRoutes(router: any) {
 
 	// Get category by ID
 	router.get("/categories/:id", async (ctx: any) => {
-		return categoryService.getById(ctx);
+		return categoryService.getById(Number(ctx.params.id));
 	});
 
 	// Get all subcategories for a category
 	router.get("/categories/:id/subcategories", async (ctx: any) => {
-		return subCategoryService.getAllByCategory(ctx);
+		return subCategoryService.getAllByCategory(ctx.params.id);
 	});
 
 	// ============================================
@@ -37,32 +38,30 @@ export function registerCategoryRoutes(router: any) {
 	router.post(
 		"/categories",
 		async (ctx: any) => {
-			const body = await CreateCategorySchema.parse(ctx.body);
+			const body = CreateCategorySchema.parse(ctx.body);
 			return categoryService.create(body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				title: t.Optional(t.String()),
-				order: t.Optional(t.Numeric()),
 			}),
 			type: "json",
 		},
 		secureRoute()
 	);
 
-	// Update metadata (title + order) — JSON body
+	// Update metadata (title) — JSON body
 	router.put(
 		"/categories/:id",
 		async (ctx: any) => {
-			const body = await UpdateCategorySchema.parse(ctx.body);
-			return categoryService.update(ctx.id, body);
+			const body = UpdateCategorySchema.parse(ctx.body);
+			return categoryService.update(Number(ctx.params.id), body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				title: t.Optional(t.String()),
-				order: t.Optional(t.Numeric()),
 			}),
 			type: "json",
 		},
@@ -73,7 +72,7 @@ export function registerCategoryRoutes(router: any) {
 	router.delete(
 		"/categories/:id",
 		async (ctx: any) => {
-			return categoryService.delete(ctx);
+			return categoryService.delete(Number(ctx.params.id));
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -85,7 +84,7 @@ export function registerCategoryRoutes(router: any) {
 	router.put(
 		"/categories/:id/image",
 		async (ctx: any) => {
-			return categoryService.uploadImage(ctx.categoryId, ctx.body);
+			return categoryService.uploadImage(ctx.params.id, ctx.body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -109,7 +108,7 @@ export function registerCategoryRoutes(router: any) {
 	router.delete(
 		"/categories/:id/image",
 		async (ctx: any) => {
-			return categoryService.deleteImage(ctx);
+			return categoryService.deleteImage(ctx.params.id);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -117,23 +116,23 @@ export function registerCategoryRoutes(router: any) {
 		secureRoute()
 	);
 
-	// Reorder categories — JSON body with items array
-	router.put(
-		"/categories/reorder",
-		async (ctx: any) => {
-			return categoryService.reorder(ctx);
-		},
-		{
-			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
-			body: t.Object({
-				items: t.Array(
-					t.Object({
-						id: t.String(),
-						order: t.Numeric(),
-					})
-				),
-			}),
-		},
-		secureRoute()
-	);
+	// // Reorder categories — JSON body with items array (ID-based ordering)
+	// router.put(
+	// 	"/categories/reorder",
+	// 	async (ctx: any) => {
+	// 		return categoryService.reorder(ctx);
+	// 	},
+	// 	{
+	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+	// 		body: t.Object({
+	// 			items: t.Array(
+	// 				t.Object({
+	// 					id: t.String(),
+	// 					order: t.Numeric(),
+	// 				})
+	// 			),
+	// 		}),
+	// 	},
+	// 	secureRoute()
+	// );
 }

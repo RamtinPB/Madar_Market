@@ -1,6 +1,7 @@
 // src/modules/subCategories/subCategories.route.ts
 import { subCategoryService } from "./subCategories.service";
-import { requireAuth, requireRole } from "../../infrastructure/auth/auth.guard";
+import { requireAuth } from "../../infrastructure/auth/auth.guard";
+import { requireRole } from "../../infrastructure/auth/role.guard";
 import {
 	CreateSubCategorySchema,
 	UpdateSubCategorySchema,
@@ -16,7 +17,7 @@ export function registerSubCategoryRoutes(router: any) {
 	router.get(
 		"/sub-categories/:id",
 		async (ctx: any) => {
-			return subCategoryService.getById(ctx);
+			return subCategoryService.getById(ctx.params.id);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -27,7 +28,7 @@ export function registerSubCategoryRoutes(router: any) {
 	router.post(
 		"/sub-categories",
 		async (ctx: any) => {
-			const body = await CreateSubCategorySchema.parse(ctx.body);
+			const body = CreateSubCategorySchema.parse(ctx.body);
 			return subCategoryService.create(body);
 		},
 		{
@@ -35,25 +36,23 @@ export function registerSubCategoryRoutes(router: any) {
 			body: t.Object({
 				title: t.Optional(t.String()),
 				categoryId: t.String(),
-				order: t.Optional(t.Numeric()),
 			}),
 			type: "json",
 		}
 	);
 
-	// Update subcategory metadata (title + order + categoryId) — JSON body
+	// Update subcategory metadata (title + categoryId) — JSON body
 	router.put(
 		"/sub-categories/:id",
 		async (ctx: any) => {
-			const body = await UpdateSubCategorySchema.parse(ctx.body);
-			return subCategoryService.update(ctx.id, body);
+			const body = UpdateSubCategorySchema.parse(ctx.body);
+			return subCategoryService.update(ctx.params.id, body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				title: t.Optional(t.String()),
 				categoryId: t.Optional(t.String()),
-				order: t.Optional(t.Numeric()),
 			}),
 			type: "json",
 		}
@@ -63,18 +62,18 @@ export function registerSubCategoryRoutes(router: any) {
 	router.delete(
 		"/sub-categories/:id",
 		async (ctx: any) => {
-			return subCategoryService.delete(ctx);
+			return subCategoryService.delete(ctx.params.id);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 		}
 	);
 
-	// Reorder subcategories — JSON body with items array
+	// Reorder subcategories — JSON body with items array (ID-based ordering)
 	router.put(
 		"/sub-categories/reorder/:categoryId",
 		async (ctx: any) => {
-			return subCategoryService.reorder(ctx.id, ctx.body);
+			return subCategoryService.reorder(ctx.params.id, ctx.body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -95,6 +94,6 @@ export function registerSubCategoryRoutes(router: any) {
 
 	// Get all products for a subcategory
 	router.get("/sub-categories/:id/products", async (ctx: any) => {
-		return subCategoryService.getAllProducts(ctx);
+		return subCategoryService.getAllProducts(ctx.params.id);
 	});
 }

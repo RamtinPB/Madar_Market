@@ -32,29 +32,13 @@ export class ProductService {
 		const total = await productRepository.getProductCountBySubCategory(
 			data.subCategoryId
 		);
-		const order = data.order ?? total + 1;
 		const title = data.title ?? "New Product";
 		const price = data.price ?? 0;
 		const discountPercent = data.discountPercent ?? 0;
 
-		if (order > total + 1) {
-			throw new BadRequestError("Invalid order position");
-		}
-
-		// shift existing items if necessary
-		if (order <= total) {
-			await productRepository.updateProductsOrder(
-				data.subCategoryId,
-				order,
-				true
-			);
-		}
-
-		// No images in create
-
 		const product = await productRepository.createProduct({
 			...data,
-			order,
+			id: total + 1, // Auto-generate ID
 			title,
 			price,
 			discountPercent,
@@ -62,9 +46,12 @@ export class ProductService {
 
 		// Create attributes if provided
 		if (data.attributes && data.attributes.length > 0) {
-			await productRepository.createAttributes(product.id, data.attributes);
+			await productRepository.createAttributes(
+				product.id.toString(),
+				data.attributes
+			);
 			// Re-fetch to include attributes
-			return this.getById(product.id);
+			return this.getById(product.id.toString());
 		}
 
 		return product;
@@ -73,26 +60,16 @@ export class ProductService {
 	async update(id: string, data: UpdateProductInput) {
 		const product = await this.getById(id);
 
-		// if subCategoryId changes, need to handle order in both subcategories
-		if (data.subCategoryId && data.subCategoryId !== product.subCategoryId) {
+		// if subCategoryId changes, update both subcategories
+		if (
+			data.subCategoryId &&
+			data.subCategoryId !== product.subCategoryId.toString()
+		) {
 			// Check new subCategory exists
 			const newSubCategory = await productRepository.findSubCatById(
 				data.subCategoryId
 			);
 			if (!newSubCategory) throw new NotFoundError("SubCategory not found");
-
-			// Remove from old subcategory order
-			await productRepository.updateProductsOrder(
-				product.subCategoryId,
-				product.order,
-				false
-			);
-
-			// Add to new subcategory
-			const newTotal = await productRepository.getProductCountBySubCategory(
-				data.subCategoryId
-			);
-			const newOrder = data.order ?? newTotal + 1;
 
 			const updateData = {
 				...(data.title !== undefined && { title: data.title }),
@@ -110,85 +87,29 @@ export class ProductService {
 					sponsorPrice: data.sponsorPrice,
 				}),
 				subCategoryId: data.subCategoryId,
-				order: newOrder,
 			};
 
 			await productRepository.updateProduct(id, updateData);
 		} else {
-			// Same subcategory, handle order change
-			if (data.order && data.order !== product.order) {
-				const oldOrder = product.order;
-				const newOrder = data.order;
+			// Same subcategory, handle regular updates
+			const updateData = {
+				...(data.title !== undefined && { title: data.title }),
+				...(data.description !== undefined && {
+					description: data.description,
+				}),
+				...(data.price !== undefined && { price: data.price }),
+				...(data.discountPercent !== undefined && {
+					discountPercent: data.discountPercent,
+				}),
+				...(data.discountedPrice !== undefined && {
+					discountedPrice: data.discountedPrice,
+				}),
+				...(data.sponsorPrice !== undefined && {
+					sponsorPrice: data.sponsorPrice,
+				}),
+			};
 
-				const maxOrder = await productRepository.getProductCountBySubCategory(
-					product.subCategoryId
-				);
-				if (newOrder < 1 || newOrder > maxOrder) {
-					throw new BadRequestError("Invalid order position");
-				}
-
-				const updateData = {
-					...(data.title !== undefined && { title: data.title }),
-					...(data.description !== undefined && {
-						description: data.description,
-					}),
-					...(data.price !== undefined && { price: data.price }),
-					...(data.discountPercent !== undefined && {
-						discountPercent: data.discountPercent,
-					}),
-					...(data.discountedPrice !== undefined && {
-						discountedPrice: data.discountedPrice,
-					}),
-					...(data.sponsorPrice !== undefined && {
-						sponsorPrice: data.sponsorPrice,
-					}),
-					order: newOrder,
-				};
-
-				await productRepository.updateProductWithTransaction(
-					id,
-					updateData,
-					async (tx) => {
-						if (newOrder < oldOrder) {
-							await tx.product.updateMany({
-								where: {
-									subCategoryId: product.subCategoryId,
-									order: { gte: newOrder, lt: oldOrder },
-								},
-								data: { order: { increment: 1 } },
-							});
-						} else {
-							await tx.product.updateMany({
-								where: {
-									subCategoryId: product.subCategoryId,
-									order: { gt: oldOrder, lte: newOrder },
-								},
-								data: { order: { decrement: 1 } },
-							});
-						}
-					}
-				);
-			} else {
-				// only updating other fields
-				const updateData = {
-					...(data.title !== undefined && { title: data.title }),
-					...(data.description !== undefined && {
-						description: data.description,
-					}),
-					...(data.price !== undefined && { price: data.price }),
-					...(data.discountPercent !== undefined && {
-						discountPercent: data.discountPercent,
-					}),
-					...(data.discountedPrice !== undefined && {
-						discountedPrice: data.discountedPrice,
-					}),
-					...(data.sponsorPrice !== undefined && {
-						sponsorPrice: data.sponsorPrice,
-					}),
-				};
-
-				await productRepository.updateProduct(id, updateData);
-			}
+			await productRepository.updateProduct(id, updateData);
 		}
 
 		// Handle attributes update
@@ -210,16 +131,14 @@ export class ProductService {
 
 		// Delete all images
 		for (const image of product.images) {
-			await storageService.deleteObject(image.key);
+			if (image.key) {
+				await storageService.deleteObject(image.key);
+			}
 		}
 
-		await productRepository.deleteProductWithTransaction(
-			id,
-			{ subCategoryId: product.subCategoryId, order: product.order },
-			async (tx) => {
-				// Image deletion handled above, no need in transaction
-			}
-		);
+		await productRepository.deleteProductWithTransaction(id, async (tx) => {
+			// Image deletion handled above, no need in transaction
+		});
 
 		return { success: true, message: "Product deleted successfully" };
 	}
@@ -240,21 +159,20 @@ export class ProductService {
 			throw new BadRequestError("Invalid product IDs");
 		}
 
-		const orders = items.map((x) => x.order);
-		const uniqueOrders = new Set(orders);
+		// Since we're using ID-based ordering, we don't need to actually reorder anything
+		// The frontend can sort by ID when displaying
+		// Just validate that the provided IDs are valid
+		const numericItems = items.map((item) => ({
+			id: item.id,
+			order: item.order,
+		}));
 
-		if (uniqueOrders.size !== orders.length) {
-			throw new BadRequestError("Duplicate order values");
-		}
-
-		const max = existing.length;
-		for (const o of orders) {
-			if (o < 1 || o > max) throw new BadRequestError("Order out of range");
-		}
-
-		await productRepository.reorderProductsTransaction(items, async (tx) => {
-			// Validation completed above, no additional transaction work needed
-		});
+		await productRepository.reorderProductsTransaction(
+			numericItems,
+			async (tx) => {
+				// Validation completed above, no additional transaction work needed
+			}
+		);
 
 		return productRepository.getProductsBySubCategoryWithIncludes(
 			subCategoryId
@@ -293,16 +211,18 @@ export class ProductService {
 
 		// Delete existing images (bulk deletion for replacement workflow)
 		for (const image of product.images) {
-			await storageService.deleteObject(image.key);
+			if (image.key) {
+				await storageService.deleteObject(image.key);
+			}
 		}
 		await productRepository.deleteAllProductImages(id);
 
-		const newImages: { key: string; order: number }[] = [];
+		const newImages: { key: string }[] = [];
 		for (let i = 0; i < images.length; i++) {
 			const filename = `${crypto.randomUUID()}.webp`;
 			const key = storageService.generateProductImageKey(id, filename);
 			await storageService.uploadFile(key, images[i] as File, "image/webp");
-			newImages.push({ key, order: i + 1 });
+			newImages.push({ key });
 		}
 
 		await productRepository.createProductImages(id, newImages);
@@ -318,27 +238,12 @@ export class ProductService {
 	// Enhanced deleteImage by ID with better error handling
 	async deleteImage(productId: string, imageId: string) {
 		const image = await productRepository.findProductImageById(imageId);
-		if (!image || image.productId !== productId) {
+		if (!image || image.productId.toString() !== productId || !image.key) {
 			throw new NotFoundError("Image not found");
 		}
 
 		await storageService.deleteObject(image.key);
 		await productRepository.deleteProductImage(imageId);
-
-		// Reorder remaining images
-		const remainingImages = await productRepository.findProductImagesByProduct(
-			productId
-		);
-
-		await productRepository.reorderProductImagesTransaction(
-			remainingImages.map((img, index) => ({
-				id: img.id,
-				order: index + 1,
-			})),
-			async (tx) => {
-				// No additional transaction work needed
-			}
-		);
 
 		const updatedProduct = await this.getById(productId);
 		return {
@@ -359,7 +264,7 @@ export class ProductService {
 			throw new NotFoundError("Image not found");
 		}
 
-		return this.deleteImage(productId, image.id);
+		return this.deleteImage(productId, image.id.toString());
 	}
 
 	// New method: Delete image by URL parameter (filename without UUID prefix)
@@ -376,7 +281,7 @@ export class ProductService {
 			throw new NotFoundError("Image not found");
 		}
 
-		return this.deleteImage(productId, image.id);
+		return this.deleteImage(productId, image.id.toString());
 	}
 
 	async reorderImages(
@@ -398,20 +303,16 @@ export class ProductService {
 			throw new BadRequestError("Invalid image IDs");
 		}
 
-		const orders = items.map((x) => x.order);
-		const uniqueOrders = new Set(orders);
-
-		if (uniqueOrders.size !== orders.length) {
-			throw new BadRequestError("Duplicate order values");
-		}
-
-		const max = existing.length;
-		for (const o of orders) {
-			if (o < 1 || o > max) throw new BadRequestError("Order out of range");
-		}
+		// Since we're using ID-based ordering, we don't need to actually reorder anything
+		// The frontend can sort by ID when displaying
+		// Just validate that the provided IDs are valid
+		const numericItems = items.map((item) => ({
+			id: item.id,
+			order: item.order,
+		}));
 
 		await productRepository.reorderProductImagesTransaction(
-			items,
+			numericItems,
 			async (tx) => {
 				// Validation completed above, no additional transaction work needed
 			}

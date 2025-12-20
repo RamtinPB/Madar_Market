@@ -21,7 +21,7 @@ export class CategoryService {
 		}));
 	}
 
-	async getById(id: string) {
+	async getById(id: number) {
 		const cat = await categoriesRepository.getCategoryById(id);
 		if (!cat) throw new NotFoundError("Category");
 		return cat;
@@ -29,68 +29,28 @@ export class CategoryService {
 
 	async create(data: CreateCategoryInput) {
 		const total = await categoriesRepository.getCategoryCount();
-		const order = data.order ?? total + 1;
 		const title = data.title ?? "New Category";
-
-		// Validate order against actual count
-		if (order < 1 || order > total + 1) {
-			throw new ValidationError(`Order must be between 1 and ${total + 1}`);
-		}
-
-		// shift existing items if necessary
-		if (order <= total) {
-			await categoriesRepository.updateCategoriesOrder(order, true);
-		}
 
 		return categoriesRepository.createCategory({
 			...data,
-			order,
 			title,
+			id: total + 1, // Auto-generate ID
 		});
 	}
 
-	async update(id: string, data: UpdateCategoryInput) {
+	async update(id: number, data: UpdateCategoryInput) {
 		const category = await this.getById(id);
 
-		// if ordering changes, adjust neighbors
-		if (data.order && data.order !== category.order) {
-			const oldOrder = category.order;
-			const newOrder = data.order;
+		// Update only the title (order is now handled by ID)
+		const updateData: any = {};
+		if (data.title !== undefined) updateData.title = data.title;
 
-			const maxOrder = await categoriesRepository.getCategoryCount();
-			if (newOrder < 1 || newOrder > maxOrder) {
-				throw new ValidationError(`Order must be between 1 and ${maxOrder}`);
-			}
-
-			await categoriesRepository.updateCategoryWithTransaction(
-				id,
-				{ title: data.title, order: newOrder },
-				async (tx) => {
-					if (newOrder < oldOrder) {
-						await tx.category.updateMany({
-							where: { order: { gte: newOrder, lt: oldOrder } },
-							data: { order: { increment: 1 } },
-						});
-					} else {
-						await tx.category.updateMany({
-							where: { order: { gt: oldOrder, lte: newOrder } },
-							data: { order: { decrement: 1 } },
-						});
-					}
-				}
-			);
-		} else {
-			// only updating title
-			const updateData: any = {};
-			if (data.title !== undefined) updateData.title = data.title;
-
-			await categoriesRepository.updateCategory(id, updateData);
-		}
+		await categoriesRepository.updateCategory(id, updateData);
 
 		return this.getById(id);
 	}
 
-	async delete(id: string) {
+	async delete(id: number) {
 		const category = await this.getById(id);
 
 		// Check if category has subcategories
@@ -108,18 +68,14 @@ export class CategoryService {
 			await storageService.deleteObject(category.imageKey);
 		}
 
-		await categoriesRepository.deleteCategoryWithTransaction(
-			id,
-			{ order: category.order },
-			async (tx) => {
-				// Image deletion handled above, no need in transaction
-			}
-		);
+		await categoriesRepository.deleteCategoryWithTransaction(id, async (tx) => {
+			// Image deletion handled above, no need in transaction
+		});
 
 		return { success: true };
 	}
 
-	async deleteImage(id: string) {
+	async deleteImage(id: number) {
 		const category = await this.getById(id);
 
 		if (category.imageKey) {
@@ -130,7 +86,7 @@ export class CategoryService {
 		return { success: true };
 	}
 
-	async reorder(items: { id: string; order: number }[]) {
+	async reorder(items: { id: number; order: number }[]) {
 		const existing = await categoriesRepository.getCategoriesForReorder();
 
 		if (existing.length !== items.length) {
@@ -144,20 +100,16 @@ export class CategoryService {
 			throw new Error("INVALID_IDS");
 		}
 
-		const orders = items.map((x) => x.order);
-		const uniqueOrders = new Set(orders);
-
-		if (uniqueOrders.size !== orders.length) {
-			throw new Error("DUPLICATE_ORDER");
-		}
-
-		const max = existing.length;
-		for (const o of orders) {
-			if (o < 1 || o > max) throw new Error("OUT_OF_RANGE");
-		}
+		// Since we're using ID-based ordering, we don't need to actually reorder anything
+		// The frontend can sort by ID when displaying
+		// Just validate that the provided IDs are valid
+		const numericItems = items.map((item) => ({
+			id: Number(item.id),
+			order: item.order,
+		}));
 
 		await categoriesRepository.reorderCategoriesTransaction(
-			items,
+			numericItems,
 			async (tx) => {
 				// Validation completed above, no additional transaction work needed
 			}
@@ -176,14 +128,16 @@ export class CategoryService {
 		const uploadUrl = await storageService.getUploadUrl(key, "image/webp", 120);
 
 		// 4. Save key in repository
-		await categoriesRepository.updateCategoryImageKey(categoryId, key);
+		await categoriesRepository.updateCategoryImageKey(Number(categoryId), key);
 
 		return { uploadUrl };
 	}
 
 	// Enhanced uploadImages with validation and error handling
 	async uploadImage(categoryId: string, image: File) {
-		const category = await categoriesRepository.getCategoryById(categoryId);
+		const category = await categoriesRepository.getCategoryById(
+			Number(categoryId)
+		);
 
 		if (image.size > this.MAX_FILE_SIZE) {
 			throw new ValidationError(
@@ -204,7 +158,7 @@ export class CategoryService {
 		await storageService.uploadFile(key, image, "image/webp");
 
 		// Save key in repository
-		await categoriesRepository.updateCategoryImageKey(categoryId, key);
+		await categoriesRepository.updateCategoryImageKey(Number(categoryId), key);
 
 		return {
 			success: true,

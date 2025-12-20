@@ -8,29 +8,29 @@ export const subCategoriesRepository = {
 	// SubCategory CRUD operations
 	async getAllByCategory(categoryId: string) {
 		return prisma.subCategory.findMany({
-			where: { categoryId },
-			orderBy: { order: "asc" },
+			where: { categoryId: Number(categoryId) },
+			orderBy: { id: "asc" },
 		});
 	},
 
 	async getSubCategoryById(id: string) {
 		return prisma.subCategory.findUnique({
-			where: { id },
+			where: { id: Number(id) },
 		});
 	},
 
 	async getSubCategoryCountByCategory(categoryId: string) {
 		return prisma.subCategory.count({
-			where: { categoryId },
+			where: { categoryId: Number(categoryId) },
 		});
 	},
 
-	async createSubCategory(data: CreateSubCategoryInput & { order: number }) {
+	async createSubCategory(data: CreateSubCategoryInput & { id: number }) {
 		return prisma.subCategory.create({
 			data: {
 				title: data.title ?? "New SubCategory",
-				categoryId: data.categoryId,
-				order: data.order,
+				categoryId: Number(data.categoryId),
+				id: data.id,
 			},
 		});
 	},
@@ -39,64 +39,32 @@ export const subCategoriesRepository = {
 		const updateData: any = {};
 
 		if (data.title !== undefined) updateData.title = data.title;
-		if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
-		if (data.order !== undefined) updateData.order = data.order;
+		if (data.categoryId !== undefined)
+			updateData.categoryId = Number(data.categoryId);
 
 		return prisma.subCategory.update({
-			where: { id },
+			where: { id: Number(id) },
 			data: updateData,
 		});
 	},
 
 	async deleteSubCategory(id: string) {
 		return prisma.subCategory.delete({
-			where: { id },
-		});
-	},
-
-	// SubCategory ordering operations
-	async updateSubCategoriesOrder(
-		categoryId: string,
-		order: number,
-		increment: boolean
-	) {
-		return prisma.subCategory.updateMany({
-			where: {
-				categoryId,
-				order: increment ? { gte: order } : { gt: order },
-			},
-			data: { order: increment ? { increment: 1 } : { decrement: 1 } },
-		});
-	},
-
-	async updateSubCategoriesOrderInRange(
-		categoryId: string,
-		startOrder: number,
-		endOrder: number,
-		increment: boolean
-	) {
-		return prisma.subCategory.updateMany({
-			where: {
-				categoryId,
-				order: increment
-					? { gte: startOrder, lt: endOrder }
-					: { gt: startOrder, lte: endOrder },
-			},
-			data: { order: increment ? { increment: 1 } : { decrement: 1 } },
+			where: { id: Number(id) },
 		});
 	},
 
 	// Category operations
 	async getCategoryById(categoryId: string) {
 		return prisma.category.findUnique({
-			where: { id: categoryId },
+			where: { id: Number(categoryId) },
 		});
 	},
 
 	// Product count operations
 	async getProductCountBySubCategory(subCategoryId: string) {
 		return prisma.product.count({
-			where: { subCategoryId },
+			where: { subCategoryId: Number(subCategoryId) },
 		});
 	},
 
@@ -110,7 +78,7 @@ export const subCategoriesRepository = {
 			await transactionCallback(tx);
 
 			return tx.subCategory.update({
-				where: { id },
+				where: { id: Number(id) },
 				data,
 			});
 		});
@@ -118,22 +86,12 @@ export const subCategoriesRepository = {
 
 	async deleteSubCategoryWithTransaction(
 		id: string,
-		subCategoryData: { categoryId: string; order: number },
 		transactionCallback: (tx: any) => Promise<void>
 	) {
 		return prisma.$transaction(async (tx) => {
 			await transactionCallback(tx);
 
-			await tx.subCategory.delete({ where: { id } });
-
-			// shift down remaining items in the same category
-			await tx.subCategory.updateMany({
-				where: {
-					categoryId: subCategoryData.categoryId,
-					order: { gt: subCategoryData.order },
-				},
-				data: { order: { decrement: 1 } },
-			});
+			await tx.subCategory.delete({ where: { id: Number(id) } });
 		});
 	},
 
@@ -145,10 +103,12 @@ export const subCategoriesRepository = {
 		return prisma.$transaction(async (tx) => {
 			await transactionCallback(tx);
 
+			// Since we're using ID-based ordering, no actual reordering is needed
+			// The frontend can sort by ID when displaying
 			const updatePromises = items.map((item) =>
 				tx.subCategory.update({
-					where: { id: item.id },
-					data: { order: item.order },
+					where: { id: Number(item.id) },
+					data: {}, // No data to update since ordering is by ID
 				})
 			);
 
@@ -159,15 +119,15 @@ export const subCategoriesRepository = {
 	// Get subcategories for reordering validation
 	async getSubCategoriesByCategoryForReorder(categoryId: string) {
 		return prisma.subCategory.findMany({
-			where: { categoryId },
+			where: { categoryId: Number(categoryId) },
 			select: { id: true },
 		});
 	},
 
 	async getSubCategoriesByCategorySimple(categoryId: string) {
 		return prisma.subCategory.findMany({
-			where: { categoryId },
-			orderBy: { order: "asc" },
+			where: { categoryId: Number(categoryId) },
+			orderBy: { id: "asc" },
 		});
 	},
 };
