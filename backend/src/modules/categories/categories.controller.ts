@@ -1,9 +1,9 @@
 // src/modules/category/category.controller.ts
-import { ReorderCategoriesDto } from "./categories.dto";
+import { ReorderCategoriesSchema } from "./categories.schema";
 import type {
 	CreateCategoryInput,
 	UpdateCategoryInput,
-} from "./categories.types";
+} from "./categories.schema";
 import { categoryService } from "./categories.service";
 import { createErrorResponse } from "../../shared/errors/http-errors";
 
@@ -41,7 +41,7 @@ export class CategoryController {
 	}
 
 	async reorder(ctx: any) {
-		const parsed = ReorderCategoriesDto.safeParse(await ctx.request.json());
+		const parsed = ReorderCategoriesSchema.safeParse(await ctx.request.json());
 		if (!parsed.success) {
 			ctx.set.status = 400;
 			return parsed.error;

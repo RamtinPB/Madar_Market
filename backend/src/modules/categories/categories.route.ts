@@ -1,12 +1,12 @@
 // src/modules/categories/categories.route.ts
-import { categoryController } from "./categories.controller";
-import { subCategoryController } from "../subCategories/subCategories.controller";
+import { categoryService } from "./categories.service";
+import { subCategoryService } from "../subCategories/subCategories.service";
 import { requireAuth, requireRole } from "../auth/auth.middleware";
 import { secureRoute } from "../../shared/http/swagger";
 import {
-	validateCreateCategory,
-	validateUpdateCategory,
-} from "./categories.middleware";
+	CreateCategorySchema,
+	UpdateCategorySchema,
+} from "./categories.schema";
 import { t } from "elysia";
 
 export function registerCategoryRoutes(router: any) {
@@ -15,18 +15,18 @@ export function registerCategoryRoutes(router: any) {
 	// ============================================
 
 	// Get all categories
-	router.get("/categories", async (ctx: any) => {
-		return categoryController.getAll(ctx);
+	router.get("/categories", async () => {
+		return categoryService.getAll();
 	});
 
 	// Get category by ID
 	router.get("/categories/:id", async (ctx: any) => {
-		return categoryController.getById(ctx);
+		return categoryService.getById(ctx);
 	});
 
 	// Get all subcategories for a category
 	router.get("/categories/:id/subcategories", async (ctx: any) => {
-		return subCategoryController.getAllByCategory(ctx);
+		return subCategoryService.getAllByCategory(ctx);
 	});
 
 	// ============================================
@@ -37,9 +37,8 @@ export function registerCategoryRoutes(router: any) {
 	router.post(
 		"/categories",
 		async (ctx: any) => {
-			const validationResult = await validateCreateCategory(ctx);
-			if (validationResult) return validationResult;
-			return categoryController.create(ctx);
+			const body = await CreateCategorySchema.parse(ctx.body);
+			return categoryService.create(body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -56,9 +55,8 @@ export function registerCategoryRoutes(router: any) {
 	router.put(
 		"/categories/:id",
 		async (ctx: any) => {
-			const validationResult = await validateUpdateCategory(ctx);
-			if (validationResult) return validationResult;
-			return categoryController.update(ctx);
+			const body = await UpdateCategorySchema.parse(ctx.body);
+			return categoryService.update(ctx.id, body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -75,7 +73,7 @@ export function registerCategoryRoutes(router: any) {
 	router.delete(
 		"/categories/:id",
 		async (ctx: any) => {
-			return categoryController.delete(ctx);
+			return categoryService.delete(ctx);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -87,7 +85,7 @@ export function registerCategoryRoutes(router: any) {
 	router.put(
 		"/categories/:id/image",
 		async (ctx: any) => {
-			return categoryController.uploadImage(ctx);
+			return categoryService.uploadImage(ctx.categoryId, ctx.body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -101,7 +99,7 @@ export function registerCategoryRoutes(router: any) {
 	// // get image upload url
 	// router.post(
 	// 	"/categories/:id/image-upload-url",
-	// 	categoryController.getCategoryImageUploadUrl,
+	// 	categoryService.getCategoryImageUploadUrl,
 	// 	{
 	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 	// 	}
@@ -111,7 +109,7 @@ export function registerCategoryRoutes(router: any) {
 	router.delete(
 		"/categories/:id/image",
 		async (ctx: any) => {
-			return categoryController.deleteImage(ctx);
+			return categoryService.deleteImage(ctx);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -123,7 +121,7 @@ export function registerCategoryRoutes(router: any) {
 	router.put(
 		"/categories/reorder",
 		async (ctx: any) => {
-			return categoryController.reorder(ctx);
+			return categoryService.reorder(ctx);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
