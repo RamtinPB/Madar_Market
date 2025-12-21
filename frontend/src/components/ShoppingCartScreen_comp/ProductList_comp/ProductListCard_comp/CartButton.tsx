@@ -3,7 +3,7 @@ import { Button } from "@/src/components/ui/button";
 import { ButtonGroup } from "@/src/components/ui/button-group";
 import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
 import TrashIcon from "@/public/assets/shopping_cart_screen/trash.svg";
-import { useCartStore } from "@/data_store/useCartStore";
+import { useCartStore } from "@/src/stores/useCartStore";
 
 export function CartButton({ title }: { title: string }) {
 	const setItemCount = useCartStore((s) => s.setItemCount);

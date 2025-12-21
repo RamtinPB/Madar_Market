@@ -90,7 +90,6 @@ export function registerProductRoutes(router: any) {
 	router.delete(
 		"/products/:id",
 		async (ctx: any) => {
-			// place zod validation here <---
 			return productService.delete(ctx.params.id);
 		},
 		{
@@ -137,6 +136,44 @@ export function registerProductRoutes(router: any) {
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+		}
+	);
+
+	// Reorder products in subcategory
+	router.put(
+		"/products/reorder/:subCategoryId",
+		async (ctx: any) => {
+			return productService.reorder(ctx.params.subCategoryId, ctx.body.items);
+		},
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+			body: t.Object({
+				items: t.Array(
+					t.Object({
+						businessId: t.String(),
+						order: t.Numeric(),
+					})
+				),
+			}),
+		}
+	);
+
+	// Reorder product images
+	router.put(
+		"/products/:id/images/reorder",
+		async (ctx: any) => {
+			return productService.reorderImages(ctx.params.id, ctx.body.items);
+		},
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+			body: t.Object({
+				items: t.Array(
+					t.Object({
+						businessId: t.String(),
+						order: t.Numeric(),
+					})
+				),
+			}),
 		}
 	);
 }

@@ -69,18 +69,18 @@ export function registerSubCategoryRoutes(router: any) {
 		}
 	);
 
-	// Reorder subcategories — JSON body with items array (ID-based ordering)
+	// Reorder subcategories — JSON body with items array
 	router.put(
 		"/sub-categories/reorder/:categoryId",
 		async (ctx: any) => {
-			return subCategoryService.reorder(ctx.params.id, ctx.body);
+			return subCategoryService.reorder(ctx.params.categoryId, ctx.body.items);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 			body: t.Object({
 				items: t.Array(
 					t.Object({
-						id: t.String(),
+						businessId: t.String(),
 						order: t.Numeric(),
 					})
 				),

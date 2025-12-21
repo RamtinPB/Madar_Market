@@ -14,56 +14,56 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  phoneNumber String @unique
+  id           Int      @id @default(autoincrement())
+  phoneNumber  String   @unique
   passwordHash String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  otps  OTP[]
-  refreshTokens  RefreshToken[]
+  otps          OTP[]
+  refreshTokens RefreshToken[]
 
-  role Role @default(USER)
+  role                Role                 @default(USER)
   revokedAccessTokens RevokedAccessToken[]
 }
 
 model OTP {
-  id  Int @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   phoneNumber String
-  codeHash  String
-  expiresAt DateTime
-  consumed Boolean @default(false)
+  codeHash    String
+  expiresAt   DateTime
+  consumed    Boolean  @default(false)
 
-  user  User? @relation(fields: [userId], references: [id])
+  user   User? @relation(fields: [userId], references: [id])
   userId Int?
 
   createdAt DateTime @default(now())
 }
 
 model RefreshToken {
-   id Int @id @default(autoincrement())
-   tokenHash String
-   revoked Boolean @default(false)
-   expiresAt DateTime
+  id        Int      @id @default(autoincrement())
+  tokenHash String
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
 
-   user User @relation(fields: [userId], references: [id])
-   userId Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-   createdAt DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model RevokedAccessToken {
-   id Int @id @default(autoincrement())
-   tokenHash String @unique
-   expiresAt DateTime
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  expiresAt DateTime
 
-   user User @relation(fields: [userId], references: [id])
-   userId Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-   createdAt DateTime @default(now())
+  createdAt DateTime @default(now())
 
-   @@index([tokenHash])
-   @@index([userId])
+  @@index([tokenHash])
+  @@index([userId])
 }
 
 enum Role {
@@ -73,21 +73,21 @@ enum Role {
 }
 
 model Category {
-  id Int @id @default(autoincrement())
-  businessId          String         @default(cuid())
-  title       String
-  imageKey   String?       // S3 object key, e.g. categories/id/filename.webp
+  businessId    String        @id @default(cuid())
+  order         Int           @default(autoincrement())
+  title         String
+  imageKey      String? // S3 object key, e.g. categories/id/filename.webp
   subCategories SubCategory[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model SubCategory {
-   id Int @id @default(autoincrement())
-  businessId         String     @default(cuid())
+  businessId String    @id @default(cuid())
+  order      Int       @default(autoincrement())
   title      String
-  category   Category  @relation(fields: [categoryId], references: [id])
-  categoryId Int
+  category   Category  @relation(fields: [categoryId], references: [businessId])
+  categoryId String
   products   Product[]
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -96,41 +96,41 @@ model SubCategory {
 }
 
 model Product {
-   id Int @id @default(autoincrement())
-   businessId              String          @default(cuid())
-   title           String
-   description     String?
-   price           Decimal        @db.Decimal(12,2) 
-   discountPercent Int            @default(0) // 0..100
-   discountedPrice Decimal?       @db.Decimal(12,2)
-   sponsorPrice    Decimal?       @db.Decimal(12,2)
-   subCategory     SubCategory    @relation(fields: [subCategoryId], references: [id])
-   subCategoryId   Int
-   attributes      Attributes[]
-   images          ProductImage[]
-   createdAt       DateTime       @default(now())
-   updatedAt       DateTime       @updatedAt
+  businessId      String         @id @default(cuid())
+  order           Int            @default(autoincrement())
+  title           String
+  description     String?
+  price           Decimal        @db.Decimal(12, 2)
+  discountPercent Int            @default(0) // 0..100
+  discountedPrice Decimal?       @db.Decimal(12, 2)
+  sponsorPrice    Decimal?       @db.Decimal(12, 2)
+  subCategory     SubCategory    @relation(fields: [subCategoryId], references: [businessId])
+  subCategoryId   String
+  attributes      Attributes[]
+  images          ProductImage[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-   @@index([subCategoryId])
+  @@index([subCategoryId])
 }
 
 model Attributes {
-   id Int @id @default(autoincrement())
-   businessId          String   @default(cuid())
-   title       String?
-   description String?
+  businessId  String  @id @default(cuid())
+  order       Int     @default(autoincrement())
+  title       String?
+  description String?
 
-   product     Product @relation(fields: [productId], references: [id])
-   productId   Int
+  product   Product @relation(fields: [productId], references: [businessId])
+  productId String
 
-   @@index([productId])
+  @@index([productId])
 }
 
 model ProductImage {
-  id Int @id @default(autoincrement())
-  businessId        String    @default(cuid())
-  product   Product  @relation(fields: [productId], references: [id])
-  productId Int
-  key      String?   // S3 object key, e.g. products/productId/filename.webp
-  createdAt DateTime @default(now())
+  businessId String   @id @default(cuid())
+  order      Int      @default(autoincrement())
+  product    Product  @relation(fields: [productId], references: [businessId])
+  productId  String
+  key        String? // S3 object key, e.g. products/productId/filename.webp
+  createdAt  DateTime @default(now())
 }

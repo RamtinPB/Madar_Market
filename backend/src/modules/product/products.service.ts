@@ -16,8 +16,8 @@ export class ProductService {
 		return await productRepository.getSubCatProducts(subCategoryId);
 	}
 
-	async getById(id: string) {
-		const product = await productRepository.findProductById(id);
+	async getById(businessId: string) {
+		const product = await productRepository.findProductById(businessId);
 		if (!product) throw new NotFoundError("Product not found");
 		return product;
 	}
@@ -38,7 +38,6 @@ export class ProductService {
 
 		const product = await productRepository.createProduct({
 			...data,
-			id: total + 1, // Auto-generate ID
 			title,
 			price,
 			discountPercent,
@@ -47,24 +46,21 @@ export class ProductService {
 		// Create attributes if provided
 		if (data.attributes && data.attributes.length > 0) {
 			await productRepository.createAttributes(
-				product.id.toString(),
+				product.businessId,
 				data.attributes
 			);
 			// Re-fetch to include attributes
-			return this.getById(product.id.toString());
+			return this.getById(product.businessId);
 		}
 
 		return product;
 	}
 
-	async update(id: string, data: UpdateProductInput) {
-		const product = await this.getById(id);
+	async update(businessId: string, data: UpdateProductInput) {
+		const product = await this.getById(businessId);
 
 		// if subCategoryId changes, update both subcategories
-		if (
-			data.subCategoryId &&
-			data.subCategoryId !== product.subCategoryId.toString()
-		) {
+		if (data.subCategoryId && data.subCategoryId !== product.subCategoryId) {
 			// Check new subCategory exists
 			const newSubCategory = await productRepository.findSubCatById(
 				data.subCategoryId
@@ -89,7 +85,7 @@ export class ProductService {
 				subCategoryId: data.subCategoryId,
 			};
 
-			await productRepository.updateProduct(id, updateData);
+			await productRepository.updateProduct(businessId, updateData);
 		} else {
 			// Same subcategory, handle regular updates
 			const updateData = {
@@ -109,25 +105,25 @@ export class ProductService {
 				}),
 			};
 
-			await productRepository.updateProduct(id, updateData);
+			await productRepository.updateProduct(businessId, updateData);
 		}
 
 		// Handle attributes update
 		if (data.attributes !== undefined) {
 			// Delete existing attributes
-			await productRepository.deleteAttributes(id);
+			await productRepository.deleteAttributes(businessId);
 
 			// Create new attributes
 			if (data.attributes.length > 0) {
-				await productRepository.createAttributes(id, data.attributes);
+				await productRepository.createAttributes(businessId, data.attributes);
 			}
 		}
 
-		return this.getById(id);
+		return this.getById(businessId);
 	}
 
-	async delete(id: string) {
-		const product = await this.getById(id);
+	async delete(businessId: string) {
+		const product = await this.getById(businessId);
 
 		// Delete all images
 		for (const image of product.images) {
@@ -136,14 +132,20 @@ export class ProductService {
 			}
 		}
 
-		await productRepository.deleteProductWithTransaction(id, async (tx) => {
-			// Image deletion handled above, no need in transaction
-		});
+		await productRepository.deleteProductWithTransaction(
+			businessId,
+			async (tx) => {
+				// Image deletion handled above, no need in transaction
+			}
+		);
 
 		return { success: true, message: "Product deleted successfully" };
 	}
 
-	async reorder(subCategoryId: string, items: { id: string; order: number }[]) {
+	async reorder(
+		subCategoryId: string,
+		items: { businessId: string; order: number }[]
+	) {
 		const existing = await productRepository.getProductsBySubCategoryForReorder(
 			subCategoryId
 		);
@@ -152,23 +154,23 @@ export class ProductService {
 			throw new BadRequestError("Mismatched item count");
 		}
 
-		const existingIds = new Set(existing.map((x) => x.id));
-		const providedIds = new Set(items.map((x) => x.id));
+		const existingIds = new Set(existing.map((x) => x.businessId));
+		const providedIds = new Set(items.map((x) => x.businessId));
 
 		if (existingIds.size !== providedIds.size) {
 			throw new BadRequestError("Invalid product IDs");
 		}
 
-		// Since we're using ID-based ordering, we don't need to actually reorder anything
-		// The frontend can sort by ID when displaying
+		// Since we're using businessId-based ordering, we don't need to actually reorder anything
+		// The frontend can sort by businessId when displaying
 		// Just validate that the provided IDs are valid
-		const numericItems = items.map((item) => ({
-			id: item.id,
+		const businessIdItems = items.map((item) => ({
+			businessId: item.businessId,
 			order: item.order,
 		}));
 
 		await productRepository.reorderProductsTransaction(
-			numericItems,
+			businessIdItems,
 			async (tx) => {
 				// Validation completed above, no additional transaction work needed
 			}
@@ -180,8 +182,8 @@ export class ProductService {
 	}
 
 	// Enhanced uploadImages with validation and error handling
-	async uploadImages(id: string, images: File[]) {
-		const product = await this.getById(id);
+	async uploadImages(businessId: string, images: File[]) {
+		const product = await this.getById(businessId);
 
 		// Validate image count
 		if (images.length === 0) {
@@ -215,19 +217,19 @@ export class ProductService {
 				await storageService.deleteObject(image.key);
 			}
 		}
-		await productRepository.deleteAllProductImages(id);
+		await productRepository.deleteAllProductImages(businessId);
 
 		const newImages: { key: string }[] = [];
 		for (let i = 0; i < images.length; i++) {
 			const filename = `${crypto.randomUUID()}.webp`;
-			const key = storageService.generateProductImageKey(id, filename);
+			const key = storageService.generateProductImageKey(businessId, filename);
 			await storageService.uploadFile(key, images[i] as File, "image/webp");
 			newImages.push({ key });
 		}
 
-		await productRepository.createProductImages(id, newImages);
+		await productRepository.createProductImages(businessId, newImages);
 
-		const updatedProduct = await this.getById(id);
+		const updatedProduct = await this.getById(businessId);
 		return {
 			success: true,
 			message: `${images.length} images uploaded successfully`,
@@ -238,7 +240,7 @@ export class ProductService {
 	// Enhanced deleteImage by ID with better error handling
 	async deleteImage(productId: string, imageId: string) {
 		const image = await productRepository.findProductImageById(imageId);
-		if (!image || image.productId.toString() !== productId || !image.key) {
+		if (!image || image.productId !== productId || !image.key) {
 			throw new NotFoundError("Image not found");
 		}
 
@@ -264,7 +266,7 @@ export class ProductService {
 			throw new NotFoundError("Image not found");
 		}
 
-		return this.deleteImage(productId, image.id.toString());
+		return this.deleteImage(productId, image.businessId);
 	}
 
 	// New method: Delete image by URL parameter (filename without UUID prefix)
@@ -281,12 +283,12 @@ export class ProductService {
 			throw new NotFoundError("Image not found");
 		}
 
-		return this.deleteImage(productId, image.id.toString());
+		return this.deleteImage(productId, image.businessId);
 	}
 
 	async reorderImages(
 		productId: string,
-		items: { id: string; order: number }[]
+		items: { businessId: string; order: number }[]
 	) {
 		const existing = await productRepository.findProductImagesByProduct(
 			productId
@@ -296,23 +298,23 @@ export class ProductService {
 			throw new BadRequestError("Mismatched item count");
 		}
 
-		const existingIds = new Set(existing.map((x) => x.id));
-		const providedIds = new Set(items.map((x) => x.id));
+		const existingIds = new Set(existing.map((x) => x.businessId));
+		const providedIds = new Set(items.map((x) => x.businessId));
 
 		if (existingIds.size !== providedIds.size) {
 			throw new BadRequestError("Invalid image IDs");
 		}
 
-		// Since we're using ID-based ordering, we don't need to actually reorder anything
-		// The frontend can sort by ID when displaying
+		// Since we're using businessId-based ordering, we don't need to actually reorder anything
+		// The frontend can sort by businessId when displaying
 		// Just validate that the provided IDs are valid
-		const numericItems = items.map((item) => ({
-			id: item.id,
+		const businessIdItems = items.map((item) => ({
+			businessId: item.businessId,
 			order: item.order,
 		}));
 
 		await productRepository.reorderProductImagesTransaction(
-			numericItems,
+			businessIdItems,
 			async (tx) => {
 				// Validation completed above, no additional transaction work needed
 			}

@@ -5,28 +5,28 @@ export const productRepository = {
 	// Existing methods
 	getSubCatProducts(subCategoryId: string) {
 		return prisma.product.findMany({
-			where: { subCategoryId: Number(subCategoryId) },
+			where: { subCategoryId },
 			include: {
 				attributes: {
-					orderBy: { id: "asc" },
+					orderBy: { businessId: "asc" },
 				},
 				images: {
-					orderBy: { id: "asc" },
+					orderBy: { businessId: "asc" },
 				},
 			},
-			orderBy: { id: "asc" },
+			orderBy: { businessId: "asc" },
 		});
 	},
 
 	findProductById(productId: string) {
 		return prisma.product.findUnique({
-			where: { id: Number(productId) },
+			where: { businessId: productId },
 			include: {
 				attributes: {
-					orderBy: { id: "asc" },
+					orderBy: { businessId: "asc" },
 				},
 				images: {
-					orderBy: { id: "asc" },
+					orderBy: { businessId: "asc" },
 				},
 			},
 		});
@@ -34,19 +34,19 @@ export const productRepository = {
 
 	findSubCatById(subCategoryId: string) {
 		return prisma.subCategory.findUnique({
-			where: { id: Number(subCategoryId) },
+			where: { businessId: subCategoryId },
 		});
 	},
 
 	// Product count operations
 	async getProductCountBySubCategory(subCategoryId: string) {
 		return prisma.product.count({
-			where: { subCategoryId: Number(subCategoryId) },
+			where: { subCategoryId },
 		});
 	},
 
 	// Product CRUD operations
-	async createProduct(data: CreateProductInput & { id: number }) {
+	async createProduct(data: CreateProductInput) {
 		return prisma.product.create({
 			data: {
 				title: data.title ?? "New Product",
@@ -55,21 +55,20 @@ export const productRepository = {
 				discountPercent: data.discountPercent ?? 0,
 				discountedPrice: data.discountedPrice,
 				sponsorPrice: data.sponsorPrice,
-				subCategoryId: Number(data.subCategoryId),
-				id: data.id,
+				subCategoryId: data.subCategoryId,
 			},
 			include: {
 				attributes: {
-					orderBy: { id: "asc" },
+					orderBy: { businessId: "asc" },
 				},
 				images: {
-					orderBy: { id: "asc" },
+					orderBy: { businessId: "asc" },
 				},
 			},
 		});
 	},
 
-	async updateProduct(id: string, data: Partial<UpdateProductInput>) {
+	async updateProduct(businessId: string, data: Partial<UpdateProductInput>) {
 		const updateData: any = {};
 
 		if (data.title !== undefined) updateData.title = data.title;
@@ -83,23 +82,23 @@ export const productRepository = {
 		if (data.sponsorPrice !== undefined)
 			updateData.sponsorPrice = data.sponsorPrice;
 		if (data.subCategoryId !== undefined)
-			updateData.subCategoryId = Number(data.subCategoryId);
+			updateData.subCategoryId = data.subCategoryId;
 
 		return prisma.product.update({
-			where: { id: Number(id) },
+			where: { businessId },
 			data: updateData,
 		});
 	},
 
-	async deleteProduct(id: string) {
+	async deleteProduct(businessId: string) {
 		return prisma.product.delete({
-			where: { id: Number(id) },
+			where: { businessId },
 		});
 	},
 
 	// Transaction operations
 	async updateProductWithTransaction(
-		id: string,
+		businessId: string,
 		data: any,
 		transactionCallback: (tx: any) => Promise<void>
 	) {
@@ -107,25 +106,25 @@ export const productRepository = {
 			await transactionCallback(tx);
 
 			return tx.product.update({
-				where: { id: Number(id) },
+				where: { businessId },
 				data,
 			});
 		});
 	},
 
 	async reorderProductsTransaction(
-		items: { id: string; order: number }[],
+		items: { businessId: string; order: number }[],
 		transactionCallback: (tx: any) => Promise<void>
 	) {
 		return prisma.$transaction(async (tx) => {
 			await transactionCallback(tx);
 
-			// Since we're using ID-based ordering, no actual reordering is needed
-			// The frontend can sort by ID when displaying
+			// Since we're using businessId-based ordering, no actual reordering is needed
+			// The frontend can sort by businessId when displaying
 			const updatePromises = items.map((item) =>
 				tx.product.update({
-					where: { id: Number(item.id) },
-					data: {}, // No data to update since ordering is by ID
+					where: { businessId: item.businessId },
+					data: {}, // No data to update since ordering is by businessId
 				})
 			);
 
@@ -143,7 +142,7 @@ export const productRepository = {
 	) {
 		return prisma.attributes.createMany({
 			data: attributes.map((attr, index) => ({
-				productId: Number(productId),
+				productId,
 				title: attr.title ?? `Attribute ${index + 1}`,
 				description: attr.description,
 			})),
@@ -152,21 +151,21 @@ export const productRepository = {
 
 	async deleteAttributes(productId: string) {
 		return prisma.attributes.deleteMany({
-			where: { productId: Number(productId) },
+			where: { productId },
 		});
 	},
 
 	// Product image operations
 	async findProductImageById(imageId: string) {
 		return prisma.productImage.findUnique({
-			where: { id: Number(imageId) },
+			where: { businessId: imageId },
 		});
 	},
 
 	async findProductImageByFilename(productId: string, filename: string) {
 		return prisma.productImage.findFirst({
 			where: {
-				productId: Number(productId),
+				productId,
 				key: {
 					contains: `/${productId}/${filename}`,
 				},
@@ -176,45 +175,45 @@ export const productRepository = {
 
 	async findProductImagesByProduct(productId: string) {
 		return prisma.productImage.findMany({
-			where: { productId: Number(productId) },
-			orderBy: { id: "asc" },
+			where: { productId },
+			orderBy: { businessId: "asc" },
 		});
 	},
 
 	async deleteAllProductImages(productId: string) {
 		return prisma.productImage.deleteMany({
-			where: { productId: Number(productId) },
+			where: { productId },
 		});
 	},
 
 	async deleteProductImage(imageId: string) {
 		return prisma.productImage.delete({
-			where: { id: Number(imageId) },
+			where: { businessId: imageId },
 		});
 	},
 
 	async createProductImages(productId: string, images: Array<{ key: string }>) {
 		return prisma.productImage.createMany({
 			data: images.map((img) => ({
-				productId: Number(productId),
+				productId,
 				key: img.key,
 			})),
 		});
 	},
 
 	async reorderProductImagesTransaction(
-		items: { id: string; order: number }[],
+		items: { businessId: string; order: number }[],
 		transactionCallback: (tx: any) => Promise<void>
 	) {
 		return prisma.$transaction(async (tx) => {
 			await transactionCallback(tx);
 
-			// Since we're using ID-based ordering, no actual reordering is needed
-			// The frontend can sort by ID when displaying
+			// Since we're using businessId-based ordering, no actual reordering is needed
+			// The frontend can sort by businessId when displaying
 			const updatePromises = items.map((item) =>
 				tx.productImage.update({
-					where: { id: Number(item.id) },
-					data: {}, // No data to update since ordering is by ID
+					where: { businessId: item.businessId },
+					data: {}, // No data to update since ordering is by businessId
 				})
 			);
 
@@ -225,29 +224,29 @@ export const productRepository = {
 	// Product reordering operations
 	async getProductsBySubCategoryForReorder(subCategoryId: string) {
 		return prisma.product.findMany({
-			where: { subCategoryId: Number(subCategoryId) },
-			select: { id: true },
+			where: { subCategoryId },
+			select: { businessId: true },
 		});
 	},
 
 	async getProductsBySubCategoryWithIncludes(subCategoryId: string) {
 		return prisma.product.findMany({
-			where: { subCategoryId: Number(subCategoryId) },
+			where: { subCategoryId },
 			include: {
 				attributes: {
-					orderBy: { id: "asc" },
+					orderBy: { businessId: "asc" },
 				},
 				images: {
-					orderBy: { id: "asc" },
+					orderBy: { businessId: "asc" },
 				},
 			},
-			orderBy: { id: "asc" },
+			orderBy: { businessId: "asc" },
 		});
 	},
 
 	// Complex transaction operations
 	async deleteProductWithTransaction(
-		id: string,
+		businessId: string,
 		transactionCallback: (tx: any) => Promise<void>
 	) {
 		return prisma.$transaction(async (tx) => {
@@ -255,11 +254,11 @@ export const productRepository = {
 
 			// Delete attributes
 			await tx.attributes.deleteMany({
-				where: { productId: Number(id) },
+				where: { productId: businessId },
 			});
 
 			// Delete product
-			await tx.product.delete({ where: { id: Number(id) } });
+			await tx.product.delete({ where: { businessId } });
 		});
 	},
 };

@@ -42,7 +42,7 @@ export const UpdateProductSchema = z.object({
 export const ReorderProductsSchema = z.object({
 	items: z.array(
 		z.object({
-			id: z.string(),
+			businessId: z.string(),
 			order: z.number().int().min(1),
 		})
 	),
@@ -51,7 +51,7 @@ export const ReorderProductsSchema = z.object({
 export const ReorderProductImagesSchema = z.object({
 	items: z.array(
 		z.object({
-			id: z.string(),
+			businessId: z.string(),
 			order: z.number().int().min(1),
 		})
 	),
@@ -63,24 +63,25 @@ export const UploadProductImagesSchema = z.object({
 
 // Response Schema
 export const ProductResponseSchema = z.object({
-	id: z.number(),
+	businessId: z.string(),
+	order: z.number(),
 	title: z.string(),
 	description: z.string().nullable(),
 	price: z.string(), // Decimal as string
 	discountPercent: z.number(),
 	discountedPrice: z.string().nullable(),
 	sponsorPrice: z.string().nullable(),
-	subCategoryId: z.number(),
+	subCategoryId: z.string(),
 	attributes: z.array(
 		z.object({
-			id: z.number(),
+			businessId: z.string(),
 			title: z.string().nullable(),
 			description: z.string().nullable(),
 		})
 	),
 	images: z.array(
 		z.object({
-			id: z.number(),
+			businessId: z.string(),
 			key: z.string(),
 		})
 	),

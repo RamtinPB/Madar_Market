@@ -8,10 +8,10 @@ export const categoriesRepository = {
 	// Category CRUD operations
 	async getAllCategories() {
 		return prisma.category.findMany({
-			orderBy: { id: "asc" },
+			orderBy: { order: "asc" },
 			include: {
 				subCategories: {
-					orderBy: { id: "asc" },
+					orderBy: { order: "asc" },
 					include: {
 						_count: {
 							select: { products: true },
@@ -25,9 +25,9 @@ export const categoriesRepository = {
 		});
 	},
 
-	async getCategoryById(id: number) {
+	async getCategoryById(businessId: string) {
 		return prisma.category.findUnique({
-			where: { id },
+			where: { businessId },
 		});
 	},
 
@@ -35,57 +35,58 @@ export const categoriesRepository = {
 		return prisma.category.count();
 	},
 
-	async createCategory(data: CreateCategoryInput & { id: number }) {
+	async createCategory(data: CreateCategoryInput) {
 		return prisma.category.create({
 			data: {
 				title: data.title ?? "New Category",
-				id: data.id,
+				imageKey: data.imageKey,
 			},
 		});
 	},
 
-	async updateCategory(id: number, data: Partial<UpdateCategoryInput>) {
+	async updateCategory(businessId: string, data: Partial<UpdateCategoryInput>) {
 		const updateData: any = {};
 
 		if (data.title !== undefined) updateData.title = data.title;
+		if (data.imageKey !== undefined) updateData.imageKey = data.imageKey;
 
 		return prisma.category.update({
-			where: { id },
+			where: { businessId },
 			data: updateData,
 		});
 	},
 
-	async deleteCategory(id: number) {
+	async deleteCategory(businessId: string) {
 		return prisma.category.delete({
-			where: { id },
+			where: { businessId },
 		});
 	},
 
-	// // Category ordering operations
-	// async updateCategoriesOrder(startOrder: number, increment: boolean) {
-	// 	return prisma.category.updateMany({
-	// 		where: { order: increment ? { gte: startOrder } : { gt: startOrder } },
-	// 		data: { order: increment ? { increment: 1 } : { decrement: 1 } },
-	// 	});
-	// },
+	// Category ordering operations
+	async updateCategoriesOrder(startOrder: number, increment: boolean) {
+		return prisma.category.updateMany({
+			where: { order: increment ? { gte: startOrder } : { gt: startOrder } },
+			data: { order: increment ? { increment: 1 } : { decrement: 1 } },
+		});
+	},
 
-	// async updateCategoriesOrderInRange(
-	// 	startOrder: number,
-	// 	endOrder: number,
-	// 	increment: boolean
-	// ) {
-	// 	return prisma.category.updateMany({
-	// 		where: {
-	// 			order: increment
-	// 				? { gte: startOrder, lt: endOrder }
-	// 				: { gt: startOrder, lte: endOrder },
-	// 		},
-	// 		data: { order: increment ? { increment: 1 } : { decrement: 1 } },
-	// 	});
-	// },
+	async updateCategoriesOrderInRange(
+		startOrder: number,
+		endOrder: number,
+		increment: boolean
+	) {
+		return prisma.category.updateMany({
+			where: {
+				order: increment
+					? { gte: startOrder, lt: endOrder }
+					: { gt: startOrder, lte: endOrder },
+			},
+			data: { order: increment ? { increment: 1 } : { decrement: 1 } },
+		});
+	},
 
 	// Subcategory count operations
-	async getSubCategoryCountByCategory(categoryId: number) {
+	async getSubCategoryCountByCategory(categoryId: string) {
 		return prisma.subCategory.count({
 			where: { categoryId },
 		});
@@ -93,7 +94,7 @@ export const categoriesRepository = {
 
 	// Transaction operations
 	async updateCategoryWithTransaction(
-		id: number,
+		businessId: string,
 		data: any,
 		transactionCallback: (tx: any) => Promise<void>
 	) {
@@ -101,36 +102,35 @@ export const categoriesRepository = {
 			await transactionCallback(tx);
 
 			return tx.category.update({
-				where: { id },
+				where: { businessId },
 				data,
 			});
 		});
 	},
 
 	async deleteCategoryWithTransaction(
-		id: number,
+		businessId: string,
 		transactionCallback: (tx: any) => Promise<void>
 	) {
 		return prisma.$transaction(async (tx) => {
 			await transactionCallback(tx);
 
-			await tx.category.delete({ where: { id } });
+			await tx.category.delete({ where: { businessId } });
 		});
 	},
 
 	async reorderCategoriesTransaction(
-		items: { id: number; order: number }[],
+		items: { businessId: string; order: number }[],
 		transactionCallback: (tx: any) => Promise<void>
 	) {
 		return prisma.$transaction(async (tx) => {
 			await transactionCallback(tx);
 
-			// Since we're using ID-based ordering, no actual reordering is needed
-			// The frontend can sort by ID when displaying
+			// Update the order field for each category
 			const updatePromises = items.map((item) =>
 				tx.category.update({
-					where: { id: item.id },
-					data: {}, // No data to update since ordering is by ID
+					where: { businessId: item.businessId },
+					data: { order: item.order },
 				})
 			);
 
@@ -141,20 +141,20 @@ export const categoriesRepository = {
 	// Get categories for reordering validation
 	async getCategoriesForReorder() {
 		return prisma.category.findMany({
-			select: { id: true },
+			select: { businessId: true },
 		});
 	},
 
 	async getCategoriesSimple() {
 		return prisma.category.findMany({
-			orderBy: { id: "asc" },
+			orderBy: { order: "asc" },
 		});
 	},
 
 	// Image operations
-	async updateCategoryImageKey(id: number, imageKey: string | null) {
+	async updateCategoryImageKey(businessId: string, imageKey: string | null) {
 		return prisma.category.update({
-			where: { id },
+			where: { businessId },
 			data: { imageKey },
 		});
 	},

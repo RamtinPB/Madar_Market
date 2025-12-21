@@ -20,9 +20,9 @@ export function registerCategoryRoutes(router: any) {
 		return categoryService.getAll();
 	});
 
-	// Get category by ID
+	// Get category by businessId
 	router.get("/categories/:id", async (ctx: any) => {
-		return categoryService.getById(Number(ctx.params.id));
+		return categoryService.getById(ctx.params.id);
 	});
 
 	// Get all subcategories for a category
@@ -56,7 +56,7 @@ export function registerCategoryRoutes(router: any) {
 		"/categories/:id",
 		async (ctx: any) => {
 			const body = UpdateCategorySchema.parse(ctx.body);
-			return categoryService.update(Number(ctx.params.id), body);
+			return categoryService.update(ctx.params.id, body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -72,7 +72,7 @@ export function registerCategoryRoutes(router: any) {
 	router.delete(
 		"/categories/:id",
 		async (ctx: any) => {
-			return categoryService.delete(Number(ctx.params.id));
+			return categoryService.delete(ctx.params.id);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -108,7 +108,7 @@ export function registerCategoryRoutes(router: any) {
 	router.delete(
 		"/categories/:id/image",
 		async (ctx: any) => {
-			return categoryService.deleteImage(Number(ctx.params.id));
+			return categoryService.deleteImage(ctx.params.id);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -116,23 +116,23 @@ export function registerCategoryRoutes(router: any) {
 		secureRoute()
 	);
 
-	// // Reorder categories — JSON body with items array (ID-based ordering)
-	// router.put(
-	// 	"/categories/reorder",
-	// 	async (ctx: any) => {
-	// 		return categoryService.reorder(ctx);
-	// 	},
-	// 	{
-	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
-	// 		body: t.Object({
-	// 			items: t.Array(
-	// 				t.Object({
-	// 					id: t.String(),
-	// 					order: t.Numeric(),
-	// 				})
-	// 			),
-	// 		}),
-	// 	},
-	// 	secureRoute()
-	// );
+	// Reorder categories — JSON body with items array
+	router.put(
+		"/categories/reorder",
+		async (ctx: any) => {
+			return categoryService.reorder(ctx.body.items);
+		},
+		{
+			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
+			body: t.Object({
+				items: t.Array(
+					t.Object({
+						businessId: t.String(),
+						order: t.Numeric(),
+					})
+				),
+			}),
+		},
+		secureRoute()
+	);
 }

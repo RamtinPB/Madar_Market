@@ -14,9 +14,10 @@ export const UpdateSubCategorySchema = z.object({
 
 // Response Schema
 export const SubCategoryResponseSchema = z.object({
-	id: z.number(),
+	businessId: z.string(),
+	order: z.number(),
 	title: z.string(),
-	categoryId: z.number(),
+	categoryId: z.string(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });
@@ -24,7 +25,7 @@ export const SubCategoryResponseSchema = z.object({
 export const ReorderSubCategoriesSchema = z.object({
 	items: z.array(
 		z.object({
-			id: z.string(),
+			businessId: z.string(),
 			order: z.number().int().min(1),
 		})
 	),

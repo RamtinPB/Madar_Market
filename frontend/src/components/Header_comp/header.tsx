@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/src/components/ui/button";
-import { useCartStore } from "@/data_store/useCartStore";
+import { useCartStore } from "@/src/stores/useCartStore";
 
 // SVG Icons (imported as React components via SVGR)
 import Logo from "@/public/assets/header/logo.svg";

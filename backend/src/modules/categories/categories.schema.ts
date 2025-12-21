@@ -11,7 +11,8 @@ const imageFileSchema = z
 
 // Response Schema
 export const CategoryResponseSchema = z.object({
-	id: z.number(),
+	businessId: z.string(),
+	order: z.number(),
 	title: z.string(),
 	imageKey: z.string().nullable(),
 	createdAt: z.date(),
@@ -19,18 +20,20 @@ export const CategoryResponseSchema = z.object({
 });
 export const CreateCategorySchema = z.object({
 	title: z.string().min(0).optional(),
+	imageKey: z.string().optional(),
 	imagePath: z.object(imageFileSchema).optional(),
 });
 
 export const UpdateCategorySchema = z.object({
 	title: z.string().min(0).optional(),
+	imageKey: z.string().optional(),
 	imagePath: z.object(imageFileSchema).optional(),
 });
 
 export const ReorderCategoriesSchema = z.object({
 	items: z.array(
 		z.object({
-			id: z.string(),
+			businessId: z.string(),
 			order: z.number().int().min(1),
 		})
 	),
