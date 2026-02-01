@@ -1,6 +1,6 @@
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/src/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProfileScreen() {
 	const router = useRouter();

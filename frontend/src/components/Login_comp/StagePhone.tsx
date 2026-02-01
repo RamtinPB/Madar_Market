@@ -1,11 +1,11 @@
 "use client";
 
-import { ButtonGroup } from "@/src/components/ui/button-group";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
-} from "@/src/components/ui/input-group";
+} from "@/components/ui/input-group";
 
 import PhoneIcon from "@/public/assets/login/Phone.svg";
 import EyeIcon from "@/public/assets/login/eye-solid-full.svg";

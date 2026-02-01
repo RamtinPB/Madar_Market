@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetTitle } from "@/src/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 // Subcomponents you created
 import { AdminProductSheetHeader } from "../ProductSheet/AdminProductSheetHeader";
@@ -10,9 +10,9 @@ import { AdminProductSheetPriceBox } from "../ProductSheet/AdminProductSheetPric
 
 // Types
 import { AdminProduceListCardProps } from "../AdminProduceListCard";
-import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
-import { Button } from "@/src/components/ui/button";
-import { ProductsAPI, Product, ProductAttribute } from "@/src/lib/api/products";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { ProductsAPI, Product, ProductAttribute } from "@/lib/api/products";
 
 interface AdminProductSheetProps {
 	open: boolean;

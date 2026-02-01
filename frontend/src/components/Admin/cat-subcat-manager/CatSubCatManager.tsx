@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Input } from "@/src/components/ui/input";
-import { Button } from "@/src/components/ui/button";
-import { Badge } from "@/src/components/ui/badge";
-import { Card } from "@/src/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from "@/src/components/ui/accordion";
-import { AspectRatio } from "@/src/components/ui/aspect-ratio";
-import { Combobox } from "@/src/components/ui/combobox";
-import { ScrollArea } from "@/src/components/ui/scroll-area";
+} from "@/components/ui/accordion";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Combobox } from "@/components/ui/combobox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { File, Box, Edit, X, Image as ImageIcon, Search } from "lucide-react";
-import { Skeleton } from "@/src/components/ui/skeleton";
-import apiFetch from "@/src/lib/api/fetcher";
+import { Skeleton } from "@/components/ui/skeleton";
+import apiFetch from "@/lib/api/fetcher";
 
 // Types
 interface Category {
@@ -94,13 +94,13 @@ export default function CatSubCatManager() {
 			.map((cat) => ({
 				...cat,
 				subCategories: cat.subCategories.filter((sub) =>
-					sub.title.toLowerCase().includes(searchQuery.toLowerCase())
+					sub.title.toLowerCase().includes(searchQuery.toLowerCase()),
 				),
 			}))
 			.filter(
 				(cat) =>
 					cat.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					cat.subCategories.length > 0
+					cat.subCategories.length > 0,
 			);
 
 		setFilteredCategories(filtered);
@@ -108,7 +108,7 @@ export default function CatSubCatManager() {
 
 	const handleEdit = (
 		type: "category" | "subcategory",
-		item: Category | SubCategory
+		item: Category | SubCategory,
 	) => {
 		setEditData({
 			type,
@@ -254,7 +254,7 @@ export default function CatSubCatManager() {
 													<span>
 														{category.subCategories.reduce(
 															(sum, sub) => sum + sub._count.products,
-															0
+															0,
 														)}
 													</span>
 													<Box className="h-3 w-3" />
@@ -361,15 +361,15 @@ export default function CatSubCatManager() {
 						{editData.type === "category" &&
 							(() => {
 								const currentCategory = categories.find(
-									(cat) => cat.id === editData.id
+									(cat) => cat.id === editData.id,
 								);
 								const hasExistingImage =
 									currentCategory?.imageUrl && !editData.shouldDeleteImage;
 								const imageSrc = editData.imageFile
 									? URL.createObjectURL(editData.imageFile)
 									: hasExistingImage
-									? `${API_BASE}${currentCategory.imageUrl}`
-									: null;
+										? `${API_BASE}${currentCategory.imageUrl}`
+										: null;
 
 								return (
 									<div className=" space-y-4">

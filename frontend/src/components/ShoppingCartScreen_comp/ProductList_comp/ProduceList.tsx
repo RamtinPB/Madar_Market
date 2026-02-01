@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ProduceListHeader } from "./ProduceListHeader";
 import { ProduceListGrid } from "./ProduceListGrid";
 import ProductSheet from "./ProductSheet_comp/ProductSheet";
 import { ProduceListCardProps } from "./ProductListCard_comp/ProduceListCard";
-import apiFetch from "@/src/lib/api/fetcher";
+import apiFetch from "@/lib/api/fetcher";
 
 interface ProduceListProps {
 	subCategoryId: string | undefined;

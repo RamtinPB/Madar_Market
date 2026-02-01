@@ -3,8 +3,8 @@
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 
-import { cn } from "@/src/lib/utils";
-import { Button } from "@/src/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
 	Command,
 	CommandEmpty,
@@ -12,12 +12,12 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-} from "@/src/components/ui/command";
+} from "@/components/ui/command";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/src/components/ui/popover";
+} from "@/components/ui/popover";
 
 interface ComboboxProps {
 	options: { value: string; label: string }[];
@@ -71,7 +71,7 @@ export function Combobox({
 									<Check
 										className={cn(
 											"mr-2 h-4 w-4",
-											value === option.value ? "opacity-100" : "opacity-0"
+											value === option.value ? "opacity-100" : "opacity-0",
 										)}
 									/>
 									{option.label}

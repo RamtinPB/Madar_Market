@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -10,15 +10,15 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/src/components/ui/table";
+} from "@/components/ui/table";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from "@/src/components/ui/dialog";
-import { Separator } from "@/src/components/ui/separator";
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import {
 	Pagination,
 	PaginationContent,
@@ -27,14 +27,10 @@ import {
 	PaginationLink,
 	PaginationNext,
 	PaginationPrevious,
-} from "@/src/components/ui/pagination";
-import {
-	Avatar,
-	AvatarFallback,
-	AvatarImage,
-} from "@/src/components/ui/avatar";
-import { CategoriesAPI, Category } from "@/src/lib/api/categories";
-import { SubCategory } from "@/src/lib/api/subcategories";
+} from "@/components/ui/pagination";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CategoriesAPI, Category } from "@/lib/api/categories";
+import { SubCategory } from "@/lib/api/subcategories";
 import { Edit3, Trash2, Plus, Eye } from "lucide-react";
 import {
 	Breadcrumb,
@@ -43,9 +39,9 @@ import {
 	BreadcrumbList,
 	BreadcrumbPage,
 	BreadcrumbSeparator,
-} from "@/src/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb";
 import SubCatManager from "./SubCatManager/SubCatManager";
-import { Tooltip, TooltipContent } from "@/src/components/ui/tooltip";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
 
 export default function CatManager() {
@@ -57,7 +53,7 @@ export default function CatManager() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-		null
+		null,
 	);
 	const [editedTitle, setEditedTitle] = useState("");
 	const [editedImage, setEditedImage] = useState<File | null>(null);
@@ -84,7 +80,7 @@ export default function CatManager() {
 		const filtered = categories.filter(
 			(category) =>
 				category.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				category.title.toLowerCase().includes(searchTerm.toLowerCase())
+				category.title.toLowerCase().includes(searchTerm.toLowerCase()),
 		);
 		setFilteredCategories(filtered);
 		setCurrentPage(1);
@@ -98,7 +94,7 @@ export default function CatManager() {
 			loadSubcategoryCounts(data);
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Failed to load categories"
+				err instanceof Error ? err.message : "Failed to load categories",
 			);
 		} finally {
 			setLoading(false);
@@ -109,7 +105,7 @@ export default function CatManager() {
 		const promises = cats.map(async (category) => {
 			try {
 				const subs = await CategoriesAPI.getSubcategoriesByCategory(
-					category.id
+					category.id,
 				);
 				return { id: category.id, count: subs.length };
 			} catch {
@@ -132,7 +128,7 @@ export default function CatManager() {
 			await loadCategories();
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Failed to delete category"
+				err instanceof Error ? err.message : "Failed to delete category",
 			);
 		}
 	};
@@ -167,7 +163,7 @@ export default function CatManager() {
 			setAddDialogOpen(false);
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Failed to create category"
+				err instanceof Error ? err.message : "Failed to create category",
 			);
 		}
 	};
@@ -182,7 +178,7 @@ export default function CatManager() {
 			if (editedImage) {
 				updatedCategory = await CategoriesAPI.uploadImage(
 					selectedCategory.id,
-					editedImage
+					editedImage,
 				);
 			}
 
@@ -197,7 +193,7 @@ export default function CatManager() {
 			setEditDialogOpen(false);
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Failed to update category"
+				err instanceof Error ? err.message : "Failed to update category",
 			);
 		}
 	};
@@ -210,7 +206,7 @@ export default function CatManager() {
 			setSubcategories(subs);
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Failed to load subcategories"
+				err instanceof Error ? err.message : "Failed to load subcategories",
 			);
 		}
 	};
@@ -222,12 +218,12 @@ export default function CatManager() {
 		if (selectedCategoryForSubcats) {
 			try {
 				const subs = await CategoriesAPI.getSubcategoriesByCategory(
-					selectedCategoryForSubcats.id
+					selectedCategoryForSubcats.id,
 				);
 				setSubcategories(subs);
 			} catch (err) {
 				setError(
-					err instanceof Error ? err.message : "Failed to reload subcategories"
+					err instanceof Error ? err.message : "Failed to reload subcategories",
 				);
 			}
 		}
@@ -235,7 +231,7 @@ export default function CatManager() {
 
 	const paginatedCategories = filteredCategories.slice(
 		(currentPage - 1) * itemsPerPage,
-		currentPage * itemsPerPage
+		currentPage * itemsPerPage,
 	);
 
 	const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
@@ -389,7 +385,7 @@ export default function CatManager() {
 												{page}
 											</PaginationLink>
 										</PaginationItem>
-									)
+									),
 								)}
 								<PaginationItem>
 									<PaginationNext

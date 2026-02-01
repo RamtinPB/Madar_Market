@@ -1,9 +1,9 @@
 "use client";
-import { Button } from "@/src/components/ui/button";
-import { ButtonGroup } from "@/src/components/ui/button-group";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
 import TrashIcon from "@/public/assets/shopping_cart_screen/trash.svg";
-import { useCartStore } from "@/src/stores/useCartStore";
+import { useCartStore } from "@/stores/cart.store.ts";
 
 export function CartButton({ title }: { title: string }) {
 	const setItemCount = useCartStore((s) => s.setItemCount);

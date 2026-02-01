@@ -1,8 +1,8 @@
 "use client";
 import AdminProductSheetCard from "../ProductSheet/AdminProductSheetCard";
-import { Button } from "@/src/components/ui/button";
+import { Button } from "@/components/ui/button";
 import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
-import { ProductAttribute } from "@/src/lib/api/products";
+import { ProductAttribute } from "@/lib/api/products";
 
 interface AdminProductSheetAttributesProps {
 	attributes: ProductAttribute[];
@@ -31,7 +31,7 @@ export function AdminProductSheetAttributes({
 	const handleUpdateAttribute = (
 		index: number,
 		field: "title" | "description",
-		value: string
+		value: string,
 	) => {
 		const newAttributes = [...attributes];
 		newAttributes[index] = {

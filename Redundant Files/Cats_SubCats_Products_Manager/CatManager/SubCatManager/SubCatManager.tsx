@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -10,14 +10,14 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/src/components/ui/table";
+} from "@/components/ui/table";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from "@/src/components/ui/dialog";
+} from "@/components/ui/dialog";
 import {
 	Pagination,
 	PaginationContent,
@@ -26,9 +26,9 @@ import {
 	PaginationLink,
 	PaginationNext,
 	PaginationPrevious,
-} from "@/src/components/ui/pagination";
-import { SubCategoriesAPI, SubCategory } from "@/src/lib/api/subcategories";
-import { CategoriesAPI, Category } from "@/src/lib/api/categories";
+} from "@/components/ui/pagination";
+import { SubCategoriesAPI, SubCategory } from "@/lib/api/subcategories";
+import { CategoriesAPI, Category } from "@/lib/api/categories";
 import { Edit, Trash2, Plus } from "lucide-react";
 
 interface SubCatManagerProps {
@@ -65,7 +65,7 @@ export default function SubCatManager({
 		const filtered = subcategories.filter(
 			(subCategory) =>
 				subCategory.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				subCategory.id.toLowerCase().includes(searchTerm.toLowerCase())
+				subCategory.id.toLowerCase().includes(searchTerm.toLowerCase()),
 		);
 		setFilteredSubCategories(filtered);
 		setCurrentPage(1);
@@ -124,7 +124,7 @@ export default function SubCatManager({
 
 	const paginatedSubCategories = filteredSubCategories.slice(
 		(currentPage - 1) * itemsPerPage,
-		currentPage * itemsPerPage
+		currentPage * itemsPerPage,
 	);
 
 	const totalPages = Math.ceil(filteredSubCategories.length / itemsPerPage);

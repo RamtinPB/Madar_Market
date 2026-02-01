@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/src/context/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const vazir = Vazirmatn({
 	subsets: ["arabic"],

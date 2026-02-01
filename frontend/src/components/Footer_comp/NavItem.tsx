@@ -1,4 +1,4 @@
-import { Button } from "@/src/components/ui/button";
+import { Button } from "@/components/ui/button";
 import ActiveIndicatorIcon from "@/public/assets/footer/item_active.svg";
 
 type SVGComponent = React.FC<React.SVGProps<SVGSVGElement>>;

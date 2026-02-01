@@ -8,7 +8,7 @@ import {
 	refreshAccessToken,
 	getMe,
 	onAuthChange,
-} from "@/src/lib/api/auth";
+} from "@/lib/api/auth";
 interface AuthContextType {
 	user: any | null;
 	isAuthenticated: boolean;

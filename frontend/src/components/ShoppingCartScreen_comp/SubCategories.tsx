@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-import apiFetch from "@/src/lib/api/fetcher";
+import apiFetch from "@/lib/api/fetcher";
 
 interface SubCategoriesProps {
 	categoryId: string | undefined;

@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/src/components/ui/button";
-import { useCartStore } from "@/src/stores/useCartStore";
+import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/stores/cart.store.ts";
 
 // SVG Icons (imported as React components via SVGR)
 import Logo from "@/public/assets/header/logo.svg";
@@ -11,7 +11,7 @@ import SearchIcon from "@/public/assets/home_screen/search.svg";
 
 export function Header() {
 	const cartCount = useCartStore((s) =>
-		Object.values(s.items).reduce((a, b) => a + b, 0)
+		Object.values(s.items).reduce((a, b) => a + b, 0),
 	);
 
 	return (

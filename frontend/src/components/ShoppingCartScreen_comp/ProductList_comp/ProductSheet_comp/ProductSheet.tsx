@@ -1,6 +1,6 @@
 "use client";
 
-import { Sheet, SheetContent } from "@/src/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 // Subcomponents you created
 import { ProductSheetHeader } from "./ProductSheetHeader";
@@ -10,7 +10,7 @@ import { ProductSheetFooter } from "./ProductSheetFooter";
 
 // Types
 import { ProduceListCardProps } from "../ProductListCard_comp/ProduceListCard";
-import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface ProductSheetProps {
 	open: boolean;

@@ -2,7 +2,7 @@
 
 import NavItem from "./NavItem";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/src/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 import HomeIcon from "@/public/assets/footer/home.svg";
 import ReceiptIcon from "@/public/assets/footer/receipt.svg";

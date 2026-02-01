@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ProduceListHeader } from "../../../ShoppingCartScreen_comp/ProductList_comp/ProduceListHeader";
 import { AdminProduceListGrid } from "./AdminProduceListGrid";
 // import ProductSheet from "./ProductSheet_comp/ProductSheet";
 import { AdminProduceListCardProps } from "./AdminProduceListCard";
-import apiFetch from "@/src/lib/api/fetcher";
+import apiFetch from "@/lib/api/fetcher";
 import AdminProductSheet from "./ProductSheet/AdminProductSheet";
 
 interface ProduceListProps {
@@ -28,7 +28,7 @@ export default function ProduceList({ subCategoryId }: ProduceListProps) {
 		const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 		try {
 			const response = await apiFetch(
-				`${API_BASE}/subcategories/${subCategoryId}/get-all-products`
+				`${API_BASE}/subcategories/${subCategoryId}/get-all-products`,
 			);
 			const data = await response.json();
 			if (Array.isArray(data) && data.length > 0) {

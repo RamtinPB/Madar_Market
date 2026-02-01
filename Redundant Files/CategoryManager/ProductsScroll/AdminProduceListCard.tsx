@@ -1,5 +1,5 @@
 "use client";
-import { Card, CardContent } from "@/src/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import CartImage from "@/public/assets/home_screen/special_products/Cart.png";
 
 import { CartButton } from "../../../ShoppingCartScreen_comp/ProductList_comp/ProductListCard_comp/CartButton";

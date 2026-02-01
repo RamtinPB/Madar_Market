@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAccessToken, onAuthChange } from "@/src/lib/api/auth";
+import { getAccessToken, onAuthChange } from "@/lib/api/auth";
 
 export function useAuthState() {
 	const [loggedIn, setLoggedIn] = useState<boolean>(() => !!getAccessToken());

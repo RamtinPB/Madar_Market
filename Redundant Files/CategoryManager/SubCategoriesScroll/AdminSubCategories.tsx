@@ -3,7 +3,7 @@ import { Button } from "../../../ui/button";
 import { ScrollArea, ScrollBar } from "../../../ui/scroll-area";
 import { Card, CardContent } from "../../../ui/card";
 import { Input } from "../../../ui/input";
-import apiFetch from "@/src/lib/api/fetcher";
+import apiFetch from "@/lib/api/fetcher";
 import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
 
 interface SubCategoriesProps {
@@ -12,7 +12,7 @@ interface SubCategoriesProps {
 		subCategory: {
 			id: string;
 			label: string;
-		} | null
+		} | null,
 	) => void;
 }
 
@@ -22,7 +22,7 @@ export default function SubCategories({
 }: SubCategoriesProps) {
 	const [title, setTitle] = useState("");
 	const [selected, setSelected] = useState<{ id: string; phase: 1 | 2 } | null>(
-		null
+		null,
 	);
 	const [subCats, setSubCats] = useState<{ id: string; label: string }[]>([]);
 
@@ -85,7 +85,7 @@ export default function SubCategories({
 				{
 					method: "PUT",
 					body: formData,
-				}
+				},
 			);
 			if (!editResponse.ok) {
 				console.error("Failed to edit sub category");
@@ -103,7 +103,7 @@ export default function SubCategories({
 				`${API_BASE}/subcategories/delete/${id}`,
 				{
 					method: "DELETE",
-				}
+				},
 			);
 			if (response.ok) {
 				fetchSubCategories();

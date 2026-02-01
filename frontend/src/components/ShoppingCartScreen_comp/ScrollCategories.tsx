@@ -1,4 +1,4 @@
-import apiFetch from "@/src/lib/api/fetcher";
+import apiFetch from "@/lib/api/fetcher";
 import CategoryItem from "../HomeScreen_comp/Categories_comp/CategoryItem";
 
 interface ScrollCategoriesProps {

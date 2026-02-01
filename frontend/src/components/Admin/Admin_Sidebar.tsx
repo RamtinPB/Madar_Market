@@ -9,7 +9,7 @@ import {
 	SidebarInset,
 	SidebarTrigger,
 	SidebarGroup,
-} from "@/src/components/ui/sidebar";
+} from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
 import RightArrowIcon from "@/public/assets/header/right_arrow.svg";
 import { useRouter } from "next/navigation";

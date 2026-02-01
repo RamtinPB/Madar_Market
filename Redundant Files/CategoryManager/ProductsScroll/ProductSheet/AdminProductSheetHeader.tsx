@@ -1,8 +1,8 @@
 "use client";
 import { useEffect } from "react";
-import { BannerCarousel } from "@/src/components/HomeScreen_comp/BannerCarousel";
-import { Input } from "@/src/components/ui/input";
-import { ProductImage } from "@/src/lib/api/products";
+import { BannerCarousel } from "@/components/HomeScreen_comp/BannerCarousel";
+import { Input } from "@/components/ui/input";
+import { ProductImage } from "@/lib/api/products";
 
 interface Props {
 	title: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import apiFetch from "@/src/lib/api/fetcher";
+import apiFetch from "@/lib/api/fetcher";
 import CategoryItem from "./CategoryItem";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";

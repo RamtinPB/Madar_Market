@@ -1,6 +1,6 @@
 "use client";
 
-import apiFetch from "@/src/lib/api/fetcher";
+import apiFetch from "@/lib/api/fetcher";
 import AdminCategoryItem from "./AdminCategoryItem";
 
 interface AdminScrollCategoriesProps {
@@ -9,15 +9,15 @@ interface AdminScrollCategoriesProps {
 			id: string;
 			icon: string;
 			label: string;
-		} | null
+		} | null,
 	) => void;
 }
 
 import { ScrollArea, ScrollBar } from "../../../ui/scroll-area";
 import { useEffect, useState } from "react";
 import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
-import { Card, CardContent } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 /* ------------------------------------------------------------
  * MAIN ADMIN SCROLL CATEGORIES COMPONENT
@@ -27,7 +27,7 @@ export default function AdminScrollCategories({
 	onSelectCategory,
 }: AdminScrollCategoriesProps) {
 	const [selected, setSelected] = useState<{ id: string; phase: 1 | 2 } | null>(
-		null
+		null,
 	);
 	const [cats, setCats] = useState<
 		{ id: string; icon: string; label: string }[]
@@ -81,7 +81,7 @@ export default function AdminScrollCategories({
 	const handleEdit = async (
 		id: string,
 		title: string,
-		imageFile: File | null
+		imageFile: File | null,
 	) => {
 		try {
 			const editResponse = await apiFetch(`${API_BASE}/categories/edit/${id}`, {
@@ -101,7 +101,7 @@ export default function AdminScrollCategories({
 					{
 						method: "PUT",
 						body: imageFormData,
-					}
+					},
 				);
 				if (!imageResponse.ok) {
 					console.error("Failed to upload image");
