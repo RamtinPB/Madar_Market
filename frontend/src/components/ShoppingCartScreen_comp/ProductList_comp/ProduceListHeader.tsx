@@ -7,9 +7,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../ui/select";
-import CardIcon from "@/public/assets/shopping_cart_screen/card.svg";
-import DiscountIcon from "@/public/assets/shopping_cart_screen/receipt-discount.svg";
-import SwapArrowIcon from "@/public/assets/shopping_cart_screen/arrow-swap.svg";
+import CardIcon from "../../../../public/assets/shopping_cart_screen/card.svg";
+import DiscountIcon from "../../../../public/assets/shopping_cart_screen/receipt-discount.svg";
+import SwapArrowIcon from "../../../../public/assets/shopping_cart_screen/arrow-swap.svg";
 
 export function ProduceListHeader() {
 	return (

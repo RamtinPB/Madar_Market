@@ -4,12 +4,12 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import LoginLeft from "@/public/assets/login/login_left.png";
-import LoginRight from "@/public/assets/login/login_right.png";
-import LoginHands from "@/public/assets/login/login_hands.png";
-import LoginBasket from "@/public/assets/login/HandBasket.png";
-import Logo from "@/public/assets/login/logo.png";
-import LogoDesc from "@/public/assets/login/logo_desc.png";
+import LoginLeft from "../../../../public/assets/login/login_left.png";
+import LoginRight from "../../../../public/assets/login/login_right.png";
+import LoginHands from "../../../../public/assets/login/login_hands.png";
+import LoginBasket from "../../../../public/assets/login/HandBasket.png";
+import Logo from "../../../../public/assets/login/logo.png";
+import LogoDesc from "../../../../public/assets/login/logo_desc.png";
 
 import { Button } from "@/components/ui/button";
 

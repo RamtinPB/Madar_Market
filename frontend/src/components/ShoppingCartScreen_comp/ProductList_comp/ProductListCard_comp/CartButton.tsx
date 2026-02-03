@@ -1,8 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import PlusIcon from "@/public/assets/shopping_cart_screen/plus.svg";
-import TrashIcon from "@/public/assets/shopping_cart_screen/trash.svg";
+import PlusIcon from "../../../../../public/assets/shopping_cart_screen/plus.svg";
+import TrashIcon from "../../../../../public/assets/shopping_cart_screen/trash.svg";
 import { useCartStore } from "@/stores/cart.store.ts";
 
 export function CartButton({ title }: { title: string }) {

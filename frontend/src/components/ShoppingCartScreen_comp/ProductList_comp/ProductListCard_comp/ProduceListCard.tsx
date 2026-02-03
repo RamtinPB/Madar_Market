@@ -1,6 +1,6 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
-import CartImage from "@/public/assets/home_screen/special_products/Cart.png";
+import CartImage from "../../../../..//public/assets/home_screen/special_products/Cart.png";
 
 import { CartButton } from "./CartButton";
 import { DiscountBadge } from "./DiscountBadge";
