@@ -2,7 +2,7 @@
 
 import NavItem from "./NavItem";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/zustandStates/auth.states";
 
 import HomeIcon from "@/public/assets/footer/home.svg";
 import ReceiptIcon from "@/public/assets/footer/receipt.svg";
@@ -27,7 +27,7 @@ const NAV_ITEMS: { tab: TabKey; label: string; icon: any }[] = [
 export function Footer() {
 	const router = useRouter();
 	const pathname = usePathname();
-	const { isAuthenticated } = useAuth();
+	const isAuthenticated = !!useAuthStore((state) => state.user);
 
 	const itemsToRender = NAV_ITEMS.concat([
 		isAuthenticated

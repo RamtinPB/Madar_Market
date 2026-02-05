@@ -22,12 +22,12 @@ import { StageOTP } from "@/components/Login_comp/StageOTP";
 import { LoginHeader } from "@/components/Login_comp/LoginHeader";
 import { LoginFooterPhone } from "@/components/Login_comp/LoginFooterPhone";
 import { LoginFooterOTP } from "@/components/Login_comp/LoginFooterOTP";
-import { requestOtp } from "@/lib/api/auth";
-import { useAuth } from "@/context/AuthContext";
+import { requestOtp, signup as apiSignup } from "@/lib/api/auth";
+import { useAuthStore } from "@/zustandStates/auth.states";
 
 export default function LoginPage() {
 	const router = useRouter();
-	const { signup } = useAuth();
+	const { setUser, setAccessToken, setUserRole } = useAuthStore();
 
 	const {
 		stage,
@@ -112,7 +112,17 @@ export default function LoginPage() {
 							} else {
 								// verify OTP (signup)
 								try {
-									await signup(phone, password, code.join(""));
+									const data = await apiSignup(phone, password, code.join(""));
+
+									// Update zustand store with auth data
+									if (data.accessToken) {
+										setAccessToken(data.accessToken);
+									}
+									if (data.user) {
+										setUser(data.user);
+										setUserRole(data.user.role || null);
+									}
+
 									router.push("/");
 								} catch (err: any) {
 									setOtpError(err.message || "خطا در ورود");
