@@ -5,6 +5,8 @@ import {
 } from "../../infrastructure/auth/jwt.provider";
 
 const REFRESH_TOKEN_EXP = process.env.REFRESH_TOKEN_EXPIRE_IN!;
+const isDevMode = process.env.NODE_ENV === "development";
+const isProdMode = process.env.NODE_ENV === "production";
 
 export const requestOtp = async (ctx: any) => {
 	const body = await ctx.body;
@@ -38,7 +40,7 @@ export const signup = async (ctx: any) => {
 		const created = await authService.signupWithPasswordOtp(
 			phoneNumber,
 			password,
-			otp
+			otp,
 		);
 
 		// Set refresh token in httpOnly cookie
@@ -71,7 +73,7 @@ export const login = async (ctx: any) => {
 		const res = await authService.loginWithPasswordOtp(
 			phoneNumber,
 			password,
-			otp
+			otp,
 		);
 
 		ctx.cookie.refreshToken.set({
@@ -95,7 +97,7 @@ export const refresh = async (ctx: any) => {
 	let raw = ctx.cookie.refreshToken.value;
 
 	// Allow supplying the refresh token in the request body for Swagger testing
-	if (!raw) {
+	if (!raw && isDevMode && !isProdMode) {
 		const body = await ctx.body;
 		raw = body?.refreshToken;
 	}

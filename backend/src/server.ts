@@ -16,16 +16,17 @@ export const app = new Elysia()
 			methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 			allowedHeaders: ["Content-Type", "Authorization"],
 			credentials: true,
-		})
+		}),
 	)
 	.use(
 		staticPlugin({
 			assets: "public",
 			prefix: "/public",
-		})
+		}),
 	)
 	.use(
 		swagger({
+			// Using default Swagger UI provider for better persistAuthorization support
 			documentation: {
 				components: {
 					securitySchemes: {
@@ -36,8 +37,12 @@ export const app = new Elysia()
 						},
 					},
 				},
+				security: [{ bearerAuth: [] }],
 			},
-		})
+			swaggerOptions: {
+				persistAuthorization: true,
+			},
+		}),
 	)
 	.get("/", () => ({ status: "ok", message: "Backend is running" }));
 
@@ -49,3 +54,4 @@ registerProductRoutes(app);
 app.listen(4000);
 
 console.log("🚀 Backend running on http://localhost:4000");
+console.log("NODE_ENV:", process.env.NODE_ENV);
