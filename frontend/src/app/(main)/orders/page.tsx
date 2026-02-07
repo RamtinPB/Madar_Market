@@ -1,5 +1,5 @@
 "use client";
-import OrdersScreen from "@/components/Screens_comp/orders_screen";
+import OrdersScreen from "@/features/Pages/OrdersPage";
 
 export default function Page() {
 	return <OrdersScreen />;

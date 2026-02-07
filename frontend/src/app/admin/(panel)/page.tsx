@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import AdminSidebar from "@/components/Admin/Admin_Sidebar";
+import AdminSidebar from "@/features/Admin/AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import CatSubCatManager from "@/components/Admin/cat-subcat-manager/CatSubCatManager";
+import CatSubCatManager from "@/features/Admin/catSubcatManager/CatSubCatManager";
 
 export default function Page() {
 	const router = useRouter();

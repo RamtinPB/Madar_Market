@@ -1,9 +1,11 @@
 import { create } from "zustand";
+
 enum RoleTypes {
 	USER,
 	SUB_ADMIN,
 	SUPER_ADMIN,
 }
+
 interface AuthState {
 	user: any | null;
 	userRole: RoleTypes | null;

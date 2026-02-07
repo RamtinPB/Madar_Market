@@ -10,7 +10,7 @@ import {
 import PhoneIcon from "@/public/assets/login/Phone.svg";
 import EyeIcon from "@/public/assets/login/eye-solid-full.svg";
 import EyeSlashIcon from "@/public/assets/login/eye-slash-regular-full.svg";
-import { Button } from "../ui/button";
+import { Button } from "../../components/ui/button";
 import { useState } from "react";
 
 export function StagePhone({

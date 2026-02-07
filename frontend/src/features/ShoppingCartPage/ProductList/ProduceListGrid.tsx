@@ -1,7 +1,7 @@
 "use client";
 import ProduceListCard, {
 	ProduceListCardProps,
-} from "./ProductListCard_comp/ProduceListCard";
+} from "./ProductListCard/ProduceListCard";
 import ShoppingCart from "@/public/assets/home_screen/special_products/Cart.png";
 import CustomSpinner from "../CustomSpinner";
 

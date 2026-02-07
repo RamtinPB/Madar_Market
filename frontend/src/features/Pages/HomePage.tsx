@@ -1,9 +1,9 @@
-import SearchBar from "../HomeScreen_comp/SearchBar";
-import { BannerCarousel } from "../HomeScreen_comp/BannerCarousel";
-import CountdownAd from "../HomeScreen_comp/CountdownAd";
-import Categories from "../HomeScreen_comp/Categories_comp/Categories";
-import SpecialProducts from "../HomeScreen_comp/SpecialProducts_comp/SpecialProducts";
-import WatchAd from "../HomeScreen_comp/WatchAd";
+import SearchBar from "../Home/SearchBar";
+import { BannerCarousel } from "../Home/BannerCarousel";
+import CountdownAd from "../Home/CountdownAd";
+import Categories from "../Home/Categories_comp/Categories";
+import SpecialProducts from "../Home/SpecialProducts_comp/SpecialProducts";
+import WatchAd from "../Home/WatchAd";
 
 /* ------------------------------------------------------------
  * MAIN COMPONENT

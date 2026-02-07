@@ -1,5 +1,5 @@
 import apiFetch from "@/lib/api/fetcher";
-import CategoryItem from "../HomeScreen_comp/Categories_comp/CategoryItem";
+import CategoryItem from "../Home/Categories_comp/CategoryItem";
 
 interface ScrollCategoriesProps {
 	onSelectCategory?: (category: {
@@ -13,7 +13,7 @@ interface ScrollCategoriesProps {
 /* ------------------------------------------------------------
  * CATEGORY ICON IMPORTS
  * ------------------------------------------------------------ */
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { ScrollArea, ScrollBar } from "../../components/ui/scroll-area";
 import { useEffect, useState } from "react";
 
 /* ------------------------------------------------------------

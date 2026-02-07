@@ -1,5 +1,5 @@
 "use client";
-import CartScreen from "@/components/Screens_comp/cart_screen";
+import CartScreen from "@/features/Pages/CartPage";
 
 export default function Page() {
 	return <CartScreen />;

@@ -9,7 +9,7 @@ import { ProductSheetPriceBox } from "./ProductSheetPriceBox";
 import { ProductSheetFooter } from "./ProductSheetFooter";
 
 // Types
-import { ProduceListCardProps } from "../ProductListCard_comp/ProduceListCard";
+import { ProduceListCardProps } from "../ProductListCard/ProduceListCard";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface ProductSheetProps {

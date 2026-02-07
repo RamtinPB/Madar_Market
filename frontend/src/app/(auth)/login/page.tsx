@@ -13,15 +13,15 @@ import LogoDesc from "../../../../public/assets/login/logo_desc.png";
 
 import { Button } from "@/components/ui/button";
 
-import { useLoginStages } from "@/components/Login_comp/hooks/useLoginStages";
-import { useOTPCountdown } from "@/components/Login_comp/hooks/useOTPCountdown";
-import { formatTime } from "@/components/Login_comp/utils/formatTime";
+import { useLoginStages } from "@/features/Login/hooks/useLoginStages";
+import { useOTPCountdown } from "@/features/Login/hooks/useOTPCountdown";
+import { formatTime } from "@/features/Login/utils/formatTime";
 
-import { StagePhone } from "@/components/Login_comp//StagePhone";
-import { StageOTP } from "@/components/Login_comp/StageOTP";
-import { LoginHeader } from "@/components/Login_comp/LoginHeader";
-import { LoginFooterPhone } from "@/components/Login_comp/LoginFooterPhone";
-import { LoginFooterOTP } from "@/components/Login_comp/LoginFooterOTP";
+import { StagePhone } from "@/features/Login/StagePhone";
+import { StageOTP } from "@/features/Login/StageOTP";
+import { LoginHeader } from "@/features/Login/LoginHeader";
+import { LoginFooterPhone } from "@/features/Login/LoginFooterPhone";
+import { LoginFooterOTP } from "@/features/Login/LoginFooterOTP";
 import { useAuthStore } from "@/zustandStates/auth.states";
 import { requestOtp, login as apiLogin } from "@/lib/api/auth";
 

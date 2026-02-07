@@ -1,5 +1,5 @@
 "use client";
-import { BannerCarousel } from "@/components/HomeScreen_comp/BannerCarousel";
+import { BannerCarousel } from "@/features/Home/BannerCarousel";
 import { SheetTitle } from "@/components/ui/sheet";
 
 interface Props {

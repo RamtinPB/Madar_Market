@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import CountdownAd from "../HomeScreen_comp/CountdownAd";
-import ProduceList from "../ShoppingCartScreen_comp/ProductList_comp/ProduceList";
-import ScrollCategories from "../ShoppingCartScreen_comp/ScrollCategories";
-import SubCategories from "../ShoppingCartScreen_comp/SubCategories";
+import CountdownAd from "../Home/CountdownAd";
+import ProduceList from "../ShoppingCartPage/ProductList/ProduceList";
+import ScrollCategories from "../ShoppingCartPage/ScrollCategories";
+import SubCategories from "../ShoppingCartPage/SubCategories";
 
 export default function CartScreen() {
 	const searchParams = useSearchParams();

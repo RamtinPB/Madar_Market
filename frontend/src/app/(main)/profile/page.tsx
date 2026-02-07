@@ -1,5 +1,5 @@
 "use client";
-import ProfileScreen from "@/components/Screens_comp/profile_screen";
+import ProfileScreen from "@/features/Pages/ProfilePage";
 
 export default function Page() {
 	return <ProfileScreen />;

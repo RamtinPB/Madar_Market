@@ -1,12 +1,12 @@
 "use client";
-import { Button } from "../../ui/button";
+import { Button } from "../../../components/ui/button";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "../../ui/select";
+} from "../../../components/ui/select";
 import CardIcon from "../../../../public/assets/shopping_cart_screen/card.svg";
 import DiscountIcon from "../../../../public/assets/shopping_cart_screen/receipt-discount.svg";
 import SwapArrowIcon from "../../../../public/assets/shopping_cart_screen/arrow-swap.svg";

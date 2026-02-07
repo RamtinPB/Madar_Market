@@ -1,5 +1,5 @@
 "use client";
-import HomeScreen from "@/components/Screens_comp/home_screen";
+import HomeScreen from "@/features/Pages/HomePage";
 
 export default function Page() {
 	return <HomeScreen />;

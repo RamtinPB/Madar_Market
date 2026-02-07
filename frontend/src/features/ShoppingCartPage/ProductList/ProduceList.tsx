@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ProduceListHeader } from "./ProduceListHeader";
 import { ProduceListGrid } from "./ProduceListGrid";
-import ProductSheet from "./ProductSheet_comp/ProductSheet";
-import { ProduceListCardProps } from "./ProductListCard_comp/ProduceListCard";
+import ProductSheet from "./ProductSheet/ProductSheet";
+import { ProduceListCardProps } from "./ProductListCard/ProduceListCard";
 import apiFetch from "@/lib/api/fetcher";
 
 interface ProduceListProps {
