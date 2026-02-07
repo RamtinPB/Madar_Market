@@ -1,7 +1,7 @@
-import MachhiatoCafe from "@/public/assets/home_screen/special_products/machhiato.png";
-import OliveOil from "@/public/assets/home_screen/special_products/olive_oil.png";
-import Qharaqhorum from "@/public/assets/home_screen/special_products/qh.png";
-import Cheese from "@/public/assets/home_screen/special_products/cheese.png";
+import MachhiatoCafe from "../../../../public/assets/home_screen/special_products/machhiato.png";
+import OliveOil from "../../../../public/assets/home_screen/special_products/olive_oil.png";
+import Qharaqhorum from "../../../../public/assets/home_screen/special_products/qh.png";
+import Cheese from "../../../../public/assets/home_screen/special_products/cheese.png";
 
 /* ------------------------------------------------------------
  * PRODUCT LIST

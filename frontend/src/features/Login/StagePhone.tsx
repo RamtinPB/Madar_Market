@@ -7,9 +7,9 @@ import {
 	InputGroupInput,
 } from "@/components/ui/input-group";
 
-import PhoneIcon from "@/public/assets/login/Phone.svg";
-import EyeIcon from "@/public/assets/login/eye-solid-full.svg";
-import EyeSlashIcon from "@/public/assets/login/eye-slash-regular-full.svg";
+import PhoneIcon from "../../../public/assets/login/Phone.svg";
+import EyeIcon from "../../../public/assets/login/eye-solid-full.svg";
+import EyeSlashIcon from "../../../public/assets/login/eye-slash-regular-full.svg";
 import { Button } from "../../components/ui/button";
 import { useState } from "react";
 

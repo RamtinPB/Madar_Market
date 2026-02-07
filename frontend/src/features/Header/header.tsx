@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useCartStore } from "@/stores/cart.store.ts";
+import { useCartStore } from "@/stores/cart.store";
 
 // SVG Icons (imported as React components via SVGR)
-import Logo from "@/public/assets/header/logo.svg";
-import RightArrowIcon from "@/public/assets/header/right_arrow.svg";
-import BasketIcon from "@/public/assets/header/basket.svg";
-import SearchIcon from "@/public/assets/home_screen/search.svg";
+import Logo from "../../../public/assets/header/logo.svg";
+import RightArrowIcon from "../../../public/assets/header/right_arrow.svg";
+import BasketIcon from "../../../public/assets/header/basket.svg";
+import SearchIcon from "../../../public/assets/home_screen/search.svg";
 
 export function Header() {
 	const cartCount = useCartStore((s) =>

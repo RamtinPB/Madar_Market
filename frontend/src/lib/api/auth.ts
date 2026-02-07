@@ -15,7 +15,7 @@ export const onAuthChange = (cb: (token: string | null) => void) => {
 export const setAccessToken = (token: string | null) => {
 	accessToken = token;
 	authEvents.dispatchEvent(
-		new CustomEvent("auth-change", { detail: { token } })
+		new CustomEvent("auth-change", { detail: { token } }),
 	);
 };
 
@@ -24,13 +24,13 @@ export const getAccessToken = () => accessToken;
 const clearTokens = () => {
 	accessToken = null;
 	authEvents.dispatchEvent(
-		new CustomEvent("auth-change", { detail: { token: null } })
+		new CustomEvent("auth-change", { detail: { token: null } }),
 	);
 };
 
 export async function authenticatedFetch(
 	input: RequestInfo,
-	init?: RequestInit
+	init?: RequestInit,
 ) {
 	init = init || {};
 	init.credentials = init.credentials ?? "include";
@@ -78,28 +78,26 @@ export async function requestOtp(phoneNumber: string, purpose: string) {
 	return response.json();
 }
 
-export async function refreshAccessToken() {
+// Verifies refreshAccessToken returns boolean and never throws fatally
+export async function refreshAccessToken(): Promise<boolean> {
 	if (refreshPromise) return refreshPromise;
 
 	refreshPromise = (async () => {
 		try {
-			let response = await fetch(`${API_BASE}/auth/refresh`, {
+			const response = await fetch(`${API_BASE}/auth/refresh`, {
 				method: "POST",
 				credentials: "include",
 			});
 
 			if (!response.ok) {
-				let errMsg = "Token refresh failed";
-				try {
-					const body = await response.json();
-					errMsg = body?.error || errMsg;
-				} catch (e) {}
-				throw new Error(errMsg);
+				return false; // Silently fail - user remains unauthenticated
 			}
 
 			const data = await response.json();
 			if (data.accessToken) setAccessToken(data.accessToken);
-			return data;
+			return true;
+		} catch {
+			return false; // Network error - silently fail
 		} finally {
 			refreshPromise = null;
 		}
@@ -111,7 +109,7 @@ export async function refreshAccessToken() {
 export async function login(
 	phoneNumber: string,
 	password: string,
-	otp: string
+	otp: string,
 ) {
 	const res = await fetch(`${API_BASE}/auth/login`, {
 		method: "POST",
@@ -137,7 +135,7 @@ export async function login(
 export async function signup(
 	phoneNumber: string,
 	password: string,
-	otp: string
+	otp: string,
 ) {
 	const res = await fetch(`${API_BASE}/auth/signup`, {
 		method: "POST",
@@ -173,19 +171,31 @@ export async function logout() {
 	}
 }
 
-export async function getMe() {
-	const res = await authenticatedFetch(`${API_BASE}/auth/me`, {
-		method: "GET",
-	});
+// Verifies getMe never throws on 401, returns null instead
+export async function getMe(): Promise<{ user: unknown } | null> {
+	try {
+		const accToken = getAccessToken();
 
-	if (!res.ok) {
-		let errMsg = "Failed to get user info";
-		try {
-			const body = await res.json();
-			errMsg = body?.error || errMsg;
-		} catch (e) {}
-		throw new Error(errMsg);
+		if (!accToken) throw new Error("No access token");
+
+		const response = await fetch(`${API_BASE}/auth/me`, {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${accToken}`,
+			},
+			credentials: "include", // Include HTTP-only cookies
+		});
+
+		if (response.status === 401) {
+			return null; // Not authenticated, but not an error
+		}
+
+		if (!response.ok) {
+			return null; // Treat any error as unauthenticated
+		}
+
+		return response.json();
+	} catch {
+		return null; // Network error - treat as unauthenticated
 	}
-
-	return res.json();
 }

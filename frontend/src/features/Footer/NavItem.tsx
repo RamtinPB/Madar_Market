@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import ActiveIndicatorIcon from "@/public/assets/footer/item_active.svg";
+import ActiveIndicatorIcon from "../../../public/assets/footer/item_active.svg";
 
 type SVGComponent = React.FC<React.SVGProps<SVGSVGElement>>;
 

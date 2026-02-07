@@ -6,7 +6,7 @@ import ViewAllCard from "./ViewAllCard";
 
 import { products } from "./ProductData";
 
-import ShoppingCart from "@/public/assets/home_screen/special_products/Cart.png";
+import ShoppingCart from "../../../../public/assets/home_screen/special_products/Cart.png";
 import { useRouter } from "next/navigation";
 
 /* ------------------------------------------------------------

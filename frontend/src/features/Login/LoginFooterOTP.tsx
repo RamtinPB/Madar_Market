@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import ClockIcon from "@/public/assets/login/clock.svg";
-import EditIcon from "@/public/assets/login/edit.svg";
+import ClockIcon from "../../../public/assets/login/clock.svg";
+import EditIcon from "../../../public/assets/login/edit.svg";
 
 export function LoginFooterOTP({
 	timeLeft,

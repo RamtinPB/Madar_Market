@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import CountdownAdImage from "@/public/assets/home_screen/CountdownAd.svg";
+import CountdownAdImage from "../../../public/assets/home_screen/CountdownAd.svg";
 
 /* ------------------------------------------------------------
  * TYPES
@@ -48,11 +48,11 @@ export default function CountdownAd() {
 	 */
 	const targetDate = useMemo(
 		() => new Date(Date.now() + 2 * 60 * 60 * 1000), // 1 hour from now
-		[]
+		[],
 	);
 
 	const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
-		getTimeRemaining(targetDate)
+		getTimeRemaining(targetDate),
 	);
 
 	/* ------------------------------------------------------------

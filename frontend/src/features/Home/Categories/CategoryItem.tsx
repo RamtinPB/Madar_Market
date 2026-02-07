@@ -1,6 +1,6 @@
 "use client";
 
-import CheckMark from "@/public/assets/shopping_cart_screen/CheckMark.svg";
+import CheckMark from "../../../../public/assets/shopping_cart_screen/CheckMark.svg";
 
 /* ------------------------------------------------------------
  * TYPES

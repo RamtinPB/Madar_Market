@@ -1,5 +1,5 @@
 import apiFetch from "@/lib/api/fetcher";
-import CategoryItem from "../Home/Categories_comp/CategoryItem";
+import CategoryItem from "../Home/Categories/CategoryItem";
 
 interface ScrollCategoriesProps {
 	onSelectCategory?: (category: {

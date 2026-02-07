@@ -1,5 +1,5 @@
 import Image from "next/image";
-import WatchImage from "@/public/assets/home_screen/watch.png";
+import WatchImage from "../../../public/assets/home_screen/watch.png";
 
 export default function WatchAd() {
 	return (

@@ -22,12 +22,18 @@ import { StageOTP } from "@/features/Login/StageOTP";
 import { LoginHeader } from "@/features/Login/LoginHeader";
 import { LoginFooterPhone } from "@/features/Login/LoginFooterPhone";
 import { LoginFooterOTP } from "@/features/Login/LoginFooterOTP";
-import { requestOtp, signup as apiSignup } from "@/lib/api/auth";
-import { useAuthStore } from "@/zustandStates/auth.states";
+import {
+	requestOtp,
+	signup as apiSignup,
+	setAccessToken,
+} from "@/lib/api/auth";
+import { useAuthenticateUser } from "@/hooks/useAuth";
 
-export default function LoginPage() {
+export default function SignupPage() {
 	const router = useRouter();
-	const { setUser, setAccessToken, setUserRole } = useAuthStore();
+	const setUser = useAuthenticateUser();
+	const [error, setError] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
 
 	const {
 		stage,
@@ -46,7 +52,6 @@ export default function LoginPage() {
 	const { timeLeft, resendDisabled, reset } = useOTPCountdown(stage === 1);
 
 	const [visibleOtp, setVisibleOtp] = useState<string | null>(null);
-	const [otpError, setOtpError] = useState<string | null>(null);
 
 	/* ------------------------------------------------------------
 	 * RENDER
@@ -91,46 +96,49 @@ export default function LoginPage() {
 					{/* MAIN ACTION BUTTON */}
 					<Button
 						className={`w-full text-white rounded-lg ${
-							(stage === 0 ? isValidPhone && isValidPassword : isValidCode)
+							(stage === 0 ? isValidPhone && isValidPassword : isValidCode) &&
+							!loading
 								? "bg-[#FF6A29]"
 								: "bg-[#FFD1B8] opacity-60"
 						}`}
 						disabled={
-							stage === 0 ? !isValidPhone && !isValidPassword : !isValidCode
+							loading ||
+							(stage === 0 ? !isValidPhone && !isValidPassword : !isValidCode)
 						}
 						onClick={async () => {
-							if (stage === 0) {
-								// request OTP
-								try {
+							setError(null);
+							setLoading(true);
+							try {
+								if (stage === 0) {
+									// request OTP
 									const { otp } = await requestOtp(phone, "signup");
 									setVisibleOtp(otp);
 									reset();
 									setStage(1);
-								} catch (err) {
-									console.error(err);
-								}
-							} else {
-								// verify OTP (signup)
-								try {
+								} else {
+									// verify OTP (signup)
 									const data = await apiSignup(phone, password, code.join(""));
 
-									// Update zustand store with auth data
+									// Update auth with zustand hooks
 									if (data.accessToken) {
 										setAccessToken(data.accessToken);
 									}
 									if (data.user) {
 										setUser(data.user);
-										setUserRole(data.user.role || null);
 									}
 
 									router.push("/");
-								} catch (err: any) {
-									setOtpError(err.message || "خطا در ورود");
 								}
+							} catch (err: any) {
+								setError(
+									err.message || "خطا در ثبت نام. لطفا دوباره تلاش کنید.",
+								);
+							} finally {
+								setLoading(false);
 							}
 						}}
 					>
-						{stage === 0 ? "ادامه" : "تایید"}
+						{loading ? "در حال پردازش..." : stage === 0 ? "ادامه" : "تایید"}
 					</Button>
 
 					{/* FOOTERS */}
@@ -141,14 +149,17 @@ export default function LoginPage() {
 							resendDisabled={resendDisabled}
 							editPhone={() => setStage(0)}
 							resend={async () => {
-								// request OTP
+								setError(null);
+								setLoading(true);
 								try {
 									const { otp } = await requestOtp(phone, "signup");
 									setVisibleOtp(otp);
 									reset();
 									setStage(1);
 								} catch (err: any) {
-									console.error(err);
+									setError(err.message || "خطا در ارسال کد");
+								} finally {
+									setLoading(false);
 								}
 							}}
 						/>
@@ -161,9 +172,7 @@ export default function LoginPage() {
 						</div>
 					)}
 
-					{otpError && (
-						<div className="mt-2 text-right text-red-600">{otpError}</div>
-					)}
+					{error && <div className="mt-2 text-right text-red-600">{error}</div>}
 				</div>
 			</main>
 

@@ -1,8 +1,8 @@
 import SearchBar from "../Home/SearchBar";
 import { BannerCarousel } from "../Home/BannerCarousel";
 import CountdownAd from "../Home/CountdownAd";
-import Categories from "../Home/Categories_comp/Categories";
-import SpecialProducts from "../Home/SpecialProducts_comp/SpecialProducts";
+import Categories from "../Home/Categories/Categories";
+import SpecialProducts from "../Home/SpecialProducts/SpecialProducts";
 import WatchAd from "../Home/WatchAd";
 
 /* ------------------------------------------------------------

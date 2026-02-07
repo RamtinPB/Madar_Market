@@ -2,13 +2,13 @@
 
 import NavItem from "./NavItem";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore } from "@/zustandStates/auth.states";
+import { useAuthStore } from "@/stores/auth.store";
 
-import HomeIcon from "@/public/assets/footer/home.svg";
-import ReceiptIcon from "@/public/assets/footer/receipt.svg";
-import BasketIcon from "@/public/assets/header/basket.svg";
-import ProfileIcon from "@/public/assets/footer/profile.svg";
-import LoginIcon from "@/public/assets/footer/right-to-bracket-solid-full.svg";
+import HomeIcon from "../../../public/assets/footer/home.svg";
+import ReceiptIcon from "../../../public/assets/footer/receipt.svg";
+import BasketIcon from "../../../public/assets/header/basket.svg";
+import ProfileIcon from "../../../public/assets/footer/profile.svg";
+import LoginIcon from "../../../public/assets/footer/right-to-bracket-solid-full.svg";
 
 type TabKey = "home" | "orders" | "profile" | "cart" | "login";
 

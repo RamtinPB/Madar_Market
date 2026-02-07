@@ -1,14 +1,24 @@
 import { Button } from "../../components/ui/button";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthUser, useIsAuthenticated, useLogout } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export default function ProfileScreen() {
 	const router = useRouter();
-	const { logout } = useAuth();
+	const user = useAuthUser();
+	const isAuthenticated = useIsAuthenticated();
+	const logout = useLogout();
+
+	useEffect(() => {
+		if (!isAuthenticated) router.push("/");
+	}, [user]);
 
 	return (
 		<div className="flex flex-col gap-4">
-			<Button className="" onClick={() => router.push("/admin")}>
+			<Button
+				className={` ${user?.role == "USER" && `hidden`}`}
+				onClick={() => router.push("/admin")}
+			>
 				پنل ادمین
 			</Button>
 			<Button

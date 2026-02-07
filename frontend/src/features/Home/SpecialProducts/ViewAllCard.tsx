@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import ArrowLeft from "@/public/assets/home_screen/special_products/arrow.png";
+import ArrowLeft from "../../../../public/assets/home_screen/special_products/arrow.png";
 
 /* ------------------------------------------------------------
  * TYPES

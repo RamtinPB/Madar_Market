@@ -11,7 +11,7 @@ import {
 	SidebarGroup,
 } from "@/components/ui/sidebar";
 import { Button } from "../../components/ui/button";
-import RightArrowIcon from "@/public/assets/header/right_arrow.svg";
+import RightArrowIcon from "../../../public/assets/header/right_arrow.svg";
 import { useRouter } from "next/navigation";
 import {
 	Accordion,
