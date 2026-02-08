@@ -332,108 +332,102 @@ export default function CatSubCatManager() {
 
 			{/* Right Section - 1/3 Edit Panel */}
 			<div className="w-1/3 space-y-4" dir="rtl">
-				{editData ? (
-					<>
-						<Input
-							placeholder="نام دسته بندی"
-							value={editData.title}
-							onChange={(e) =>
-								setEditData({ ...editData, title: e.target.value })
-							}
-						/>
+				<>
+					<Input
+						placeholder="نام دسته بندی"
+						value={editData?.title}
+						onChange={(e) =>
+							setEditData(
+								editData ? { ...editData, title: e.target.value } : null,
+							)
+						}
+					/>
 
-						{editData.type === "subcategory" && (
-							<Combobox
-								options={categories.map((cat) => ({
-									value: cat.id,
-									label: cat.title || "بدون عنوان",
-								}))}
-								value={editData.categoryId}
-								onValueChange={(value) =>
-									setEditData({ ...editData, categoryId: value })
-								}
-								placeholder="گروه اصلی"
-								searchPlaceholder="جستجو دسته‌بندی‌ها..."
-								emptyMessage="دسته‌بندی یافت نشد"
-							/>
-						)}
+					<Combobox
+						options={categories.map((cat) => ({
+							value: cat.id,
+							label: cat.title || "بدون عنوان",
+						}))}
+						value={editData?.categoryId}
+						onValueChange={(value) =>
+							setEditData(editData ? { ...editData, categoryId: value } : null)
+						}
+						placeholder="گروه اصلی"
+						searchPlaceholder="جستجو دسته‌بندی‌ها..."
+						emptyMessage="دسته‌بندی یافت نشد"
+					/>
 
-						{editData.type === "category" &&
-							(() => {
-								const currentCategory = categories.find(
-									(cat) => cat.id === editData.id,
-								);
-								const hasExistingImage =
-									currentCategory?.imageUrl && !editData.shouldDeleteImage;
-								const imageSrc = editData.imageFile
-									? URL.createObjectURL(editData.imageFile)
-									: hasExistingImage
-										? `${API_BASE}${currentCategory.imageUrl}`
-										: null;
+					{editData?.type === "category" &&
+						(() => {
+							const currentCategory = categories.find(
+								(cat) => cat.id === editData?.id,
+							);
+							const hasExistingImage =
+								currentCategory?.imageUrl && !editData?.shouldDeleteImage;
+							const imageSrc = editData.imageFile
+								? URL.createObjectURL(editData.imageFile)
+								: hasExistingImage
+									? `${API_BASE}${currentCategory.imageUrl}`
+									: null;
 
-								return (
-									<div className=" space-y-4">
-										{/* Image Preview */}
-										<div className="size-[124px] ">
-											{imageSrc ? (
-												<div className="relative rounded-2xl">
-													<Button
-														variant="ghost"
-														size="sm"
-														className="absolute -top-1 -right-1 z-20 h-6 w-6 rounded-full p-0"
-														onClick={handleRemoveImage}
-													>
-														<X className="h-3 w-3" />
-													</Button>
-													<img
-														src={imageSrc}
-														alt={editData.title || "Category"}
-														className="object-cover rounded w-full h-full"
-													/>
-												</div>
-											) : (
-												<Skeleton className="relative w-full h-full rounded-2xl flex items-center justify-center">
-													<ImageIcon className="h-12 w-12 text-gray-400" />
-													<input
-														type="file"
-														accept="image/*"
-														onChange={(e) => {
-															const file = e.target.files?.[0];
-															if (file) {
-																setEditData({
-																	...editData,
-																	imageFile: file,
-																	shouldDeleteImage: false,
-																});
-															}
-														}}
-														className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-													/>
-												</Skeleton>
-											)}
-										</div>
-
-										{/* Info Text */}
-										<div className="text-sm text-gray-600  space-y-1">
-											<p>تصویر دسته بندی را بارگذاری کنید</p>
-											<p>
-												تصویر باید با پسوند jpeg , jpg , png , webp باشد . تصویر
-												باید کمتر از 10 مگابایت باشد .
-											</p>
-										</div>
+							return (
+								<div className=" space-y-4">
+									{/* Image Preview */}
+									<div className="size-[124px] ">
+										{imageSrc ? (
+											<div className="relative rounded-2xl">
+												<Button
+													variant="ghost"
+													size="sm"
+													className="absolute -top-1 -right-1 z-20 h-6 w-6 rounded-full p-0"
+													onClick={handleRemoveImage}
+												>
+													<X className="h-3 w-3" />
+												</Button>
+												<img
+													src={imageSrc}
+													alt={editData.title || "Category"}
+													className="object-cover rounded w-full h-full"
+												/>
+											</div>
+										) : (
+											<Skeleton className="relative w-full h-full rounded-2xl flex items-center justify-center">
+												<ImageIcon className="h-12 w-12 text-gray-400" />
+												<input
+													type="file"
+													accept="image/*"
+													onChange={(e) => {
+														const file = e.target.files?.[0];
+														if (file && editData) {
+															setEditData({
+																...editData,
+																imageFile: file,
+																shouldDeleteImage: false,
+															});
+														}
+													}}
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+												/>
+											</Skeleton>
+										)}
 									</div>
-								);
-							})()}
 
-						<Button onClick={handleSaveEdit} className="w-full">
-							ویرایش
-						</Button>
-					</>
-				) : (
-					<div className="text-center text-gray-500 mt-8">
-						آیتمی برای ویرایش انتخاب نشده
-					</div>
-				)}
+									{/* Info Text */}
+									<div className="text-sm text-gray-600  space-y-1">
+										<p>تصویر دسته بندی را بارگذاری کنید</p>
+										<p>
+											تصویر باید با پسوند jpeg , jpg , png , webp باشد . تصویر
+											باید کمتر از 10 مگابایت باشد .
+										</p>
+									</div>
+								</div>
+							);
+						})()}
+
+					<Button onClick={handleSaveEdit} className="w-full">
+						ویرایش
+					</Button>
+				</>
 			</div>
 		</div>
 	);
