@@ -11,7 +11,6 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Combobox } from "@/components/ui/combobox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -367,6 +366,7 @@ export default function CatSubCatManager() {
 										<Button
 											variant="ghost"
 											size="sm"
+											asChild={true}
 											onClick={(e) => {
 												e.stopPropagation();
 												if (draft.id === category.id) {
@@ -394,6 +394,7 @@ export default function CatSubCatManager() {
 												<Button
 													variant="ghost"
 													size="sm"
+													asChild={true}
 													onClick={() => {
 														if (draft.id === subCategory.id) {
 															handleCancel();
