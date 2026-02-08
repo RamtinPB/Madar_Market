@@ -90,14 +90,14 @@ export async function refreshAccessToken(): Promise<boolean> {
 			});
 
 			if (!response.ok) {
-				return false; // Silently fail - user remains unauthenticated
+				return false;
 			}
 
 			const data = await response.json();
 			if (data.accessToken) setAccessToken(data.accessToken);
 			return true;
 		} catch {
-			return false; // Network error - silently fail
+			return false;
 		} finally {
 			refreshPromise = null;
 		}
@@ -176,26 +176,32 @@ export async function getMe(): Promise<{ user: unknown } | null> {
 	try {
 		const accToken = getAccessToken();
 
-		if (!accToken) throw new Error("No access token");
+		if (!accToken) {
+			throw new Error("No access token");
+		}
 
 		const response = await fetch(`${API_BASE}/auth/me`, {
 			method: "GET",
 			headers: {
 				Authorization: `Bearer ${accToken}`,
 			},
-			credentials: "include", // Include HTTP-only cookies
+			credentials: "include",
 		});
 
 		if (response.status === 401) {
-			return null; // Not authenticated, but not an error
+			return null;
 		}
 
 		if (!response.ok) {
-			return null; // Treat any error as unauthenticated
+			return null;
 		}
 
 		return response.json();
-	} catch {
-		return null; // Network error - treat as unauthenticated
+	} catch (err) {
+		// Only catch network errors, re-throw "No access token" to trigger refresh
+		if (err instanceof Error && err.message === "No access token") {
+			throw err;
+		}
+		return null;
 	}
 }

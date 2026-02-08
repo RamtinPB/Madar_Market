@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/auth.store";
 import { bootstrapAuth } from "@/lib/auth/bootstrap";
+import CustomSpinner from "@/features/ShoppingCartPage/CustomSpinner";
+import { Helix } from "ldrs/react";
+import "ldrs/react/Helix.css";
 
 interface AuthBootstrapProps {
 	children: React.ReactNode;
@@ -15,11 +18,18 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
 		let cancelled = false;
 
 		(async () => {
-			const { user } = await bootstrapAuth();
+			try {
+				const { user } = await bootstrapAuth();
 
-			if (!cancelled) {
-				setUser(user);
-				setLoading(false);
+				if (!cancelled) {
+					setUser(user);
+					setLoading(false);
+				}
+			} catch {
+				if (!cancelled) {
+					setUser(null);
+					setLoading(false);
+				}
 			}
 		})();
 
@@ -41,6 +51,8 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
 				}}
 			>
 				در حال بارگذاری...
+				<CustomSpinner />
+				<Helix size="45" speed="2.5" color="black" />
 			</div>
 		);
 	}

@@ -11,7 +11,7 @@ export async function bootstrapAuth(): Promise<{ user: User | null }> {
 		}
 
 		return { user: me.user as User };
-	} catch (err) {
+	} catch {
 		// 2. If /me failed, attempt refresh ONCE
 		try {
 			await refreshAccessToken();
