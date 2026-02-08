@@ -41,8 +41,8 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
 	if (loading) {
 		return (
 			<div
+				className="flex flex-col gap-3"
 				style={{
-					display: "flex",
 					justifyContent: "center",
 					alignItems: "center",
 					height: "100vh",
@@ -50,9 +50,8 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
 					direction: "rtl",
 				}}
 			>
-				در حال بارگذاری...
-				<CustomSpinner />
-				<Helix size="45" speed="2.5" color="black" />
+				در حال بارگذاری
+				<Helix size="45" speed="2.5" color="#FF6A29" />
 			</div>
 		);
 	}
