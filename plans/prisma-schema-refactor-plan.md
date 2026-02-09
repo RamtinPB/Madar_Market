@@ -358,7 +358,9 @@ model AttributeDefinition {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([name])
+  // Unique per name+unit combination. This allows same attribute name with different units
+  // (e.g., "Weight" for fruits in kg vs "Weight" for jewelry in pieces)
+  @@unique([name, unit])
   @@index([publicId])
 }
 
@@ -767,50 +769,88 @@ async findByIdInternal(id: number) {
 
 #### 7.2.1 Category Routes
 
-| Endpoint               | Current                     | After                         |
-| ---------------------- | --------------------------- | ----------------------------- |
-| GET /categories        | Returns all with businessId | Returns all with publicId, id |
-| GET /categories/:id    | Finds by businessId         | Finds by id or publicId       |
-| POST /categories       | Creates with businessId     | Returns new publicId          |
-| PUT /categories/:id    | Updates by businessId       | Updates by id or publicId     |
-| DELETE /categories/:id | Deletes by businessId       | Deletes by id or publicId     |
+**Public Routes (External APIs):**
+
+| Endpoint                     | Current                     | After                     |
+| ---------------------------- | --------------------------- | ------------------------- |
+| GET /categories              | Returns all with businessId | Returns all with publicId |
+| GET /categories/:publicId    | Finds by businessId         | Finds by **publicId**     |
+| POST /categories             | Creates with businessId     | Returns new publicId      |
+| PUT /categories/:publicId    | Updates by businessId       | Updates by **publicId**   |
+| DELETE /categories/:publicId | Deletes by businessId       | Deletes by **publicId**   |
+
+**Internal/Admin Routes:**
+
+| Endpoint                     | Accepts       | Purpose    |
+| ---------------------------- | ------------- | ---------- |
+| GET /internal/categories/:id | Internal `id` | Admin only |
 
 #### 7.2.2 SubCategory Routes
 
-| Endpoint                                 | Current                      | After                                     |
-| ---------------------------------------- | ---------------------------- | ----------------------------------------- |
-| GET /sub-categories                      | Returns all with businessId  | Returns all with publicId, id             |
-| GET /sub-categories/:id                  | Finds by businessId          | Finds by id or publicId                   |
-| GET /sub-categories/category/:categoryId | Finds by category.businessId | Finds by category.id or category.publicId |
-| POST /sub-categories                     | Creates with businessId      | Returns new publicId                      |
-| PUT /sub-categories/:id                  | Updates by businessId        | Updates by id or publicId                 |
+**Public Routes (External APIs):**
+
+| Endpoint                                       | Current                      | After                          |
+| ---------------------------------------------- | ---------------------------- | ------------------------------ |
+| GET /sub-categories                            | Returns all with businessId  | Returns all with publicId      |
+| GET /sub-categories/:publicId                  | Finds by businessId          | Finds by **publicId**          |
+| GET /sub-categories/category/:categoryPublicId | Finds by category.businessId | Finds by **category.publicId** |
+| POST /sub-categories                           | Creates with businessId      | Returns new publicId           |
+| PUT /sub-categories/:publicId                  | Updates by businessId        | Updates by **publicId**        |
+| DELETE /sub-categories/:publicId               | Deletes by businessId        | Deletes by **publicId**        |
+
+**Internal/Admin Routes:**
+
+| Endpoint                                          | Accepts               | Purpose    |
+| ------------------------------------------------- | --------------------- | ---------- |
+| GET /internal/sub-categories/:id                  | Internal `id`         | Admin only |
+| GET /internal/sub-categories/category/:categoryId | Internal `categoryId` | Admin only |
 
 #### 7.2.3 Product Routes
 
-| Endpoint                           | Current                        | After                              |
-| ---------------------------------- | ------------------------------ | ---------------------------------- |
-| GET /products                      | Returns all with businessId    | Returns all with publicId, id      |
-| GET /products/:id                  | Finds by businessId            | Finds by id or publicId            |
-| GET /products/category/:categoryId | Filters by category.businessId | Filters by category.id or publicId |
-| POST /products                     | Creates with businessId        | Returns new publicId               |
-| PUT /products/:id                  | Updates by businessId          | Updates by id or publicId          |
-| DELETE /products/:id               | Deletes by businessId          | Deletes by id or publicId          |
+**Public Routes (External APIs):**
+
+| Endpoint                                 | Current                        | After                            |
+| ---------------------------------------- | ------------------------------ | -------------------------------- |
+| GET /products                            | Returns all with businessId    | Returns all with publicId        |
+| GET /products/:publicId                  | Finds by businessId            | Finds by **publicId**            |
+| GET /products/category/:categoryPublicId | Filters by category.businessId | Filters by **category.publicId** |
+| POST /products                           | Creates with businessId        | Returns new publicId             |
+| PUT /products/:publicId                  | Updates by businessId          | Updates by **publicId**          |
+| DELETE /products/:publicId               | Deletes by businessId          | Deletes by **publicId**          |
+
+**Internal/Admin Routes:**
+
+| Endpoint                   | Accepts       | Purpose    |
+| -------------------------- | ------------- | ---------- |
+| GET /internal/products/:id | Internal `id` | Admin only |
+| PUT /internal/products/:id | Internal `id` | Admin only |
 
 #### 7.2.4 Product Image Routes
 
-| Endpoint                         | Current                       | After                           |
-| -------------------------------- | ----------------------------- | ------------------------------- |
-| GET /products/:productId/images  | Lists by product.businessId   | Lists by product.id or publicId |
-| POST /products/:productId/images | Creates image with businessId | Creates image with publicId     |
+**Public Routes (External APIs):**
+
+| Endpoint                               | Current                       | After                         |
+| -------------------------------------- | ----------------------------- | ----------------------------- |
+| GET /products/:productPublicId/images  | Lists by product.businessId   | Lists by **product.publicId** |
+| POST /products/:productPublicId/images | Creates image with businessId | Creates image with publicId   |
+
+**Internal/Admin Routes:**
+
+| Endpoint                                 | Accepts              | Purpose    |
+| ---------------------------------------- | -------------------- | ---------- |
+| GET /internal/products/:productId/images | Internal `productId` | Admin only |
 
 ### 7.3 Frontend/API Consumer Updates
 
 #### 7.3.1 TypeScript Type Updates
 
+**Important:** Frontend should use `publicId` for URL routing. Internal `id` should only be used in admin dashboards.
+
 ```typescript
-// New types for frontend
-interface Category {
-	id: number;
+// === PUBLIC DTOs (consumer apps) ===
+// These types are returned by public APIs - NO internal id exposed
+
+interface PublicCategory {
 	publicId: string;
 	title: string;
 	imageKey?: string;
@@ -818,7 +858,47 @@ interface Category {
 	updatedAt: Date;
 }
 
-interface SubCategory {
+interface PublicSubCategory {
+	publicId: string;
+	title: string;
+	categoryPublicId: string;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+interface PublicProduct {
+	publicId: string;
+	title: string;
+	description?: string;
+	price: number;
+	discountPercent: number;
+	sponsorPrice?: number;
+	subCategoryPublicId: string;
+	createdAt: Date;
+	updatedAt: Date;
+	// NO internal id exposed
+}
+
+interface PublicProductImage {
+	publicId: string;
+	productPublicId: string;
+	key?: string;
+	createdAt: Date;
+}
+
+// === ADMIN DTOs (internal/admin panels) ===
+// These types include internal ids for admin operations
+
+interface AdminCategory {
+	id: number; // Internal PK - safe for admin use
+	publicId: string;
+	title: string;
+	imageKey?: string;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+interface AdminSubCategory {
 	id: number;
 	publicId: string;
 	title: string;
@@ -827,7 +907,7 @@ interface SubCategory {
 	updatedAt: Date;
 }
 
-interface Product {
+interface AdminProduct {
 	id: number;
 	publicId: string;
 	title: string;
@@ -840,7 +920,7 @@ interface Product {
 	updatedAt: Date;
 }
 
-interface ProductImage {
+interface AdminProductImage {
 	id: number;
 	publicId: string;
 	productId: number;

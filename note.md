@@ -3,5 +3,5 @@
 
 - [] upgrade prisma schema
 
-alright, here is the new plan, please review it and check if everything is there and up to industry standard:
+alright, here is the new plan, please review it and check if everything is there and up to industry standard (remember that kilo will use this plan to alter the prisma schema):
 ""
