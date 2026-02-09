@@ -201,6 +201,30 @@ model ProductAttribute {
 
 ---
 
+## 3.X Architectural Constraints
+
+### Database Requirement: PostgreSQL Only
+
+⚠️ **THIS SCHEMA REQUIRES POSTGRESQL**
+
+The following PostgreSQL-specific features are used:
+
+| Feature             | Usage                         | Impact                        |
+| ------------------- | ----------------------------- | ----------------------------- |
+| `String[]` (array)  | `AttributeDefinition.options` | No MySQL/SQLite support       |
+| `CHECK` constraints | Pricing validation            | Must be removed for other DBs |
+| `CUID()` function   | `publicId` generation         | Not available in all DBs      |
+
+**If database portability is required:**
+
+- Replace `String[]` with a normalized `AttributeOption` table
+- Remove `CHECK` constraints (validate in application layer)
+- Generate CUIDs in application code instead of DB
+
+**This is an intentional trade-off for correctness and performance.**
+
+---
+
 ## 4. Proposed Schema After Refactor
 
 ```prisma
@@ -421,7 +445,7 @@ ALTER TABLE "Product"
 ADD CONSTRAINT product_sponsor_price_valid
 CHECK (
   "sponsorPrice" IS NULL
-  OR ("sponsorPrice" * 100) < ("price" * (100 - "discountPercent"))
+  OR "sponsorPrice" < ("price" * (1 - (("discountPercent")::numeric / 100)))
 );
 ```
 
@@ -441,9 +465,8 @@ function getDiscountedPrice(product: Product): number {
 function isSponsorPriceValid(product: Product): boolean {
 	if (!product.sponsorPrice) return true;
 	const discountedPrice = getDiscountedPrice(product);
-	// Use integer math to avoid floating-point precision issues
-	const discountedPriceTimes100 = Number(discountedPrice) * 100;
-	return Number(product.sponsorPrice) * 100 < discountedPriceTimes100;
+	// Use NUMERIC cast to ensure proper decimal arithmetic
+	return Number(product.sponsorPrice) < discountedPrice;
 }
 ```
 
@@ -523,8 +546,11 @@ flowchart TD
 -- Step 1: Add nullable INTEGER column (NOT SERIAL)
 ALTER TABLE "Category" ADD COLUMN "id" INTEGER;
 
--- Step 2: Backfill id values from Prisma-managed sequence
--- (Prisma automatically creates the sequence when schema includes @default(autoincrement()))
+-- Step 2: Backfill id values using the sequence that Prisma created
+-- The sequence was auto-created when the migration ran with @default(autoincrement())
+UPDATE "Category"
+SET "id" = nextval(pg_get_serial_sequence('"Category"', 'id'))
+WHERE "id" IS NULL;
 
 -- Step 3: Make NOT NULL after backfill
 ALTER TABLE "Category" ALTER COLUMN "id" SET NOT NULL;
@@ -544,7 +570,10 @@ ALTER TABLE "Category" ALTER COLUMN "publicId" SET NOT NULL;
 -- Step 1: Add nullable INTEGER column (NOT SERIAL)
 ALTER TABLE "SubCategory" ADD COLUMN "id" INTEGER;
 
--- Step 2: Backfill id values from Prisma-managed sequence
+-- Step 2: Backfill id values using the sequence that Prisma created
+UPDATE "SubCategory"
+SET "id" = nextval(pg_get_serial_sequence('"SubCategory"', 'id'))
+WHERE "id" IS NULL;
 
 -- Step 3: Make NOT NULL after backfill
 ALTER TABLE "SubCategory" ALTER COLUMN "id" SET NOT NULL;
@@ -580,7 +609,10 @@ ALTER TABLE "SubCategory" ALTER COLUMN "publicId" SET NOT NULL;
 -- Step 1: Add nullable INTEGER column (NOT SERIAL)
 ALTER TABLE "Product" ADD COLUMN "id" INTEGER;
 
--- Step 2: Backfill id values from Prisma-managed sequence
+-- Step 2: Backfill id values using the sequence that Prisma created
+UPDATE "Product"
+SET "id" = nextval(pg_get_serial_sequence('"Product"', 'id'))
+WHERE "id" IS NULL;
 
 -- Step 3: Make NOT NULL after backfill
 ALTER TABLE "Product" ALTER COLUMN "id" SET NOT NULL;
@@ -618,7 +650,7 @@ ALTER TABLE "Product"
 ADD CONSTRAINT product_sponsor_price_valid
 CHECK (
   "sponsorPrice" IS NULL
-  OR ("sponsorPrice" * 100) < ("price" * (100 - "discountPercent"))
+  OR "sponsorPrice" < ("price" * (1 - (("discountPercent")::numeric / 100)))
 );
 ```
 
@@ -628,7 +660,10 @@ CHECK (
 -- Step 1: Add nullable INTEGER column (NOT SERIAL)
 ALTER TABLE "ProductImage" ADD COLUMN "id" INTEGER;
 
--- Step 2: Backfill id values from Prisma-managed sequence
+-- Step 2: Backfill id values using the sequence that Prisma created
+UPDATE "ProductImage"
+SET "id" = nextval(pg_get_serial_sequence('"ProductImage"', 'id'))
+WHERE "id" IS NULL;
 
 -- Step 3: Make NOT NULL after backfill
 ALTER TABLE "ProductImage" ALTER COLUMN "id" SET NOT NULL;
