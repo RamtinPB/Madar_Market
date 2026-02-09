@@ -21,21 +21,22 @@ This document outlines a comprehensive refactoring plan for the Madar Market e-c
 
 ### Key Architectural Decisions (Locked)
 
-| Category               | ID Strategy                                                                              | Reasoning                                                                       |
-| ---------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Internal/System Tables | `Int @id @default(autoincrement())`                                                      | User, OTP, RefreshToken, RevokedAccessToken - simple, sequential, low-traffic   |
+| Category               | ID Strategy                                                                         | Reasoning                                                                                                |
+| ---------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Internal/System Tables | `Int @id @default(autoincrement())`                                                 | User, OTP, RefreshToken, RevokedAccessToken - simple, sequential, low-traffic                            |
 | Domain/Business Tables | `id Int @id @default(autoincrement())` + `publicId String @unique @default(cuid())` | Category, SubCategory, Product, ProductImage - DB uses id for relations, APIs expose publicId externally |
-| Order Columns          | Remove all                                                                               | Use `createdAt` for sorting instead                                             |
-| Attributes             | `AttributeDefinition` + `ProductAttribute`                                               | Global/reusable attribute definitions with product-specific values              |
+| Order Columns          | Remove all                                                                          | Use `createdAt` for sorting instead                                                                      |
+| Attributes             | `AttributeDefinition` + `ProductAttribute`                                          | Global/reusable attribute definitions with product-specific values                                       |
 
 ## 1.1 ID Terminology Reference
 
-| Term | Definition | Usage |
-| ---- | ---------- | ----- |
-| `id` | Primary Key (PK) - internal, numeric identifier | Database joins, foreign keys, internal app logic |
-| `publicId` | Public Identifier - external-facing CUID | API endpoints, URL routing, external consumers |
+| Term       | Definition                                      | Usage                                            |
+| ---------- | ----------------------------------------------- | ------------------------------------------------ |
+| `id`       | Primary Key (PK) - internal, numeric identifier | Database joins, foreign keys, internal app logic |
+| `publicId` | Public Identifier - external-facing CUID        | API endpoints, URL routing, external consumers   |
 
 **Important Rules:**
+
 - **Never** accept `id` in API requests - use `publicId` instead
 - **Never** use `publicId` in foreign key relations - use `id` instead
 - **Always** return `publicId` in API responses
@@ -316,6 +317,10 @@ model Product {
   @@index([subCategoryId])
 }
 
+// Pricing invariants enforced at database level via CHECK constraints
+// These are added via raw SQL in migration, not directly in Prisma schema
+// See Section 4.X Pricing Invariants for details
+
 model ProductImage {
   id        Int     @id @default(autoincrement())
   publicId  String  @unique @default(cuid())
@@ -371,10 +376,81 @@ model ProductAttribute {
 
   createdAt DateTime @default(now())
 
+  @@unique([productId, attributeDefinitionId])
   @@index([publicId])
   @@index([productId])
   @@index([attributeDefinitionId])
 }
+```
+
+## 4.X Pricing Invariants
+
+The Product model includes pricing fields that require special validation at the database level. Since Prisma doesn't natively support CHECK constraints, these are enforced via raw SQL in migrations.
+
+### 4.X.1 discountPercent Constraint
+
+| Property        | Value                            |
+| --------------- | -------------------------------- |
+| Range           | [0, 100]                         |
+| Constraint Name | `product_discount_percent_range` |
+| Enforcement     | PostgreSQL CHECK constraint      |
+
+```sql
+ALTER TABLE "Product"
+ADD CONSTRAINT product_discount_percent_range
+CHECK ("discountPercent" BETWEEN 0 AND 100);
+```
+
+### 4.X.2 sponsorPrice Constraint
+
+| Property        | Value                                                      |
+| --------------- | ---------------------------------------------------------- |
+| Rule            | `sponsorPrice < discountedPrice` OR `sponsorPrice IS NULL` |
+| Constraint Name | `product_sponsor_price_valid`                              |
+| Enforcement     | PostgreSQL CHECK constraint                                |
+
+```sql
+ALTER TABLE "Product"
+ADD CONSTRAINT product_sponsor_price_valid
+CHECK (
+  "sponsorPrice" IS NULL
+  OR "sponsorPrice" <
+     ("price" * (1 - ("discountPercent"::decimal / 100)))
+);
+```
+
+### 4.X.3 discountedPrice Derivation
+
+**Important:** `discountedPrice` is a DERIVED value and is NEVER stored in the database.
+
+**Application Logic:**
+
+```typescript
+// Compute discounted price on-the-fly
+function getDiscountedPrice(product: Product): number {
+	return Number(product.price) * (1 - product.discountPercent / 100);
+}
+
+// Check if sponsor price is valid
+function isSponsorPriceValid(product: Product): boolean {
+	if (!product.sponsorPrice) return true;
+	const discountedPrice = getDiscountedPrice(product);
+	return Number(product.sponsorPrice) < discountedPrice;
+}
+```
+
+### 4.X.4 Pricing Flow
+
+```mermaid
+flowchart TD
+    A[Product Creation/Update] --> B{Validate discountPercent ∈ 0..100}
+    B -->|Pass| C{Validate sponsorPrice < discountedPrice}
+    B -->|Fail| E[Reject - Invalid discount]
+    C -->|Pass| D[Accept changes]
+    C -->|Fail| F[Reject - Invalid sponsor price]
+
+    G[Read Product] --> H[Compute discountedPrice]
+    H --> I[Return product with derived discountedPrice]
 ```
 
 ---
@@ -488,6 +564,19 @@ UPDATE "Product" SET "publicId" = "businessId";
 -- Make columns NOT NULL
 ALTER TABLE "Product" ALTER COLUMN "id" SET NOT NULL;
 ALTER TABLE "Product" ALTER COLUMN "publicId" SET NOT NULL;
+
+-- Add pricing constraints (PostgreSQL CHECK constraints)
+ALTER TABLE "Product"
+ADD CONSTRAINT product_discount_percent_range
+CHECK ("discountPercent" BETWEEN 0 AND 100);
+
+ALTER TABLE "Product"
+ADD CONSTRAINT product_sponsor_price_valid
+CHECK (
+  "sponsorPrice" IS NULL
+  OR "sponsorPrice" <
+     ("price" * (1 - ("discountPercent"::decimal / 100)))
+);
 ```
 
 #### 5.2.4 Backfill ProductImage Table
@@ -524,26 +613,27 @@ ALTER TABLE "ProductImage" ALTER COLUMN "publicId" SET NOT NULL;
 #### 5.2.5 Migrate Attributes to New Schema
 
 ```sql
--- Create AttributeDefinition from unique attribute names
+-- Step 1: Deduplicate attributes by TRIM(LOWER(name)), generate new publicIds
 INSERT INTO "AttributeDefinition" ("publicId", "name", "type", "isRequired")
-SELECT DISTINCT
-  a."businessId",
-  COALESCE(a."title", 'Unnamed'),
+SELECT DISTINCT ON (TRIM(LOWER(a."title")))
+  gen_random_uuid()::text,
+  TRIM(LOWER(a."title")),
   'TEXT'::"AttributeType",
   false
 FROM "Attributes" a
-ON CONFLICT DO NOTHING;
+WHERE a."title" IS NOT NULL
+ORDER BY TRIM(LOWER(a."title")), a."businessId";
 
--- Create ProductAttribute linking products to definitions
+-- Step 2: Map product attributes to definitions using name matching
 INSERT INTO "ProductAttribute" ("publicId", "productId", "attributeDefinitionId", "value")
 SELECT
-  a."businessId",
+  gen_random_uuid()::text,
   p.id,
   ad.id,
   COALESCE(a."description", '')
 FROM "Attributes" a
 JOIN "Product" p ON p."publicId" = a."productId"
-JOIN "AttributeDefinition" ad ON ad."publicId" = a."businessId";
+JOIN "AttributeDefinition" ad ON TRIM(LOWER(ad."name")) = TRIM(LOWER(a."title"));
 ```
 
 ### 5.3 Safety Checkpoints
@@ -623,34 +713,30 @@ async findById(id: string) {
 }
 ```
 
-**After:**
+**After (CORRECTED - Public API only accepts publicId):**
 
 ```typescript
-async findAll() {
-  return prisma.category.findMany({
-    orderBy: { createdAt: 'asc' }
-  });
-}
-
-async findById(id: string) {
-  // Accept either internal id (number) or publicId (string)
-  const numericId = parseInt(id, 10);
-  if (!isNaN(numericId)) {
-    return prisma.category.findUnique({
-      where: { id: numericId }
-    });
-  }
-  return prisma.category.findUnique({
-    where: { publicId: id }
-  });
-}
-
+// Public API - only accepts publicId
 async findByPublicId(publicId: string) {
   return prisma.category.findUnique({
     where: { publicId }
   });
 }
+
+// Internal/admin repository (separate file)
+async findByIdInternal(id: number) {
+  return prisma.category.findUnique({
+    where: { id }
+  });
+}
 ```
+
+**Important Rules:**
+
+- **Never** create a dual-lookup `findById` that accepts both id and publicId
+- Public APIs should **only** accept `publicId` in URL parameters
+- Internal/admin use cases should use separate repositories or routes like `/internal/categories/:id`
+- This prevents confusion and security issues from exposing internal IDs
 
 #### 7.1.2 SubCategory Repository
 
