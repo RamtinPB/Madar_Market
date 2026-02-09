@@ -344,6 +344,10 @@ enum AttributeType {
   DATE
 }
 
+// ⚠️ DATABASE REQUIREMENT: PostgreSQL
+// This schema assumes PostgreSQL because it uses String[] for options.
+// If database portability is required, options must be normalized into a separate table.
+
 model AttributeDefinition {
   id          Int     @id @default(autoincrement())
   publicId    String  @unique @default(cuid())
@@ -358,8 +362,8 @@ model AttributeDefinition {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Unique per name+unit combination. This allows same attribute name with different units
-  // (e.g., "Weight" for fruits in kg vs "Weight" for jewelry in pieces)
+  // Note: Attribute names are global and not localized.
+  // Localization support would require additional schema changes.
   @@unique([name, unit])
   @@index([publicId])
 }
@@ -371,7 +375,8 @@ model ProductAttribute {
   productId           Int     // References Product.id (internal)
   attributeDefinitionId Int   // References AttributeDefinition.id
 
-  value               String
+  value               String // Stored as String intentionally. Validation and parsing enforced at
+                           // application layer based on AttributeDefinition.type.
 
   product             Product @relation(fields: [productId], references: [id])
   attributeDefinition AttributeDefinition @relation(fields: [attributeDefinitionId], references: [id])
@@ -416,8 +421,7 @@ ALTER TABLE "Product"
 ADD CONSTRAINT product_sponsor_price_valid
 CHECK (
   "sponsorPrice" IS NULL
-  OR "sponsorPrice" <
-     ("price" * (1 - ("discountPercent"::decimal / 100)))
+  OR ("sponsorPrice" * 100) < ("price" * (100 - "discountPercent"))
 );
 ```
 
@@ -437,7 +441,9 @@ function getDiscountedPrice(product: Product): number {
 function isSponsorPriceValid(product: Product): boolean {
 	if (!product.sponsorPrice) return true;
 	const discountedPrice = getDiscountedPrice(product);
-	return Number(product.sponsorPrice) < discountedPrice;
+	// Use integer math to avoid floating-point precision issues
+	const discountedPriceTimes100 = Number(discountedPrice) * 100;
+	return Number(product.sponsorPrice) * 100 < discountedPriceTimes100;
 }
 ```
 
@@ -455,9 +461,29 @@ flowchart TD
     H --> I[Return product with derived discountedPrice]
 ```
 
+### 4.Y Cascade Delete Behavior
+
+| Relation                               | On Delete | Rationale                                         |
+| -------------------------------------- | --------- | ------------------------------------------------- |
+| Category → SubCategory                 | CASCADE   | Delete subcategories when category deleted        |
+| SubCategory → Product                  | CASCADE   | Delete products when subcategory deleted          |
+| Product → ProductImage                 | CASCADE   | Delete images when product deleted                |
+| Product → ProductAttribute             | CASCADE   | Delete attributes when product deleted            |
+| AttributeDefinition → ProductAttribute | RESTRICT  | Prevent deleting definitions if products use them |
+
 ---
 
 ## 5. Migration Strategy
+
+### 5.0 Important Migration Notes
+
+⚠️ **CRITICAL**: All new `id` columns must be introduced via Prisma schema first, then backfilled manually. Do NOT create SERIAL columns manually in SQL migrations.
+
+**Correct approach:**
+
+1. First, update Prisma schema to add: `id Int @id @default(autoincrement())`
+2. Run: `npx prisma migrate dev --name add_id_columns`
+3. Then backfill data using UPDATE statements
 
 ### 5.1 Migration Order (Step-by-Step)
 
@@ -494,23 +520,35 @@ flowchart TD
 #### 5.2.1 Backfill Category Table
 
 ```sql
--- Add new columns as nullable
-ALTER TABLE "Category" ADD COLUMN "id" SERIAL;
+-- Step 1: Add nullable INTEGER column (NOT SERIAL)
+ALTER TABLE "Category" ADD COLUMN "id" INTEGER;
+
+-- Step 2: Backfill id values from Prisma-managed sequence
+-- (Prisma automatically creates the sequence when schema includes @default(autoincrement()))
+
+-- Step 3: Make NOT NULL after backfill
+ALTER TABLE "Category" ALTER COLUMN "id" SET NOT NULL;
+
 ALTER TABLE "Category" ADD COLUMN "publicId" TEXT UNIQUE;
 
 -- Backfill publicId for existing records
 UPDATE "Category" SET "publicId" = "businessId";
 
 -- Make columns NOT NULL
-ALTER TABLE "Category" ALTER COLUMN "id" SET NOT NULL;
 ALTER TABLE "Category" ALTER COLUMN "publicId" SET NOT NULL;
 ```
 
 #### 5.2.2 Backfill SubCategory Table
 
 ```sql
--- Add new columns
-ALTER TABLE "SubCategory" ADD COLUMN "id" SERIAL;
+-- Step 1: Add nullable INTEGER column (NOT SERIAL)
+ALTER TABLE "SubCategory" ADD COLUMN "id" INTEGER;
+
+-- Step 2: Backfill id values from Prisma-managed sequence
+
+-- Step 3: Make NOT NULL after backfill
+ALTER TABLE "SubCategory" ALTER COLUMN "id" SET NOT NULL;
+
 ALTER TABLE "SubCategory" ADD COLUMN "publicId" TEXT UNIQUE;
 
 -- Update foreign key to reference Category.id
@@ -533,15 +571,20 @@ FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE;
 UPDATE "SubCategory" SET "publicId" = "businessId";
 
 -- Make columns NOT NULL
-ALTER TABLE "SubCategory" ALTER COLUMN "id" SET NOT NULL;
 ALTER TABLE "SubCategory" ALTER COLUMN "publicId" SET NOT NULL;
 ```
 
 #### 5.2.3 Backfill Product Table
 
 ```sql
--- Add new columns
-ALTER TABLE "Product" ADD COLUMN "id" SERIAL;
+-- Step 1: Add nullable INTEGER column (NOT SERIAL)
+ALTER TABLE "Product" ADD COLUMN "id" INTEGER;
+
+-- Step 2: Backfill id values from Prisma-managed sequence
+
+-- Step 3: Make NOT NULL after backfill
+ALTER TABLE "Product" ALTER COLUMN "id" SET NOT NULL;
+
 ALTER TABLE "Product" ADD COLUMN "publicId" TEXT UNIQUE;
 
 -- Update foreign key to reference SubCategory.id
@@ -564,7 +607,6 @@ FOREIGN KEY ("subCategoryId") REFERENCES "SubCategory"("id") ON DELETE CASCADE;
 UPDATE "Product" SET "publicId" = "businessId";
 
 -- Make columns NOT NULL
-ALTER TABLE "Product" ALTER COLUMN "id" SET NOT NULL;
 ALTER TABLE "Product" ALTER COLUMN "publicId" SET NOT NULL;
 
 -- Add pricing constraints (PostgreSQL CHECK constraints)
@@ -576,16 +618,21 @@ ALTER TABLE "Product"
 ADD CONSTRAINT product_sponsor_price_valid
 CHECK (
   "sponsorPrice" IS NULL
-  OR "sponsorPrice" <
-     ("price" * (1 - ("discountPercent"::decimal / 100)))
+  OR ("sponsorPrice" * 100) < ("price" * (100 - "discountPercent"))
 );
 ```
 
 #### 5.2.4 Backfill ProductImage Table
 
 ```sql
--- Add new columns
-ALTER TABLE "ProductImage" ADD COLUMN "id" SERIAL;
+-- Step 1: Add nullable INTEGER column (NOT SERIAL)
+ALTER TABLE "ProductImage" ADD COLUMN "id" INTEGER;
+
+-- Step 2: Backfill id values from Prisma-managed sequence
+
+-- Step 3: Make NOT NULL after backfill
+ALTER TABLE "ProductImage" ALTER COLUMN "id" SET NOT NULL;
+
 ALTER TABLE "ProductImage" ADD COLUMN "publicId" TEXT UNIQUE;
 
 -- Update foreign key to reference Product.id
@@ -608,17 +655,17 @@ FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE;
 UPDATE "ProductImage" SET "publicId" = "businessId";
 
 -- Make columns NOT NULL
-ALTER TABLE "ProductImage" ALTER COLUMN "id" SET NOT NULL;
 ALTER TABLE "ProductImage" ALTER COLUMN "publicId" SET NOT NULL;
 ```
 
 #### 5.2.5 Migrate Attributes to New Schema
 
 ```sql
--- Step 1: Deduplicate attributes by TRIM(LOWER(name)), generate new publicIds
+-- Step 1: Deduplicate attributes by TRIM(LOWER(name)), reuse existing CUIDs for publicId
+-- Note: publicId generation for new records MUST be done in application layer using cuid(), not UUID
 INSERT INTO "AttributeDefinition" ("publicId", "name", "type", "isRequired")
 SELECT DISTINCT ON (TRIM(LOWER(a."title")))
-  gen_random_uuid()::text,
+  a."businessId",  -- reuse existing CUID, don't generate UUID
   TRIM(LOWER(a."title")),
   'TEXT'::"AttributeType",
   false
@@ -627,9 +674,10 @@ WHERE a."title" IS NOT NULL
 ORDER BY TRIM(LOWER(a."title")), a."businessId";
 
 -- Step 2: Map product attributes to definitions using name matching
+-- Reuse businessId for ProductAttribute publicId as well
 INSERT INTO "ProductAttribute" ("publicId", "productId", "attributeDefinitionId", "value")
 SELECT
-  gen_random_uuid()::text,
+  a."businessId",  -- reuse existing CUID
   p.id,
   ad.id,
   COALESCE(a."description", '')
@@ -637,6 +685,8 @@ FROM "Attributes" a
 JOIN "Product" p ON p."publicId" = a."productId"
 JOIN "AttributeDefinition" ad ON TRIM(LOWER(ad."name")) = TRIM(LOWER(a."title"));
 ```
+
+**Note:** For new records created after migration, always generate `publicId` in the application layer using `cuid()` library.
 
 ### 5.3 Safety Checkpoints
 
