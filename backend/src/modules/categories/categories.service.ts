@@ -13,7 +13,7 @@ import {
 export class CategoryService {
 	private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-	async getAll() {
+	async getAllCategories() {
 		const categories = await categoriesRepository.getAllCategories();
 		return categories.map((cat) => ({
 			...cat,
@@ -21,45 +21,45 @@ export class CategoryService {
 		}));
 	}
 
-	async getById(businessId: string) {
-		const cat = await categoriesRepository.getCategoryById(businessId);
+	async getCategoryByPublicId(publicId: string) {
+		const cat = await categoriesRepository.getCategoryByPublicId(publicId);
 		if (!cat) throw new NotFoundError("Category");
 		return cat;
 	}
 
-	async create(data: CreateCategoryInput) {
-		const total = await categoriesRepository.getCategoryCount();
+	async createNewCategory(data: CreateCategoryInput) {
+		const total = await categoriesRepository.getCategoriesCount();
 		const title = data.title ?? "New Category";
 
-		return categoriesRepository.createCategory({
+		return categoriesRepository.createNewCategory({
 			...data,
 			title,
 		});
 	}
 
-	async update(businessId: string, data: UpdateCategoryInput) {
-		const category = await this.getById(businessId);
+	async updateCategory(publicId: string, data: UpdateCategoryInput) {
+		const category = await this.getCategoryByPublicId(publicId);
 
 		// Update the title and imageKey
 		const updateData: any = {};
 		if (data.title !== undefined) updateData.title = data.title;
 		if (data.imageKey !== undefined) updateData.imageKey = data.imageKey;
 
-		await categoriesRepository.updateCategory(businessId, updateData);
+		await categoriesRepository.updateCategory(publicId, updateData);
 
-		return this.getById(businessId);
+		return this.getCategoryByPublicId(publicId);
 	}
 
-	async delete(businessId: string) {
-		const category = await this.getById(businessId);
+	async deleteCategory(publicId: string) {
+		const category = await this.getCategoryByPublicId(publicId);
 
 		// Check if category has subcategories
 		const subCategoryCount =
-			await categoriesRepository.getSubCategoryCountByCategory(businessId);
+			await categoriesRepository.getSubCategoryCountByCategory(publicId);
 
 		if (subCategoryCount > 0) {
 			throw new ValidationError(
-				"Cannot delete category with existing subcategories"
+				"Cannot delete category with existing subcategories",
 			);
 		}
 
@@ -69,72 +69,48 @@ export class CategoryService {
 		}
 
 		await categoriesRepository.deleteCategoryWithTransaction(
-			businessId,
+			publicId,
 			async (tx) => {
 				// Image deletion handled above, no need in transaction
-			}
+			},
 		);
 
 		return { success: true };
 	}
 
-	async deleteImage(businessId: string) {
-		const category = await this.getById(businessId);
+	async deleteCategoryImage(publicId: string) {
+		const category = await this.getCategoryByPublicId(publicId);
 
 		if (category.imageKey) {
 			await storageService.deleteObject(category.imageKey);
-			await categoriesRepository.updateCategoryImageKey(businessId, null);
+			await categoriesRepository.updateCategoryImageKey(publicId, null);
 		}
 
 		return { success: true };
 	}
 
-	async reorder(items: { businessId: string; order: number }[]) {
-		const existing = await categoriesRepository.getCategoriesForReorder();
-
-		if (existing.length !== items.length) {
-			throw new Error("MISMATCH_COUNT");
-		}
-
-		const existingIds = new Set(existing.map((x) => x.businessId));
-		const providedIds = new Set(items.map((x) => x.businessId));
-
-		if (existingIds.size !== providedIds.size) {
-			throw new Error("INVALID_IDS");
-		}
-
-		await categoriesRepository.reorderCategoriesTransaction(
-			items,
-			async (tx) => {
-				// Validation completed above, no additional transaction work needed
-			}
-		);
-
-		return categoriesRepository.getCategoriesSimple();
-	}
-
-	async getCategoryImageUploadUrl(categoryId: string) {
+	async getCategoryImageUploadUrl(publicId: string) {
 		const key = storageService.generateCategoryImageKey(
-			categoryId,
-			crypto.randomUUID() + ".webp"
+			publicId,
+			crypto.randomUUID() + ".webp",
 		);
 
 		// 3. Issue upload URL
 		const uploadUrl = await storageService.getUploadUrl(key, "image/webp", 120);
 
 		// 4. Save key in repository
-		await categoriesRepository.updateCategoryImageKey(categoryId, key);
+		await categoriesRepository.updateCategoryImageKey(publicId, key);
 
 		return { uploadUrl };
 	}
 
 	// Enhanced uploadImages with validation and error handling
-	async uploadImage(categoryId: string, image: File) {
-		const category = await categoriesRepository.getCategoryById(categoryId);
+	async uploadCategoryImage(publicId: string, image: File) {
+		const category = await categoriesRepository.getCategoryByPublicId(publicId);
 
 		if (image.size > this.MAX_FILE_SIZE) {
 			throw new ValidationError(
-				`File size exceeds ${this.MAX_FILE_SIZE / 1024 / 1024}MB limit`
+				`File size exceeds ${this.MAX_FILE_SIZE / 1024 / 1024}MB limit`,
 			);
 		}
 
@@ -147,11 +123,11 @@ export class CategoryService {
 		}
 
 		const filename = `${crypto.randomUUID()}.webp`;
-		const key = storageService.generateCategoryImageKey(categoryId, filename);
+		const key = storageService.generateCategoryImageKey(publicId, filename);
 		await storageService.uploadFile(key, image, "image/webp");
 
 		// Save key in repository
-		await categoriesRepository.updateCategoryImageKey(categoryId, key);
+		await categoriesRepository.updateCategoryImageKey(publicId, key);
 
 		return {
 			success: true,

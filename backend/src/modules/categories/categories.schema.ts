@@ -6,13 +6,12 @@ const imageFileSchema = z
 	.refine((file) => file.size <= 5 * 1024 * 1024, "File size must be <= 5MB")
 	.refine(
 		(file) => ["image/png", "image/jpeg", "image/webp"].includes(file.type),
-		"File must be PNG, JPEG, or WebP"
+		"File must be PNG, JPEG, or WebP",
 	);
 
 // Response Schema
 export const CategoryResponseSchema = z.object({
-	businessId: z.string(),
-	order: z.number(),
+	publicId: z.string(),
 	title: z.string(),
 	imageKey: z.string().nullable(),
 	createdAt: z.date(),
@@ -33,9 +32,8 @@ export const UpdateCategorySchema = z.object({
 export const ReorderCategoriesSchema = z.object({
 	items: z.array(
 		z.object({
-			businessId: z.string(),
-			order: z.number().int().min(1),
-		})
+			publicId: z.string(),
+		}),
 	),
 });
 

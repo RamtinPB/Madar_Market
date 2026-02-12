@@ -8,10 +8,10 @@ export const categoriesRepository = {
 	// Category CRUD operations
 	async getAllCategories() {
 		return prisma.category.findMany({
-			orderBy: { order: "asc" },
+			orderBy: { createdAt: "asc" },
 			include: {
 				subCategories: {
-					orderBy: { order: "asc" },
+					orderBy: { createdAt: "asc" },
 					include: {
 						_count: {
 							select: { products: true },
@@ -25,17 +25,17 @@ export const categoriesRepository = {
 		});
 	},
 
-	async getCategoryById(businessId: string) {
+	async getCategoryByPublicId(publicId: string) {
 		return prisma.category.findUnique({
-			where: { businessId },
+			where: { publicId },
 		});
 	},
 
-	async getCategoryCount() {
+	async getCategoriesCount() {
 		return prisma.category.count();
 	},
 
-	async createCategory(data: CreateCategoryInput) {
+	async createNewCategory(data: CreateCategoryInput) {
 		return prisma.category.create({
 			data: {
 				title: data.title ?? "New Category",
@@ -44,117 +44,58 @@ export const categoriesRepository = {
 		});
 	},
 
-	async updateCategory(businessId: string, data: Partial<UpdateCategoryInput>) {
+	async updateCategory(publicId: string, data: Partial<UpdateCategoryInput>) {
 		const updateData: any = {};
 
 		if (data.title !== undefined) updateData.title = data.title;
 		if (data.imageKey !== undefined) updateData.imageKey = data.imageKey;
 
 		return prisma.category.update({
-			where: { businessId },
+			where: { publicId },
 			data: updateData,
 		});
 	},
 
-	async deleteCategory(businessId: string) {
+	async deleteCategory(publicId: string) {
 		return prisma.category.delete({
-			where: { businessId },
-		});
-	},
-
-	// Category ordering operations
-	async updateCategoriesOrder(startOrder: number, increment: boolean) {
-		return prisma.category.updateMany({
-			where: { order: increment ? { gte: startOrder } : { gt: startOrder } },
-			data: { order: increment ? { increment: 1 } : { decrement: 1 } },
-		});
-	},
-
-	async updateCategoriesOrderInRange(
-		startOrder: number,
-		endOrder: number,
-		increment: boolean
-	) {
-		return prisma.category.updateMany({
-			where: {
-				order: increment
-					? { gte: startOrder, lt: endOrder }
-					: { gt: startOrder, lte: endOrder },
-			},
-			data: { order: increment ? { increment: 1 } : { decrement: 1 } },
+			where: { publicId },
 		});
 	},
 
 	// Subcategory count operations
-	async getSubCategoryCountByCategory(categoryId: string) {
-		return prisma.subCategory.count({
-			where: { categoryId },
+	async getSubCategoryCountByCategory(publicId: string) {
+		const category = await prisma.category.findUnique({
+			where: { publicId },
+			select: { id: true },
 		});
-	},
+		if (!category) return 0;
 
-	// Transaction operations
-	async updateCategoryWithTransaction(
-		businessId: string,
-		data: any,
-		transactionCallback: (tx: any) => Promise<void>
-	) {
-		return prisma.$transaction(async (tx) => {
-			await transactionCallback(tx);
-
-			return tx.category.update({
-				where: { businessId },
-				data,
-			});
+		return prisma.subCategory.count({
+			where: { categoryId: category.id },
 		});
 	},
 
 	async deleteCategoryWithTransaction(
-		businessId: string,
-		transactionCallback: (tx: any) => Promise<void>
+		publicId: string,
+		transactionCallback: (tx: any) => Promise<void>,
 	) {
 		return prisma.$transaction(async (tx) => {
 			await transactionCallback(tx);
 
-			await tx.category.delete({ where: { businessId } });
-		});
-	},
-
-	async reorderCategoriesTransaction(
-		items: { businessId: string; order: number }[],
-		transactionCallback: (tx: any) => Promise<void>
-	) {
-		return prisma.$transaction(async (tx) => {
-			await transactionCallback(tx);
-
-			// Update the order field for each category
-			const updatePromises = items.map((item) =>
-				tx.category.update({
-					where: { businessId: item.businessId },
-					data: { order: item.order },
-				})
-			);
-
-			await Promise.all(updatePromises);
-		});
-	},
-
-	// Get categories for reordering validation
-	async getCategoriesForReorder() {
-		return prisma.category.findMany({
-			select: { businessId: true },
+			await tx.category.delete({ where: { publicId } });
 		});
 	},
 
 	async getCategoriesSimple() {
 		return prisma.category.findMany({
-			orderBy: { order: "asc" },
+			orderBy: { createdAt: "asc" },
 		});
 	},
 
 	// Image operations
-	async updateCategoryImageKey(businessId: string, imageKey: string | null) {
+	async updateCategoryImageKey(publicId: string, imageKey: string | null) {
 		return prisma.category.update({
-			where: { businessId },
+			where: { publicId },
 			data: { imageKey },
 		});
 	},

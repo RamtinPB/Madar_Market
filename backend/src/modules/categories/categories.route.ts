@@ -17,18 +17,21 @@ export function registerCategoryRoutes(router: any) {
 
 	// Get all categories
 	router.get("/categories", async () => {
-		return categoryService.getAll();
+		return categoryService.getAllCategories();
 	});
 
-	// Get category by businessId
-	router.get("/categories/:id", async (ctx: any) => {
-		return categoryService.getById(ctx.params.id);
+	// Get category by publicId
+	router.get("/categories/:categoryPublicId", async (ctx: any) => {
+		return categoryService.getCategoryByPublicId(ctx.params.categoryPublicId);
 	});
 
 	// Get all subcategories for a category
-	router.get("/categories/:id/subcategories", async (ctx: any) => {
-		return subCategoryService.getAllByCategory(ctx.params.id);
-	});
+	router.get(
+		"/categories/:categoryPublicId/subcategories",
+		async (ctx: any) => {
+			return subCategoryService.getAllByCategory(ctx.params.categoryPublicId);
+		},
+	);
 
 	// ============================================
 	// ADMIN ROUTES (requires SUPER_ADMIN role)
@@ -39,7 +42,7 @@ export function registerCategoryRoutes(router: any) {
 		"/categories",
 		async (ctx: any) => {
 			const body = CreateCategorySchema.parse(ctx.body);
-			return categoryService.create(body);
+			return categoryService.createNewCategory(body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -48,15 +51,15 @@ export function registerCategoryRoutes(router: any) {
 			}),
 			type: "json",
 		},
-		secureRoute()
+		secureRoute(),
 	);
 
 	// Update metadata (title) — JSON body
 	router.put(
-		"/categories/:id",
+		"/categories/:categoryPublicId",
 		async (ctx: any) => {
 			const body = UpdateCategorySchema.parse(ctx.body);
-			return categoryService.update(ctx.params.id, body);
+			return categoryService.updateCategory(ctx.params.categoryPublicId, body);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -65,26 +68,29 @@ export function registerCategoryRoutes(router: any) {
 			}),
 			type: "json",
 		},
-		secureRoute()
+		secureRoute(),
 	);
 
 	// Delete category
 	router.delete(
-		"/categories/:id",
+		"/categories/:categoryPublicId",
 		async (ctx: any) => {
-			return categoryService.delete(ctx.params.id);
+			return categoryService.deleteCategory(ctx.params.categoryPublicId);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 		},
-		secureRoute()
+		secureRoute(),
 	);
 
 	// Upload/replace image — multipart/form-data with 'image' file
 	router.put(
-		"/categories/:id/image",
+		"/categories/:categoryPublicId/image",
 		async (ctx: any) => {
-			return categoryService.uploadImage(ctx.params.id, ctx.body.image);
+			return categoryService.uploadCategoryImage(
+				ctx.params.categoryPublicId,
+				ctx.body.image,
+			);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -92,12 +98,12 @@ export function registerCategoryRoutes(router: any) {
 				image: t.File(),
 			}),
 			type: "multipart/form-data",
-		}
+		},
 	);
 
 	// // get image upload url
 	// router.post(
-	// 	"/categories/:id/image-upload-url",
+	// 	"/categories/:categoryPublicId/image-upload-url",
 	// 	categoryService.getCategoryImageUploadUrl,
 	// 	{
 	// 		beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
@@ -106,33 +112,13 @@ export function registerCategoryRoutes(router: any) {
 
 	// Delete image
 	router.delete(
-		"/categories/:id/image",
+		"/categories/:categoryPublicId/image",
 		async (ctx: any) => {
-			return categoryService.deleteImage(ctx.params.id);
+			return categoryService.deleteCategoryImage(ctx.params.categoryPublicId);
 		},
 		{
 			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
 		},
-		secureRoute()
-	);
-
-	// Reorder categories — JSON body with items array
-	router.put(
-		"/categories/reorder",
-		async (ctx: any) => {
-			return categoryService.reorder(ctx.body.items);
-		},
-		{
-			beforeHandle: [requireAuth, requireRole("SUPER_ADMIN")],
-			body: t.Object({
-				items: t.Array(
-					t.Object({
-						businessId: t.String(),
-						order: t.Numeric(),
-					})
-				),
-			}),
-		},
-		secureRoute()
+		secureRoute(),
 	);
 }
