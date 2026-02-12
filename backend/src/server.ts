@@ -26,7 +26,6 @@ export const app = new Elysia()
 	)
 	.use(
 		swagger({
-			// Using default Swagger UI provider for better persistAuthorization support
 			documentation: {
 				components: {
 					securitySchemes: {
@@ -41,6 +40,7 @@ export const app = new Elysia()
 			},
 			swaggerOptions: {
 				persistAuthorization: true,
+				docExpansion: "none",
 			},
 		}),
 	)
